@@ -1,5 +1,6 @@
 require 'alloy/dsl/model_builder'
 require 'seculloy/dsl/view_dsl_api'
+require 'seculloy/dsl/module_dsl_api'
 
 module Seculloy
 

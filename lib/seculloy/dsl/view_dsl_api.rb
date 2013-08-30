@@ -1,5 +1,6 @@
 require 'alloy/dsl/model_api'
-require 'seculloy/seculloy_model'
+require 'seculloy/model/data'
+require 'seculloy/model/module'
 
 module Seculloy
   module Dsl
