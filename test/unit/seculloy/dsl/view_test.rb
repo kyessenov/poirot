@@ -137,6 +137,7 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_to_als
-    puts Alloy.meta.to_als
+    # just make sure it doesn't raise exceptions for now
+    Alloy.meta.to_als
   end
 end
