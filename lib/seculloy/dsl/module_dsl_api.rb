@@ -25,12 +25,13 @@ module Seculloy
       def operation(*args, &body)
         # evaluate ops lazily
         meta.add_lazy_operation lambda{
-          op = Alloy::Dsl::SigBuilder.new(
+          ans = Alloy::Dsl::SigBuilder.new(
             :superclass => Seculloy::Model::Operation,
             :create_const => false
           ).sig(*args, &body)
           # TODO: check that all fields are of type Data
-          meta.add_operation op
+          ops = (Array === ans) ? ans : [ans]
+          ops.each{|op| meta.add_operation op}
         }
       end
 
@@ -60,13 +61,13 @@ module Seculloy
         end
         @lazy_ops = []
       end
-      
+
       def _hierarchy_up
         up=super && AlloySigMetaModuleExt === up
       end
 
-      private 
-      
+      private
+
       def lazy_ops() @lazy_ops ||= [] end
     end
   end
