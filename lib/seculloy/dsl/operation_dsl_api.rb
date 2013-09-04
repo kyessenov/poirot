@@ -29,6 +29,8 @@ module Seculloy
         meta.add_effect e
       end
 
+      alias_method :affects, :effects #TODO: pick one or the other
+
       private
 
       # Extend the existing Alloy::Ast::SigMeta class with some extra

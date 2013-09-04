@@ -3,7 +3,7 @@ require 'seculloy/seculloy_dsl'
 
 include Seculloy::Dsl
 
-view :OAuth do
+view :OAuthOld do
   abstract_data Payload
   data Credential  < Payload
   data AuthGrant   < Payload
@@ -71,13 +71,13 @@ end
 class ViewTest < Test::Unit::TestCase
   include SDGUtils::Testing::SmartSetup
   include SDGUtils::Testing::Assertions
-  include OAuth
+  include OAuthOld
 
-  def oauth() OAuth.meta end
+  def oauth() OAuthOld.meta end
 
   def test1
-    assert OAuth
-    oauth = OAuth.meta
+    assert OAuthOld
+    oauth = OAuthOld.meta
     assert oauth
   end
 

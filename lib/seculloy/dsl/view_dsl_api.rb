@@ -29,6 +29,12 @@ module Seculloy
         ).sig(*args, &block)
       end
 
+      def __finish
+        meta.modules.each do |mod|
+          mod.meta.eval_lazy_operations
+        end
+      end
+
       # Extend the existing Alloy::Ast::Model class with some extra
       # methods for fetching Seculloy specific entites.
       def __define_meta(alloy_model)

@@ -15,49 +15,24 @@ module Seculloy
     module ModuleDslApi
       include Alloy::Dsl::SigDslApi
 
-      def creates(data_cls)
-        Alloy::Ast::TypeChecker.check_sig_class(data_cls, Seculloy::Model::Data)
-        meta.add_creates(data_cls)
+      def creates(*data_classes)
+        data_classes.each do |data_cls|
+          Alloy::Ast::TypeChecker.check_sig_class(data_cls, Seculloy::Model::Data)
+          meta.add_creates(data_cls)
+        end
       end
 
       def operation(*args, &body)
-        op = Alloy::Dsl::SigBuilder.new(
-          :superclass => Seculloy::Model::Operation,
-          :create_const => false
-        ).sig(*args, &body)
-        meta.add_operation op
+        # evaluate ops lazily
+        meta.add_lazy_operation lambda{
+          op = Alloy::Dsl::SigBuilder.new(
+            :superclass => Seculloy::Model::Operation,
+            :create_const => false
+          ).sig(*args, &body)
+          # TODO: check that all fields are of type Data
+          meta.add_operation op
+        }
       end
-
-      # # @deprecated
-      # def after(name, &block)
-      #   fun_name = "after_#{name}_#{SDGUtils::Random.salted_timestamp}"
-      #   fun = fun(fun_name, &block)
-      #   meta.add_invoke Seculloy::Model::Invocation.new(
-      #     :type          => :after,
-      #     :owner         => self,
-      #     :fun           => fun,
-      #     :target_export => name
-      #   )
-      #   fun
-      # end
-
-      # # @deprecated
-      # def nondet(&block)
-      #   fun_name = "nondet_#{SDGUtils::Random.salted_timestamp}"
-      #   fun = fun(fun_name, &block)
-      #   meta.add_invoke Seculloy::Model::Invocation.new(
-      #     :type          => :nondet,
-      #     :owner         => self,
-      #     :fun           => fun
-      #   )
-      #   fun
-      # end
-
-      # def after_fun_from_method_added(fun)
-      #   meta.add_export(fun)
-      #   _define_method_for_fun(fun, false, true)
-      #   fun
-      # end
 
       # Extend the existing Alloy::Ast::SigMeta class with some extra
       # methods for fetching Seculloy specific stuff.
@@ -75,9 +50,24 @@ module Seculloy
 
       attr_hier_searchable :operation
 
+      def add_lazy_operation(proc)
+        lazy_ops << proc
+      end
+
+      def eval_lazy_operations
+        lazy_ops.each do |proc|
+          proc.call()
+        end
+        @lazy_ops = []
+      end
+      
       def _hierarchy_up
         up=super && AlloySigMetaModuleExt === up
       end
+
+      private 
+      
+      def lazy_ops() @lazy_ops ||= [] end
     end
   end
 end
