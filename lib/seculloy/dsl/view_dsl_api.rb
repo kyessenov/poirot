@@ -13,7 +13,14 @@ module Seculloy
         sb = Alloy::Dsl::SigBuilder.new(
           :superclass => Seculloy::Model::Data
         )
-        names.each{ |name| sb.sig(name, {}) }
+        names.map{ |name| sb.sig(name, {}) }
+      end
+
+      def abstract_data(*args, &block)
+        data(*args, &block).map do |d|
+          d.abstract()
+          d
+        end
       end
 
       def mod(*args, &block)

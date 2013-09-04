@@ -6,6 +6,7 @@ require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
 
 require 'seculloy/model/data'
+require 'seculloy/model/operation'
 require 'seculloy/model/invocation'
 
 module Seculloy
@@ -19,51 +20,64 @@ module Seculloy
         meta.add_creates(data_cls)
       end
 
-      def after(name, &block)
-        fun_name = "after_#{name}_#{SDGUtils::Random.salted_timestamp}"
-        fun = fun(fun_name, &block)
-        meta.add_invoke Seculloy::Model::Invocation.new(
-          :type          => :after,
-          :owner         => self,
-          :fun           => fun,
-          :target_export => name
-        )
-        fun
+      def operation(*args, &body)
+        op = Alloy::Dsl::SigBuilder.new(
+          :superclass => Seculloy::Model::Operation,
+          :create_const => false
+        ).sig(*args, &body)
+        meta.add_operation op
       end
 
-      def nondet(&block)
-        fun_name = "nondet_#{SDGUtils::Random.salted_timestamp}"
-        fun = fun(fun_name, &block)
-        meta.add_invoke Seculloy::Model::Invocation.new(
-          :type          => :nondet,
-          :owner         => self,
-          :fun           => fun
-        )
-        fun
-      end
+      # # @deprecated
+      # def after(name, &block)
+      #   fun_name = "after_#{name}_#{SDGUtils::Random.salted_timestamp}"
+      #   fun = fun(fun_name, &block)
+      #   meta.add_invoke Seculloy::Model::Invocation.new(
+      #     :type          => :after,
+      #     :owner         => self,
+      #     :fun           => fun,
+      #     :target_export => name
+      #   )
+      #   fun
+      # end
 
-      def after_fun_from_method_added(fun)
-        meta.add_export(fun)
-        _define_method_for_fun(fun, false, true)
-        fun
-      end
+      # # @deprecated
+      # def nondet(&block)
+      #   fun_name = "nondet_#{SDGUtils::Random.salted_timestamp}"
+      #   fun = fun(fun_name, &block)
+      #   meta.add_invoke Seculloy::Model::Invocation.new(
+      #     :type          => :nondet,
+      #     :owner         => self,
+      #     :fun           => fun
+      #   )
+      #   fun
+      # end
+
+      # def after_fun_from_method_added(fun)
+      #   meta.add_export(fun)
+      #   _define_method_for_fun(fun, false, true)
+      #   fun
+      # end
 
       # Extend the existing Alloy::Ast::SigMeta class with some extra
       # methods for fetching Seculloy specific stuff.
       def _define_meta
         meta = super
-        meta.singleton_class.send :include, AlloySigMetaExt
+        meta.singleton_class.send :include, AlloySigMetaModuleExt
         meta
       end
     end
 
-    module AlloySigMetaExt
+    module AlloySigMetaModuleExt
       include SDGUtils::Caching::SearchableAttr
-
       def creates()             @creates ||= [] end
       def add_creates(data_cls) creates << data_cls end
 
-      attr_hier_searchable :export, :invoke
+      attr_hier_searchable :operation
+
+      def _hierarchy_up
+        up=super && AlloySigMetaModuleExt === up
+      end
     end
   end
 end
