@@ -19,15 +19,15 @@ view :OAuth do
   data URI[addr: Addr, vals: (set Payload)]
 
   mod UserAgent do
-    operation initFlow[redirectURI: URI] do
+    operation InitFlow[redirectURI: URI] do
       affects(user: EndUser) { user.promptForCred }
     end
 
-    operation enterCred[cred: Credential, uri: URI] do
+    operation EnterCred[cred: Credential, uri: URI] do
       affects(client: ClientServer) { client.reqAuth(cred, uri) }
     end
 
-    operation redirect[uri: URI] do
+    operation Redirect[uri: URI] do
       affects(client: ClientServer) { client.sendAuthResp(uri) }
     end
   end
@@ -37,7 +37,7 @@ view :OAuth do
   } do
     creates Credential
 
-    operation promptForCred[uri: URI] do
+    operation PromptForCred[uri: URI] do
       affects(agent: UserAgent) { agent.enterCred(cred, uri) }
     end
   end
@@ -45,9 +45,9 @@ view :OAuth do
   mod ClientServer, {
     addr: Addr
   } do
-    operation sendAuthResp[uri: URI]
-    operation sendAccessToken[token: AccessToken]
-    operation sendResource[data: Payload]
+    operation SendAuthResp[uri: URI]
+    operation SendAccessToken[token: AccessToken]
+    operation SendResource[data: Payload]
 
     # affects(agent: UserAgent) { agent.initFlow(addr) }
     # affects reqResource
@@ -60,16 +60,16 @@ view :OAuth do
   } do
     creates AuthGrant, AccessToken
 
-    operation reqAuth[cred: Credential, uri: URI]  do
+    operation ReqAuth[cred: Credential, uri: URI]  do
       guard { cred.in? authGrants.keys }
 
-      # effects(agent: UserAgent) { agent.redirect URI.new(uri, [authGrants[cred]]) }
-      affects(agent: UserAgent) {
-        agent.redirect URI.some{ self.uri == uri && authGrants[cred].in?(self.vals) }
-      }
+      affects(agent: UserAgent) { agent.redirect URI.new(uri, [authGrants[cred]]) }
+      # affects(agent: UserAgent) {
+      #   agent.redirect URI.some{ self.uri == uri && authGrants[cred].in?(self.vals) }
+      # }
     end
 
-    operation reqAccessToken[authGrant: AuthGrant]  do
+    operation ReqAccessToken[authGrant: AuthGrant]  do
       guard                         { authGrant.in? accessTokens.keys }
       affects(client: ClientServer) { client.sendAccessToken(accessTokens[authGrant]) }
     end
@@ -80,7 +80,7 @@ view :OAuth do
   } do
     creates Resource
 
-    operation reqResource[accessToken: AccessToken]  do
+    operation ReqResource[accessToken: AccessToken]  do
       guard                         { accessToken.in? resources.keys }
       affects(client: ClientServer) { client.sendResource(resources[accessToken]) }
     end
@@ -154,6 +154,9 @@ class ViewTest < Test::Unit::TestCase
     op.meta.guards.each_with_index do |guard, idx|
       expected_guard = guards[idx]
       assert_equal expected_guard.size, guard.args.size
+
+      puts guard.sym_exe.to_s
+
       expected_guard.each do |name, cls|
         assert_equal cls, guard.arg(name).type.klass
       end
@@ -163,6 +166,9 @@ class ViewTest < Test::Unit::TestCase
     op.meta.effects.each_with_index do |effect, idx|
       expected_effect = effects[idx]
       assert_equal expected_effect.size, effect.args.size
+
+      puts effect.sym_exe.to_s
+
       expected_effect.each do |name, cls|
         assert_equal cls, effect.arg(name).type.klass
       end
@@ -170,37 +176,38 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_UserAgent_ops
-    op = UserAgent.meta.operation("initFlow")
+    op = UserAgent::InitFlow
     do_test_op op, {:redirectURI => URI}, [], [{:user => EndUser}]
-    op = UserAgent.meta.operation("enterCred")
+    op = UserAgent::EnterCred
     do_test_op op, {:cred => Credential, :uri => URI}, [], [{:client => ClientServer}]
-    op = UserAgent.meta.operation("redirect")
+    op = UserAgent::Redirect
     do_test_op op, {:uri => URI}, [], [{:client => ClientServer}]
   end
 
   def test_EndUser_ops
-    op = EndUser.meta.operation("promptForCred")
+    op = EndUser::PromptForCred
     do_test_op op, {:uri => URI}, [], [{:agent => UserAgent}]
   end
 
   def test_ClientServer_ops
-    op = ClientServer.meta.operation("sendAuthResp")
+    op = ClientServer::SendAuthResp
     do_test_op op, {:uri => URI}, [], []
-    op = ClientServer.meta.operation("sendAccessToken")
+    op = ClientServer::SendAccessToken
     do_test_op op, {:token => AccessToken}, [], []
-    op = ClientServer.meta.operation("sendResource")
+    op = ClientServer::SendResource
     do_test_op op, {:data => Payload}, [], []
   end
 
   def test_AuthServer_ops
-    op = AuthServer.meta.operation("reqAuth")
+    op = AuthServer::ReqAuth
+    $pera = 1
     do_test_op op, {cred:Credential, :uri => URI}, [{}], [{:agent => UserAgent}]
-    op = AuthServer.meta.operation("reqAccessToken")
+    op = AuthServer::ReqAccessToken
     do_test_op op, {:authGrant => AuthGrant}, [{}], [{:client => ClientServer}]
   end
 
   def test_ResourceServer_ops
-    op = ResourceServer.meta.operation("reqResource")
+    op = ResourceServer::ReqResource
     do_test_op op, {:accessToken => AccessToken}, [{}], [{:client => ClientServer}]
   end
 
