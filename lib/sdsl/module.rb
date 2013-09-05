@@ -66,7 +66,15 @@ class Mod
     # declarations 
     alloyChunk += wrap("-- module " + modn)
     if isUniq then alloyChunk += "one " end
-    alloyChunk += wrap("sig " + modn + " extends Module {")
+    if isAbstract then alloyChunk += "abstract " end
+
+    alloyChunk += "sig " + modn + " extends "
+    if not extends.empty?
+      alloyChunk += wrap("#{extends[0].name} {")
+    else
+      alloyChunk += wrap("Module {")
+    end
+
     # fields      
     fields.each do |f|
       alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
