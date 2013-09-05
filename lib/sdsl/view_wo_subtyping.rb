@@ -28,7 +28,7 @@ class View
     creators = {}
     decls = {}  # declarations
     sigfacts = {} # signature facts 
-    fields = {}     
+    fields = {} 
 
     # for pretty printing purposes only
     ctx[:nesting] = 0
@@ -49,13 +49,7 @@ class View
       # exports
       m.exports.each do |o|
         n = o.name.to_s
-        
-        if o.parent
-          decls[n] = o.parent.name.to_s
-        else 
-          decls[n] = "Op"
-        end
-
+        decls[n] = "Op"
         if not exporters.has_key? n then exporters[n] = [] end
         exporters[n] << modn
         # op arguments
@@ -263,9 +257,11 @@ def refineExports(sup, sub, exportsRel)
       matches = sub.exports.select { |o2| o2.name == exportsRel[n] }      
       if not matches.empty?
         o2 = matches[0]   
-        exports << Op.new(n, 
-                          {:when => (o.constraints[:when]),
-                            :args => (o.constraints[:args])}, o2, o)
+        exports << Op.new(mkMixedName(n, o2.name), 
+                          {:when => (o.constraints[:when] + 
+                                     o2.constraints[:when]),
+                            :args => (o.constraints[:args] + 
+                                      o2.constraints[:args])}, o2, o)
 # TODO: Is this right? Too weak?       
 #        subExports.delete(o2)
         next
@@ -273,7 +269,7 @@ def refineExports(sup, sub, exportsRel)
     end
     exports << o
   end  
-  exports
+  exports + subExports
 end
 
 def refineInvokes(sup, sub, invokesRel)
@@ -287,8 +283,9 @@ def refineInvokes(sup, sub, invokesRel)
 
       if not matches.empty?
         o2 = matches[0]    
-        invokes << Op.new(n, 
-                          {:when => (o.constraints[:when])},
+        invokes << Op.new(mkMixedName(n, o2.name), 
+                          {:when => (o.constraints[:when] + 
+                                     o2.constraints[:when])},
                           o2, o)  
 # TODO: Is this right? Too weak?        
 #        subInvokes.delete(o2)
@@ -297,7 +294,7 @@ def refineInvokes(sup, sub, invokesRel)
     end
     invokes << o
   end  
-  invokes
+  invokes + subInvokes
 end
 
 def abstractExports(m1, m2, exportsRel)
@@ -356,14 +353,14 @@ end
 # sub is the module refining
 # sup is a supertype of sub
 def refineMod(sup, sub, exportsRel, invokesRel)
-  name = sup.name
+  name = mkMixedName(sup.name, sub.name)
   # refinement
   exports = refineExports(sup, sub, exportsRel)  
   invokes = refineInvokes(sup, sub, invokesRel)
-  assumptions = sub.assumptions
-  stores = sup.stores
-  creates = sup.creates
-  extends = [sub]
+  assumptions = sub.assumptions + sup.assumptions
+  stores = sub.stores + sup.stores
+  creates = sub.creates + sup.creates
+  extends = sup
   isAbstract = false
   isUniq = sup.isUniq  #TODO: Fix it later
 
@@ -384,7 +381,7 @@ def mergeMod(m1, m2, exportsRel, invokesRel)
   isUniq = m1.isUniq #TODO: Fix it later
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
-          [], isAbstract, isUniq)
+          extends, isAbstract, isUniq)
 end
 
 def buildMapping(v1, v2, refineRel)
@@ -413,9 +410,8 @@ def buildMapping(v1, v2, refineRel)
       newMod = refineMod(sup, sub, exportsRel, invokesRel)
     end
     moduleMap[sup] = newMod
-    moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
-    moduleMap[sub].isAbstract = true
-    moduleMap[sub].isUniq = false
+    sup.isAbstract = true
+    moduleMap[sub] = newMod #TODO: too strong, fix later    
   end
 
   dataMap.update(opMap).update(moduleMap)
@@ -445,29 +441,41 @@ def merge(v1, v2, mapping, refineRel)
     end
   end
   modules = myuniq(modules)
-  
-  # TODO: Probably need this
-  # invokesRel.each do |from, to|
-  #   if from == to then next end
-  #   o = mkMixedName(from, to)
-  #   if modules.any? { |m| m.findExport(o) } then next end
 
-  #   o1 = v1.findModsWithExport(from)[0].findExport(from)  
+  exportsRel.each do |from, to|
+    if from == to 
+      o = from
+    else 
+      o = mkMixedName(from, to)
+    end
+    if ctx[from].nil? then ctx[from] = Set.new() end
+    if ctx[to].nil? then ctx[to] = Set.new() end    
+    ctx[from].add(o)
+    ctx[to].add(o)
+  end  
 
-  #   modules.each do |m| 
-  #     if m.findExport o or not (m.findExport to) then next end
-  #     o2 = m.findExport to     
-  #     m.exports << Op.new(from,
-  #                         {:when => [],
-  #                           :args => (o1.constraints[:args])}, o2, o1)
-  #     # simplification
-  #     # if m1.invokes op1, op2 in m2 and op1 is a specialization of op2, 
-  #     # then remove op2 from m1.invokes
-  #     modules.select { |m2| m2.findInvoke o and m2.findInvoke to}.each do |m2|
-  #       m2.invokes.delete(m2.findInvoke to)
-  #     end 
-  #   end
-  # end
+  invokesRel.each do |from, to|
+    if from == to then next end
+    o = mkMixedName(from, to)
+    if modules.any? { |m| m.findExport(o) } then next end
+
+    o1 = v1.findModsWithExport(from)[0].findExport(from)  
+
+    modules.each do |m| 
+      if m.findExport o or not (m.findExport to) then next end
+      o2 = m.findExport to     
+      m.exports << Op.new(mkMixedName(from, to),
+                          {:when => (o2.constraints[:when]),
+                            :args => (o1.constraints[:args] + 
+                                      o2.constraints[:args])}, o2, o1)
+      # simplification
+      # if m1.invokes op1, op2 in m2 and op1 is a specialization of op2, 
+      # then remove op2 from m1.invokes
+      modules.select { |m2| m2.findInvoke o and m2.findInvoke to}.each do |m2|
+        m2.invokes.delete(m2.findInvoke to)
+      end 
+    end
+  end
 
   # trusted modules
   trusted = (v1.trusted + v2.trusted).map{ |m| if mapping.has_key? m then 
@@ -491,7 +499,50 @@ def merge(v1, v2, mapping, refineRel)
   data += otherData
   data = myuniq(data)
 
-  assumptions = (v1.assumptions + v2.assumptions)
+  # all exported operations
+  allExports = modules.inject([]) {|r, m| r + m.exports}
+ 
+  modules.each do |m|
+
+    newInvokes = []
+
+    m.invokes.each do |i|      
+      n = i.name
+      c = i.constraints
+      relevantExports =
+        allExports.select {|e| (n == e.name or
+                                ((not e.parent.nil?) and n == e.parent.name) or
+#TODO: o1 calls o2 only if o1 is o2 or o1 is a supertype of o2
+                                ((not e.child.nil?) and n == e.child.name)
+                                )}
+
+      relevantExports.each do |e|
+        newInvokes << Op.new(e.name, c)
+      end
+          
+      # update the context
+      if not ctx.has_key? n then ctx[n] = Set.new([]) end
+      ctx[n].merge(relevantExports.map {|e| e.name})      
+    end
+
+    m.invokes = myuniq(newInvokes)
+  end
+
+  # rewrite all of the constraints with the context info
+  modules.each do |m|
+    m.exports = 
+      m.exports.map { |e| Op.new(e.name, 
+                                 :args => e.constraints[:args].clone,
+                                 :when => 
+                                 e.constraints[:when].map{ |c| c.rewrite(ctx) })}    
+    m.invokes = 
+      m.invokes.map { |i| Op.new(i.name, 
+                                 :when =>
+                                 i.constraints[:when].map{ |c| c.rewrite(ctx) })}
+    m.assumptions = m.assumptions.map { |a| a.rewrite(ctx) }
+  end
+
+  assumptions = (v1.assumptions + v2.assumptions).map { |a| a.rewrite(ctx) }
   
   View.new(:MergedView, modules, trusted, data, v1.critical, 
            assumptions, v1.protected, ctx)

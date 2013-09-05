@@ -342,6 +342,7 @@ class OpExpr < Expr
     end
     @e = e
   end
+
   def to_s
     @e.to_s
   end
@@ -351,7 +352,7 @@ class OpExpr < Expr
   end
 
   def rewrite(ctx)
-    if ctx.has_key? @e
+    if ctx.has_key? @e and not ctx[@e].empty?
       tmp = nil
       ctx[@e].to_a.each do |e2|
         if tmp == nil
