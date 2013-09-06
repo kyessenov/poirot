@@ -18,27 +18,27 @@ Seculloy::Dsl.view :OAuth do
 
   data URI[addr: Addr, vals: (set Payload)]
 
-  mod UserAgent do
-    operation InitFlow[redirectURI: URI] do
-      affects(user: EndUser) { user.promptForCred }
-    end
-
-    operation EnterCred[cred: Credential, uri: URI] do
-      affects(client: ClientServer) { client.reqAuth(cred, uri) }
-    end
-
-    operation Redirect[uri: URI] do
-      affects(client: ClientServer) { client.sendAuthResp(uri) }
-    end
-  end
-
   mod EndUser, {
     cred: Credential
   } do
     creates Credential
 
     operation PromptForCred[uri: URI] do
-      affects(agent: UserAgent) { agent.enterCred(cred, uri) }
+      sends { UserAgent::EnterCred[cred, uri] }
+    end
+  end
+
+  mod UserAgent do
+    operation InitFlow[redirectURI: URI] do
+      sends { EndUser::PromptForCred[redirectURI] }
+    end
+
+    operation EnterCred[cred: Credential, uri: URI] do
+      sends { AuthServer::ReqAuth[cred, uri] }
+    end
+
+    operation Redirect[uri: URI] do
+      sends { ClientServer::SendAuthResp[uri] }
     end
   end
 
@@ -61,17 +61,17 @@ Seculloy::Dsl.view :OAuth do
     creates AuthGrant, AccessToken
 
     operation ReqAuth[cred: Credential, uri: URI]  do
-      guard { cred.in? authGrants.keys }
+      guard { authGrants.key? cred }
 
-      affects(agent: UserAgent) { agent.redirect URI.new(uri, [authGrants[cred]]) }
+      sends { UserAgent::Redirect[URI.new(uri, [authGrants[cred]])] }
       # affects(agent: UserAgent) {
       #   agent.redirect URI.some{ self.uri == uri && authGrants[cred].in?(self.vals) }
       # }
     end
 
     operation ReqAccessToken[authGrant: AuthGrant]  do
-      guard                         { authGrant.in? accessTokens.keys }
-      affects(client: ClientServer) { client.sendAccessToken(accessTokens[authGrant]) }
+      guard { accessTokens.key? authGrant }
+      sends { ClientServer::SendAccessToken[accessTokens[authGrant]] }
     end
   end
 
@@ -81,8 +81,8 @@ Seculloy::Dsl.view :OAuth do
     creates Resource
 
     operation ReqResource[accessToken: AccessToken]  do
-      guard                         { accessToken.in? resources.keys }
-      affects(client: ClientServer) { client.sendResource(resources[accessToken]) }
+      guard { resources.key? accessToken }
+      sends { ClientServer::SendResource[resources[accessToken]] }
     end
   end
 end
@@ -162,16 +162,9 @@ class ViewTest < Test::Unit::TestCase
       end
     end
 
-    assert_equal effects.size, op.meta.effects.size
-    op.meta.effects.each_with_index do |effect, idx|
-      expected_effect = effects[idx]
-      assert_equal expected_effect.size, effect.args.size
-
-      puts effect.sym_exe.to_s
-
-      expected_effect.each do |name, cls|
-        assert_equal cls, effect.arg(name).type.klass
-      end
+    assert_equal effects.size, op.meta.triggers.size
+    op.meta.triggers.each do |t|
+      puts t.sym_exe.to_s
     end
   end
 
@@ -212,7 +205,9 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_to_sdsl
-    oauth.to_sdsl
+    ans = oauth.to_sdsl
+    binding.pry
+    ans
   end
 
 end

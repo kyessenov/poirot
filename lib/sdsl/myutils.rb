@@ -193,7 +193,6 @@ class Bag < Rel
      other.name == self.name && 
      other.type == self.type)
   end
-
 end
 def set(n, t)
   Bag.new(n, t)
@@ -224,12 +223,22 @@ class Map < Rel
      other.type1 == self.type1 &&
      other.type2 == self.type2)
   end
-
 end
 def hasKey(m, i)
   if not m.is_a? Expr then m = expr(m) end
   if not i.is_a? Expr then i = expr(i) end
   some(nav(m, i))  
+end
+def map(n, d, r)
+  Map.new(n, d, r)
+end
+def rel(n, *t)
+  case t.size
+  when 1; item(n, t[0])
+  when 2; map(n, t[0], t[1])
+  else
+    raise "only unary and binary relations supported"
+  end    
 end
 
 def myuniq(a)
@@ -338,10 +347,13 @@ end
 class OpExpr < Expr
   
   def initialize(e)  
-    if not e.is_a? Symbol
-      raise "Expected a symbol, but received #{e}"
+    if e.is_a? String
+      @e = e.to_sym
+    elsif e.is_a? Symbol
+      @e = e
+    else
+      raise "Expected a symbol or a string, but received #{e}"
     end
-    @e = e
   end
 
   def to_s

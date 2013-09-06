@@ -140,6 +140,9 @@ class ModuleBuilder
     end    
   end
 
+  def exports_ops(*ops) @exports += ops end
+  def invokes_ops(*ops) @invokes += ops end
+
   def assumes(*constr)
     @assumptions += constr   
   end

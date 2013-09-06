@@ -17,6 +17,10 @@ class DatatypeBuilder
     @fields << f    
   end
 
+  def fields *flds 
+    @fields += flds   
+  end
+
   def extends parent
     @extends = parent
   end

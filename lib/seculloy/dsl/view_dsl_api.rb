@@ -19,7 +19,7 @@ module Seculloy
 
       def abstract_data(*args, &block)
         data(*args, &block).map do |d|
-          d.abstract()
+          d.send :abstract
           d
         end
       end
