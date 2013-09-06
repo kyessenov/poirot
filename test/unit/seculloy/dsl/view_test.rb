@@ -15,7 +15,7 @@ view :OAuthOld do
   } do
     creates Credential
 
-    operation sendResp[data: Payload]
+    operation SendResp[data: Payload]
   end
 
   mod ResourceOwner, {
@@ -23,7 +23,7 @@ view :OAuthOld do
   } do
     creates AuthGrant
 
-    operation reqAuth[cred: Credential]  do
+    operation ReqAuth[cred: Credential]  do
       guard {
         cred.in? authGrants.keys
       }
@@ -39,7 +39,7 @@ view :OAuthOld do
   } do
     creates AccessToken
 
-    operation reqAccessToken[authGrant: AuthGrant]  do
+    operation ReqAccessToken[authGrant: AuthGrant]  do
       guard {
         authGrant.in? accessTokens.keys
       }
@@ -55,7 +55,7 @@ view :OAuthOld do
   } do
     creates Resource
 
-    operation reqResource[accessToken: AccessToken]  do
+    operation ReqResource[accessToken: AccessToken]  do
       guard {
         accessToken.in? resources.keys
       }
@@ -104,10 +104,14 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_exports
-    assert_seq_equal ["sendResp"],       Client.meta.operations.map(&:name)
-    assert_seq_equal ["reqAuth"],        ResourceOwner.meta.operations.map(&:name)
-    assert_seq_equal ["reqAccessToken"], AuthServer.meta.operations.map(&:name)
-    assert_seq_equal ["reqResource"],    ResourceServer.meta.operations.map(&:name)
+    assert_seq_equal [Client::SendResp.name],       
+                      Client.meta.operations.map(&:name)
+    assert_seq_equal [ResourceOwner::ReqAuth.name], 
+                      ResourceOwner.meta.operations.map(&:name)
+    assert_seq_equal [AuthServer::ReqAccessToken.name], 
+                      AuthServer.meta.operations.map(&:name)
+    assert_seq_equal [ResourceServer::ReqResource.name],
+                      ResourceServer.meta.operations.map(&:name)
   end
 
   def do_test_op(op, fields, guards, effects)
@@ -137,22 +141,22 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_sendResp
-    op = Client.meta.operation("sendResp")
+    op = Client.meta.operation("SendResp")
     do_test_op op, {:data => Payload}, [], []
   end
 
   def test_reqAuth
-    op = ResourceOwner.meta.operation("reqAuth")
+    op = ResourceOwner.meta.operation("ReqAuth")
     do_test_op op, {:cred => Credential}, [{}], [{:client => Client}]
   end
 
   def test_reqAccessToken
-    op = AuthServer.meta.operation("reqAccessToken")
+    op = AuthServer.meta.operation("ReqAccessToken")
     do_test_op op, {:authGrant => AuthGrant}, [{}], [{:client => Client}]
   end
 
   def test_reqResource
-    op = ResourceServer.meta.operation("reqResource")
+    op = ResourceServer.meta.operation("ReqResource")
     do_test_op op, {:accessToken => AccessToken}, [{}], [{:client => Client}]
   end
 

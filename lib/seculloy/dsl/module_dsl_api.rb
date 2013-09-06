@@ -27,7 +27,7 @@ module Seculloy
         meta.add_lazy_operation lambda{
           ans = Alloy::Dsl::SigBuilder.new(
             :superclass => Seculloy::Model::Operation,
-            :create_const => false
+            :scope_class => self,
           ).sig(*args, &body)
           # TODO: check that all fields are of type Data
           ops = (Array === ans) ? ans : [ans]
@@ -50,6 +50,10 @@ module Seculloy
       def add_creates(data_cls) creates << data_cls end
 
       attr_hier_searchable :operation
+
+      def operation(name)
+        sig_cls.const_get name
+      end
 
       def add_lazy_operation(proc)
         lazy_ops << proc
