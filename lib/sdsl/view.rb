@@ -69,8 +69,17 @@ class View
           fields[n] << arg
           args << arg.to_s
         end
-        if not args.empty?
+        
+        if o.parent 
+          o.parent.constraints[:args].each do |arg|
+            args << arg.to_s
+          end
+        end
+                
+        if not args.empty? and not o.child
           sigfacts[n] << "args = " + args.join(" + ")
+        elsif args.empty?
+          sigfacts[n] << "no args"
         end
       end
 
@@ -265,7 +274,7 @@ def refineExports(sup, sub, exportsRel)
         o2 = matches[0]   
         exports << Op.new(n, 
                           {:when => (o.constraints[:when]),
-                            :args => (o.constraints[:args])}, o2, o)
+                            :args => (o.constraints[:args])}, o2, nil)
 # TODO: Is this right? Too weak?       
 #        subExports.delete(o2)
         next
@@ -289,7 +298,7 @@ def refineInvokes(sup, sub, invokesRel)
         o2 = matches[0]    
         invokes << Op.new(n, 
                           {:when => (o.constraints[:when])},
-                          o2, o)  
+                          o2, nil)  
 # TODO: Is this right? Too weak?        
 #        subInvokes.delete(o2)
         next
@@ -314,7 +323,7 @@ def abstractExports(m1, m2, exportsRel)
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when]),
                             :args => myuniq(o.constraints[:args] + 
-                                            o2.constraints[:args])}, o2, o)
+                                            o2.constraints[:args])}, nil, nil)
         m2Exports.delete(o2)
         next
       end
@@ -340,7 +349,7 @@ def abstractInvokes(m1, m2, invokesRel)
         invokes << Op.new(n, #mkMixedName(n, o2.name),
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when])},
-                          o2, o)
+                          nil, nil)
         m2Invokes.delete(o2)
         next
       end
@@ -401,6 +410,31 @@ def buildMapping(v1, v2, refineRel)
     sup = v2.findData(to)    
     dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, false)
     dataMap[to] = Datatype.new(sup.name, sup.fields, :Data, true)
+  end
+
+  v1.data.each do |d1| 
+    v2.data.each do |d2|
+      if d1.name == d2.name
+        extends = :Data
+        if not (d1.extends == :Data or d2.extends == :Data) and
+            not (d1.extends == d2.extends) then
+          raise "Conflicting data types: Same name with different supertype"
+        else
+          if not d1.extends == :Data then 
+            extends = d1.extends 
+          else
+            extends = d2.extends
+          end
+        end
+
+        if d1.extends != :Data then extends = d1.extends end
+        if d2.extends != :Data then extends = d2.extends end
+        newData = Datatype.new(d1.name, myuniq(d1.fields + d2.fields),
+                               extends, false)        
+        dataMap[d1.name] = newData
+        dataMap[d2.name] = newData
+      end
+    end
   end
 
   modRel = refineRel[:Module]
@@ -492,7 +526,14 @@ def merge(v1, v2, mapping, refineRel)
   data = myuniq(data)
 
   assumptions = (v1.assumptions + v2.assumptions)
-  
+    modules.each do |m| 
+    (m.exports + m.invokes).each do |o|
+      if o.parent then 
+        o.parent.child = o
+      end
+    end
+  end
+
   View.new(:MergedView, modules, trusted, data, v1.critical, 
            assumptions, v1.protected, ctx)
 end
