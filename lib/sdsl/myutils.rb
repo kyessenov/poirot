@@ -40,8 +40,7 @@ end
 
 class Symbol
   def method_missing(n, *args, &block)
-    puts "---------method missing in SYmbol: #{n}"
-    puts caller.join("\n")
+    return super unless $SDSL_EXE
     if args.count > 1
       raise "Symbol.method_missing: Invalid number of arguments!"
     end
