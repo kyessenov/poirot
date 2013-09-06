@@ -3,7 +3,7 @@ require 'seculloy/seculloy_dsl'
 
 include Seculloy::Dsl
 
-view :OAuth do
+Seculloy::Dsl.view :OAuth do
   abstract_data Payload
   abstract_data AuthGrant < Payload
 
@@ -209,6 +209,10 @@ class ViewTest < Test::Unit::TestCase
   def test_ResourceServer_ops
     op = ResourceServer::ReqResource
     do_test_op op, {:accessToken => AccessToken}, [{}], [{:client => ClientServer}]
+  end
+
+  def test_to_sdsl
+    oauth.to_sdsl
   end
 
 end

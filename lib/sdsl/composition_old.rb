@@ -1,11 +1,11 @@
 # composition.rb
 #
-require 'oauth_old.rb'
-require 'network.rb'
-require 'attack_csrf.rb'
-require 'attack_eavesdropper.rb'
-require 'attack_open_redirector.rb'
-require 'attack_replay.rb'
+require 'sdsl/oauth_old.rb'
+require 'sdsl/network.rb'
+require 'sdsl/attack_csrf.rb'
+require 'sdsl/attack_eavesdropper.rb'
+require 'sdsl/attack_open_redirector.rb'
+require 'sdsl/attack_replay.rb'
 
 # Composition #1
 

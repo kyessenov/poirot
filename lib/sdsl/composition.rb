@@ -1,8 +1,8 @@
 # composition.rb
 #
-require 'oauth.rb'
-require 'attack_open_redirector.rb'
-require 'attack_csrf.rb'
+require 'sdsl/oauth.rb'
+require 'sdsl/attack_open_redirector.rb'
+require 'sdsl/attack_csrf.rb'
 
 # Merging OAuth and open redirection threat
 mv = composeViews(VIEW_OAUTH, VIEW_OPEN_REDIRECTOR, 

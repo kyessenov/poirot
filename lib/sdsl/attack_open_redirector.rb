@@ -1,7 +1,7 @@
 # attack_open_redirector.rb
 # model of an attack that involves an open redirector
 
-require 'view.rb'
+require 'sdsl/view.rb'
 
 u = mod :User do
   stores set(:intentsB, :URI)

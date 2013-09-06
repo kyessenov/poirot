@@ -2,7 +2,7 @@
 # model of a network replay attacker
 #
 
-require 'view.rb'
+require 'sdsl/view.rb'
 
 ep = mod :Endpoint do 
   creates :Packet

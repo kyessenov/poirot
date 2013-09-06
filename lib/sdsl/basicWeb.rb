@@ -1,5 +1,5 @@
 
-require 'module.rb'
+require 'sdsl/module.rb'
 
 ##### instantiation #####
 

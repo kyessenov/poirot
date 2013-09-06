@@ -5,7 +5,7 @@
 # - just use symbols for data?
 #
 
-require 'PP'
+require 'pp'
 
 DOT_FILE = "out.dot"
 ALLOY_FILE = "out.als"
@@ -40,6 +40,7 @@ end
 
 class Symbol
   def method_missing(n, *args, &block)
+    return super unless $SDSL_EXE
     if args.count > 1
       raise "Symbol.method_missing: Invalid number of arguments!"
     end

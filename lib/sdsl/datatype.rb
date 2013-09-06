@@ -2,11 +2,11 @@
 #
 require 'rubygems'
 require 'docile'
-require 'myutils.rb'
+require 'sdsl/myutils'
 
 Datatype = Struct.new(:name, :fields, :extends, :isAbstract)
 
-class DataypeBuilder
+class DatatypeBuilder
   def initialize 
     @fields = []
     @extends = :Data
@@ -51,5 +51,5 @@ class Datatype
 end
 
 def datatype(name, &block)
-  Docile.dsl_eval(DataypeBuilder.new, &block).build name
+  Docile.dsl_eval(DatatypeBuilder.new, &block).build name
 end

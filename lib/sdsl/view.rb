@@ -1,7 +1,7 @@
 # view.rb
 # generic definition of a view
 
-require 'module.rb'
+require 'sdsl/module.rb'
 
 View = Struct.new(:name, :modules, :trusted, :data, :critical, :assumptions,
                   :protected, :ctx)

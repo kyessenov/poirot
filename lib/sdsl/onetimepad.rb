@@ -1,6 +1,6 @@
 # onetimepad.rb
 #
-require 'view.rb'
+require 'sdsl/view.rb'
 
 sender = mod :Sender do
   stores set(:resource, :Resource)

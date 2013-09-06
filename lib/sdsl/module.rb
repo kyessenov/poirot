@@ -3,8 +3,8 @@
 #
 require 'rubygems'
 require 'docile'
-require 'myutils.rb'
-require 'datatype.rb'
+require 'sdsl/myutils'
+require 'sdsl/datatype'
 
 Mod = Struct.new(:name, :exports, :invokes, :assumptions, 
                  :stores, :creates,
