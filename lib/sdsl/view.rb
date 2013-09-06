@@ -443,13 +443,15 @@ def buildMapping(v1, v2, refineRel)
     sub = v2.findMod(to)
     if sup.name == sub.name      
       newMod = mergeMod(sup, sub, exportsRel, invokesRel)
+      moduleMap[sup] = newMod
+      moduleMap[sub] = newMod
     else
       newMod = refineMod(sup, sub, exportsRel, invokesRel)
+      moduleMap[sup] = newMod
+      moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
+      moduleMap[sub].isAbstract = true
+      moduleMap[sub].isUniq = false      
     end
-    moduleMap[sup] = newMod
-    moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
-    moduleMap[sub].isAbstract = true
-    moduleMap[sub].isUniq = false
   end
 
   dataMap.update(opMap).update(moduleMap)
@@ -526,10 +528,11 @@ def merge(v1, v2, mapping, refineRel)
   data = myuniq(data)
 
   assumptions = (v1.assumptions + v2.assumptions)
-    modules.each do |m| 
+    
+  modules.each do |m| 
     (m.exports + m.invokes).each do |o|
       if o.parent then 
-        o.parent.child = o
+        o.parent.child = true
       end
     end
   end

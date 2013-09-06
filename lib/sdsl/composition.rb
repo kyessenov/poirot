@@ -55,3 +55,28 @@ mv2 = composeViews(VIEW_OAUTH, VIEW_CSRF,
                            })
 drawView mv2, "merged_csrf_oauth.dot"
 dumpAlloy mv2, "merged_csrf_oauth.als"
+
+mergedClient = composeViews(VIEW_OPEN_REDIRECTOR, VIEW_CSRF,
+                            :Module => {
+                              :User => :User,
+                              :TrustedServer => :TrustedServer,
+                              :MaliciousServer => :MaliciousServer,
+                              :Client => :Client
+                            },
+                            :Exports => {
+                              :httpReq => :httpReq,
+                              :httpReq2 => :httpReq2,
+                              :httpResp => :httpResp,
+                              :visit => :visit
+                            },
+                            :Invokes => {
+                              :httpReq => :httpReq,
+                              :httpReq2 => :httpReq2,
+                              :httpResp => :httpResp,
+                              :visit => :visit
+                            },
+                            :Data => {
+                            }
+                            )
+drawView mergedClient, "merged_client.dot"
+dumpAlloy mergedClient, "merged_client.als"
