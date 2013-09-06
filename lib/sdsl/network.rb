@@ -1,6 +1,6 @@
 # network.rb
 #
-require 'view.rb'
+require 'sdsl/view'
 
 sender = mod :Sender do
   stores set(:resource, :Resource)

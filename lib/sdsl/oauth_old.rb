@@ -1,7 +1,7 @@
 # oauth.rb
 # model of a basic OAuth protocol
 
-require 'view.rb'
+require 'sdsl/view.rb'
 
 resOwner = mod :ResourceOwner do
   stores :authGrants, :Credential, :AuthGrant

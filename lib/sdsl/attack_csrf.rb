@@ -1,7 +1,7 @@
 # attack_csrf.rb
 # model of a cross-site request forgery attack
 
-require 'view.rb'
+require 'sdsl/view.rb'
 
 u = mod :User do
   stores set(:intentsA, :URI)

@@ -2,7 +2,7 @@
 # model of a network eavesdropper
 #
 
-require 'view.rb'
+require 'sdsl/view.rb'
 
 ep1 = mod :EndpointA do 
   creates :Packet

@@ -1,6 +1,7 @@
 require 'alloy/dsl/model_api'
 require 'seculloy/model/data'
 require 'seculloy/model/module'
+require 'seculloy/model/view'
 
 module Seculloy
   module Dsl
@@ -35,22 +36,10 @@ module Seculloy
         end
       end
 
-      # Extend the existing Alloy::Ast::Model class with some extra
-      # methods for fetching Seculloy specific entites.
-      def __define_meta(alloy_model)
-        alloy_model.singleton_class.send :include, AlloyModelExt
-        define_singleton_method :meta, lambda{alloy_model}
+      def __create_model(scope_module)
+        Seculloy::Model::View.new(scope_module, self)
       end
     end
 
-    module AlloyModelExt
-      def data(*args)
-        sigs(*args).select{|sig| sig < Seculloy::Model::Data}
-      end
-
-      def modules(*args)
-        sigs(*args).select{|sig| sig < Seculloy::Model::Module}
-      end
-    end
   end
 end

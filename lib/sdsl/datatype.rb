@@ -2,7 +2,7 @@
 #
 require 'rubygems'
 require 'docile'
-require 'myutils.rb'
+require 'sdsl/myutils'
 
 Datatype = Struct.new(:name, :fields, :extends, :isAbstract)
 
