@@ -63,12 +63,11 @@ module Seculloy
 
       def make_me_sym_expr(name="self")
         p = __parent()
-        if Alloy::Ast::ASig === p
-          expr = p.make_me_sym_expr("_")
-          if Seculloy::Model::Module === p
-            expr.singleton_class.send :include, ParentModExpr
-          end
-          expr
+        if Seculloy::Model::Module === p
+          p.make_me_parent_mod_expr
+        else
+          fail "Didn't expect operation to have a parent that is not Module " +
+               "(it's #{p}:#{p.class} instead)"
         end
         Alloy::Ast::Expr.as_atom(self, name)
         self
@@ -106,9 +105,11 @@ module Seculloy
     end
 
     module OpExpr
+      include Alloy::Ast::Expr::MExpr
     end
 
     module TrigExpr
+      include Alloy::Ast::Expr::MExpr
     end
 
     class ArgOfExpr < Alloy::Ast::Expr::UnaryExpr
@@ -116,14 +117,9 @@ module Seculloy
     end
 
     module ArgExpr
+      include Alloy::Ast::Expr::MExpr
       def apply_join(other)
         ArgOfExpr.new(other)
-      end
-    end
-
-    module ParentModExpr
-      def apply_join(other)
-        other
       end
     end
 

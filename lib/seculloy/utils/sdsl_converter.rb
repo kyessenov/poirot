@@ -22,51 +22,64 @@ module Seculloy
         # add all modules
         vb.modules *view.modules.map(&method(:convert_module))
 
+        @pera = 1
+
+        # set critical datatypes
+        vb.critical *view.critical.map(&method(:convert_data))
+
+        # set trusted modules
+        vb.trusted *view.modules.select(&:trusted?).map(&method(:convert_module))
+
         vb.build(view.name)
       end
 
       # @param data [Class(? < Seculloy::Model::Data)]
       # @return [Datatype]
       def convert_data(data)
-        meta = data.meta
-        db = DatatypeBuilder.new
+        cache_or("data", data) do
+          meta = data.meta
+          db = DatatypeBuilder.new
 
-        # abstract
-        db.setAbstract if meta.abstract?
+          # abstract
+          db.setAbstract if meta.abstract?
 
-        # super
-        db.extends meta.parent_sig.relative_name
+          # super
+          db.extends meta.parent_sig.relative_name
 
-        # fields
-        db.fields *meta.fields.map(&method(:convert_arg))
+          # fields
+          db.fields *meta.fields.map(&method(:convert_arg))
 
-        db.build(data.relative_name)
+          db.build(data.relative_name)
+        end
       end
 
       # @param mod [Class(? < Seculloy::Model::Module)]
       # @return [Mod]
       def convert_module(mod)
-        meta = mod.meta
-        mb = ModuleBuilder.new
+        cache_or("module", mod) do
+          meta = mod.meta
+          mb = ModuleBuilder.new
 
-        # extends
-        mb.extends(meta.parent_sig.relative_name) unless meta.oldest_ancestor.nil?
+          # extends
+          mb.extends(meta.parent_sig.relative_name) unless meta.oldest_ancestor.nil?
 
-        # creates
-        mb.creates *meta.creates.map(&:relative_name)
+          # creates
+          mb.creates *meta.creates.map(&:relative_name)
 
-        # stores
-        meta.fields.each{|fld| mb.stores convert_arg(fld)}
+          # stores
+          meta.fields.each{|fld| mb.stores convert_arg(fld)}
 
-        ops = meta.operations
+          ops = meta.operations
 
-        # exports
-        mb.exports_ops *ops.map(&method(:convert_op_to_exports))
+          # exports
+          mb.exports_ops *ops.map(&method(:convert_op_to_exports))
 
-        # invokes
-        mb.invokes_ops *ops.map(&method(:convert_op_to_invokes)).flatten
+          # invokes
+          mb.invokes_ops *ops.map(&method(:convert_op_to_invokes)).flatten,
+          *meta.triggers.map(&method(:convert_trigger))
 
-        mb.build mod.relative_name
+          mb.build mod.relative_name
+        end
       end
 
       # @param op [Class(? < Seculloy::Model::Operation)]
@@ -81,13 +94,27 @@ module Seculloy
       # @return [Op]
       def convert_op_to_invokes(op)
         op.meta.triggers.map do |fun|
-          body = fun.sym_exe_invoke
-          msg = "unexpected trigger body; expected OpConstr, got #{body.class}"
-          fail msg unless Seculloy::Model::OpConstr === body
-          when_constr = [triggeredBy(op.relative_name.to_sym)] +
-                        body.constr.map(&method(:convert_expr))
-          Op.new body.target_op.relative_name, :when => when_constr
+          convert_trigger(fun, op)
         end
+      end
+
+      # @param op [Alloy::Ast::Fun]
+      # @return [Op]
+      def convert_trigger(fun, op=nil)
+        body = fun.sym_exe_invoke
+        trig_constr =
+          case
+          when Seculloy::Model::OpConstr === body
+            body
+          when ::Class === body && body < Seculloy::Model::Operation
+            body.some()
+          else
+            fail "unexpected trigger body; expected OpConstr, got #{body}:#{body.class}"
+          end
+        when_constr = []
+        when_constr << triggeredBy(op.relative_name.to_sym) if op
+        when_constr += trig_constr.constr.map(&method(:convert_expr))
+        Op.new trig_constr.target_op.relative_name, :when => when_constr
       end
 
       # @param arg [Alloy::Ast::Arg]
@@ -104,14 +131,6 @@ module Seculloy
         else
           rel name, *col_types
         end
-      end
-
-      def evis()
-        @evis ||= SDGUtils::Visitors::TypeDelegatingVisitor.new(self,
-          :top_class        => Alloy::Ast::Expr::MExpr,
-          :visit_meth_namer => proc{|cls, kind| "convert_#{kind}"},
-          :default_return   => proc{|node| fail "no handler for #{node}:#{node.class}"}
-        )
       end
 
       # @param expr [Alloy::Ast::Expr::MExpr]
@@ -171,6 +190,24 @@ module Seculloy
 
       def convert_argexpr(ar)
         fail "ArgExpr should not exist on its own"
+      end
+
+      protected
+
+      def evis()
+        @evis ||= SDGUtils::Visitors::TypeDelegatingVisitor.new(self,
+          :top_class        => Alloy::Ast::Expr::MExpr,
+          :visit_meth_namer => proc{|cls, kind| "convert_#{kind}"},
+          :default_return   => proc{|node| fail "no handler for #{node}:#{node.class}"}
+        )
+      end
+
+      def caches() @caches ||= {} end
+
+      def cache_or(name, key, &block)
+        msg = "#{key} not found in #{name} cache"
+        cache = caches()[name] ||= {}
+        cache[key] ||= (@must_find_in_cache ? fail(msg) : block.call)
       end
 
     end

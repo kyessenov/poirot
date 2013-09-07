@@ -5,6 +5,7 @@ require 'alloy/dsl/sig_api'
 require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
 
+require 'seculloy/dsl/trigger_helper'
 require 'seculloy/model/data'
 require 'seculloy/model/operation'
 require 'seculloy/model/invocation'
@@ -14,10 +15,10 @@ module Seculloy
 
     module ModuleDslApi
       include Alloy::Dsl::SigDslApi
+      include Seculloy::Dsl::TriggerHelper
 
       def creates(*data_classes)
         data_classes.each do |data_cls|
-          Alloy::Ast::TypeChecker.check_sig_class(data_cls, Seculloy::Model::Data)
           meta.add_creates(data_cls)
         end
       end
@@ -53,10 +54,18 @@ module Seculloy
 
     module AlloySigMetaModuleExt
       include SDGUtils::Caching::SearchableAttr
-      def creates()             @creates ||= [] end
-      def add_creates(data_cls) creates << data_cls end
 
-      attr_hier_searchable :operation
+      def creates()             @creates ||= [] end
+      def add_creates(data_cls)
+        msg = "Use `add_creates' to add a *Data* instance"
+        Alloy::Ast::TypeChecker.check_sig_class(data_cls, Seculloy::Model::Data)
+        creates << data_cls
+      end
+
+      def trusted?()    !!@trusted end
+      def set_trusted() @trusted = true end
+
+      attr_hier_searchable :operation, :trigger
 
       def operation(name)
         sig_cls.const_get name

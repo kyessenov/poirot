@@ -24,11 +24,25 @@ module Seculloy
         end
       end
 
+      def critical(*data_classes)
+        data_classes.each do |data_cls|
+          meta.add_critical(data_cls)
+        end
+      end
+
       def mod(*args, &block)
         Alloy::Dsl::SigBuilder.new(
           :superclass => Seculloy::Model::Module
         ).sig(*args, &block)
       end
+
+      def trusted_module(*args, &block)
+        ans = mod(*args, &block)
+        ans.meta.set_trusted
+        ans
+      end
+
+      alias_method :trusted, :trusted_module
 
       def __finish
         meta.modules.each do |mod|
