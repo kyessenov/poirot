@@ -107,7 +107,6 @@ class ViewTest < Test::Unit::TestCase
 
   def test_AuthServer_ops
     op = AuthServer::ReqAuth
-    $pera = 1
     do_test_op op, {cred:Credential, :uri => URI}, [{}], [{:agent => UserAgent}]
     op = AuthServer::ReqAccessToken
     do_test_op op, {:authGrant => AuthGrant}, [{}], [{:client => ClientServer}]
@@ -120,7 +119,6 @@ class ViewTest < Test::Unit::TestCase
 
   def test_to_sdsl
     ans = oauth.to_sdsl
-    binding.pry
     puts ans.to_alloy
   end
 

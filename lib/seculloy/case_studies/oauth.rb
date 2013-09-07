@@ -63,7 +63,7 @@ Seculloy::Dsl.view :OAuth do
 
       sends {
         UserAgent::Redirect() { |redirectUri|
-          redirectUri == uri &&
+          redirectUri.addr == uri.addr &&
           authGrants[cred].in?(redirectUri.vals)
         }
       }
