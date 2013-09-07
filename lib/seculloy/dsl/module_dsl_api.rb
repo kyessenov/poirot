@@ -31,7 +31,14 @@ module Seculloy
           ).sig(*args, &body)
           # TODO: check that all fields are of type Data
           ops = (Array === ans) ? ans : [ans]
-          ops.each{|op| meta.add_operation op}
+          ops.each do |op|
+            meta.add_operation op
+            class_eval <<-RUBY, __FILE__, __LINE__+1
+              def self.#{op.relative_name}(*args, &blk)
+                #{relative_name}::#{op.relative_name}.some(*args, &blk)
+              end
+            RUBY
+          end
         }
       end
 

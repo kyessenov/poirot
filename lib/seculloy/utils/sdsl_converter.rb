@@ -1,3 +1,5 @@
+require 'sdg_utils/visitors/visitor'
+
 require 'sdsl/datatype'
 require 'sdsl/view'
 require 'sdsl/myutils'
@@ -88,12 +90,6 @@ module Seculloy
         end
       end
 
-      # @param expr [Alloy::Ast::MExpr]
-      # @return [Expr]
-      def convert_expr(expr)
-        expr.to_s
-      end
-
       # @param arg [Alloy::Ast::Arg]
       # @return [Item, Bag]
       def convert_arg(arg)
@@ -109,6 +105,74 @@ module Seculloy
           rel name, *col_types
         end
       end
+
+      def evis()
+        @evis ||= SDGUtils::Visitors::TypeDelegatingVisitor.new(self,
+          :top_class        => Alloy::Ast::Expr::MExpr,
+          :visit_meth_namer => proc{|cls, kind| "convert_#{kind}"},
+          :default_return   => proc{|node| fail "no handler for #{node}:#{node.class}"}
+        )
+      end
+
+      # @param expr [Alloy::Ast::Expr::MExpr]
+      # @return [Expr]
+      def convert_expr(expr)
+        evis.visit(expr)
+      end
+
+      def convert_parenexpr(pe)
+        evis.visit(pe.sub)
+      end
+
+      def convert_callexpr(ce)
+        case ce.fun
+        when :key?
+          fail "expected 1 arg for :key?, got #{ce.args.size}" unless ce.args.size == 1
+          target = evis.visit(ce.target)
+          arg = evis.visit(ce.args.first)
+          hasKey(target, arg)
+        when :in?
+          fail "expected 1 arg for :in?, got #{ce.args.size}" unless ce.args.size == 1
+          target = evis.visit(ce.target)
+          arg = evis.visit(ce.args.first)
+          arg.contains(target)
+        else
+          fail "unknown method call: #{ce.fun}"
+        end
+      end
+
+      # @param be [Alloy::Ast::Expr::BinaryExpression]
+      def convert_binaryexpr(be)
+        lhs = evis.visit(be.lhs)
+        rhs = evis.visit(be.rhs)
+        meth = be.op.name.to_sym
+        if lhs.respond_to? meth
+          lhs.send meth, rhs
+        else
+          fail "#{lhs}:#{lhs.class} does not respond to #{meth}"
+        end
+      end
+
+      def convert_mvarexpr(v)
+        e(v.name.to_sym)
+      end
+
+      def convert_opexpr(op)
+        o()
+      end
+
+      def convert_trigexpr(tr)
+        trig()
+      end
+
+      def convert_argofexpr(ar)
+        arg(evis.visit(ar.sub()))
+      end
+
+      def convert_argexpr(ar)
+        fail "ArgExpr should not exist on its own"
+      end
+
     end
 
   end

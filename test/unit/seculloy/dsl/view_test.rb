@@ -65,10 +65,9 @@ Seculloy::Dsl.view :OAuthOld do
       }
     end
   end
-
 end
 
-class ViewTest < Test::Unit::TestCase
+class ViewTest_ < Test::Unit::TestCase
   include SDGUtils::Testing::SmartSetup
   include SDGUtils::Testing::Assertions
   include OAuthOld
@@ -104,11 +103,11 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_exports
-    assert_seq_equal [Client::SendResp.name],       
+    assert_seq_equal [Client::SendResp.name],
                       Client.meta.operations.map(&:name)
-    assert_seq_equal [ResourceOwner::ReqAuth.name], 
+    assert_seq_equal [ResourceOwner::ReqAuth.name],
                       ResourceOwner.meta.operations.map(&:name)
-    assert_seq_equal [AuthServer::ReqAccessToken.name], 
+    assert_seq_equal [AuthServer::ReqAccessToken.name],
                       AuthServer.meta.operations.map(&:name)
     assert_seq_equal [ResourceServer::ReqResource.name],
                       ResourceServer.meta.operations.map(&:name)

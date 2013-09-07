@@ -63,10 +63,12 @@ Seculloy::Dsl.view :OAuth do
     operation ReqAuth[cred: Credential, uri: URI]  do
       guard { authGrants.key? cred }
 
-      sends { UserAgent::Redirect[URI.new(uri, [authGrants[cred]])] }
-      # affects(agent: UserAgent) {
-      #   agent.redirect URI.some{ self.uri == uri && authGrants[cred].in?(self.vals) }
-      # }
+      sends {
+        UserAgent::Redirect() { |redirectUri|
+          redirectUri == uri &&
+          authGrants[cred].in?(redirectUri.vals)
+        }
+      }
     end
 
     operation ReqAccessToken[authGrant: AuthGrant]  do
@@ -206,8 +208,7 @@ class ViewTest < Test::Unit::TestCase
 
   def test_to_sdsl
     ans = oauth.to_sdsl
-    binding.pry
-    ans
+    puts ans.to_alloy
   end
 
 end

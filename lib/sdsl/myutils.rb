@@ -1,7 +1,7 @@
 # myutils.rb
 # misc. utility stuff
 #
-# TODO: decisions to mull over 
+# TODO: decisions to mull over
 # - just use symbols for data?
 #
 
@@ -23,7 +23,7 @@ run SanityCheck {
 } for 1 but 9 Data, 10 Step, 9 Op
 
 check Confidentiality {
-   Confidentiality 
+   Confidentiality
 } for 1 but 9 Data, 10 Step, 9 Op
 
 -- check who can create CriticalData
@@ -49,7 +49,7 @@ class Symbol
 end
 
 # String utils
-def wrap(s, t=0)  
+def wrap(s, t=0)
   ("\t"*t) + s + "\n"
 end
 
@@ -70,9 +70,9 @@ def writeComment comment
 end
 
 def writeFacts(fname, facts)
-  if facts.empty? 
+  if facts.empty?
     ""
-  else 
+  else
     str = writeComment("fact #{fname}")
     str += wrap("fact " + fname + " {")
     facts.each do |f|
@@ -82,7 +82,7 @@ def writeFacts(fname, facts)
   end
 end
 
-def dotModule m 
+def dotModule m
   "#{m.name} [shape=component];"
 end
 
@@ -101,7 +101,7 @@ def writeDot(mods, dotFile)
   f.puts 'node[fontname="' + FONTNAME + '"];'
   f.puts 'edge[fontname="' + FONTNAME + '", len=1.0];'
   mods.each do |m|
-    f.puts "subgraph cluster_#{m.name} { " 
+    f.puts "subgraph cluster_#{m.name} { "
     f.puts "style=filled; color=lightgrey;"
     f.puts(dotModule m)
     m.exports.each do |e|
@@ -161,8 +161,8 @@ class Item < Rel
   end
   def ==(other)
     other.equal?(self) ||
-    (other.instance_of?(self.class) && 
-     other.name == self.name && 
+    (other.instance_of?(self.class) &&
+     other.name == self.name &&
      other.type == self.type)
   end
 
@@ -189,8 +189,8 @@ class Bag < Rel
   end
   def ==(other)
     other.equal?(self) ||
-    (other.instance_of?(self.class) && 
-     other.name == self.name && 
+    (other.instance_of?(self.class) &&
+     other.name == self.name &&
      other.type == self.type)
   end
 end
@@ -210,7 +210,7 @@ class Map < Rel
     @name.to_s
   end
   def to_alloy(ctx=nil)
-    @name.to_s + " : " + @type1.to_s + " -> " + @type2.to_s  
+    @name.to_s + " : " + @type1.to_s + " -> " + @type2.to_s
   end
   def rewrite(ctx)
     Map.new(@name,@type1,@type2)
@@ -218,8 +218,8 @@ class Map < Rel
 
   def ==(other)
     other.equal?(self) ||
-    (other.instance_of?(self.class) && 
-     other.name == self.name && 
+    (other.instance_of?(self.class) &&
+     other.name == self.name &&
      other.type1 == self.type1 &&
      other.type2 == self.type2)
   end
@@ -227,7 +227,7 @@ end
 def hasKey(m, i)
   if not m.is_a? Expr then m = expr(m) end
   if not i.is_a? Expr then i = expr(i) end
-  some(nav(m, i))  
+  some(nav(m, i))
 end
 def map(n, d, r)
   Map.new(n, d, r)
@@ -238,7 +238,7 @@ def rel(n, *t)
   when 2; map(n, t[0], t[1])
   else
     raise "only unary and binary relations supported"
-  end    
+  end
 end
 
 def myuniq(a)
@@ -255,18 +255,20 @@ class Expr
   def join otherExpr
     Join.new(self, otherExpr)
   end
-  
+
   def contains otherExpr
-    if not otherExpr.is_a? Expr then otherExpr = expr(otherExpr) end 
+    if not otherExpr.is_a? Expr then otherExpr = expr(otherExpr) end
     some(intersect(self, otherExpr))
   end
 
   def eq otherExpr
     Equals.new(self, otherExpr)
   end
-  
+
+  alias_method :equals, :eq
+
   def [] key
-    if not key.is_a? Expr then key = expr(key) end  
+    if not key.is_a? Expr then key = expr(key) end
     Nav.new(self, key)
   end
 
@@ -310,12 +312,12 @@ class SymbolExpr < Expr
       ctx[@e].to_a.each do |e2|
         if tmp == nil
           tmp = SymbolExpr.new(e2)
-        else 
+        else
           tmp = Union.new(tmp, op(e2))
         end
       end
       tmp
-    else 
+    else
       SymbolExpr.new(@e)
     end
   end
@@ -345,8 +347,8 @@ class FuncApp < Expr
 end
 
 class OpExpr < Expr
-  
-  def initialize(e)  
+
+  def initialize(e)
     if e.is_a? String
       @e = e.to_sym
     elsif e.is_a? Symbol
@@ -370,12 +372,12 @@ class OpExpr < Expr
       ctx[@e].to_a.each do |e2|
         if tmp == nil
           tmp = OpExpr.new(e2)
-        else 
+        else
           tmp = Union.new(tmp, op(e2))
         end
       end
       tmp
-    else 
+    else
       OpExpr.new(@e)
     end
   end
@@ -407,7 +409,7 @@ class Union < Expr
     l2 = []
     if e1.is_a? Union
       l1 = @e1.listify(ctx)
-    else 
+    else
       l1 = [@e1.to_alloy(ctx)]
     end
     if e2.is_a? Union
@@ -432,7 +434,7 @@ class Intersect < Expr
   end
   def rewrite(ctx)
     Intersect.new(@e1.rewrite(ctx), @e2.rewrite(ctx))
-  end  
+  end
 end
 def intersect(e1, e2)
   if not e1.is_a? Expr then e1 = expr(e1) end
@@ -458,7 +460,7 @@ class Nav < Expr
 end
 def nav(m, i)
   if not m.is_a? Expr then m = expr(m) end
-  if not i.is_a? Expr then i = expr(i) end  
+  if not i.is_a? Expr then i = expr(i) end
   Nav.new(m, i)
 end
 
@@ -472,7 +474,7 @@ class Join < Expr
   end
   def to_alloy(ctx=nil)
     e1 = @rel.to_alloy(ctx)
-    e2 = @col.to_alloy(ctx)    
+    e2 = @col.to_alloy(ctx)
 
     if not UNIVERSAL_FIELDS.include? e2
       if e1 == "o"
@@ -490,15 +492,15 @@ class Join < Expr
 end
 
 def arg(arg, op = nil)
-  if not op 
+  if not op
     e = expr(:o).join expr(arg)
-  else 
+  else
     e = op.join expr(arg)
   end
   FuncApp.new(e(:arg), e)
 end
 
-def trig 
+def trig
   expr(:o).join expr(:trigger)
 end
 
@@ -508,7 +510,7 @@ end
 
 #########################################
 # Formulas
-class Formula 
+class Formula
   def and other
     And.new(self, other)
   end
@@ -516,14 +518,14 @@ class Formula
   def or other
     Or.new(self, other)
   end
-  
+
   def then other
     Implies.new(self, other)
   end
 
   def ==(other)
     other.equal?(self) ||
-    (other.instance_of?(self.class) && 
+    (other.instance_of?(self.class) &&
      other.to_s == self.to_s)
   end
 end
@@ -565,7 +567,7 @@ end
 class Exists < Formula
   def initialize(e)
     @expr = e
-  end  
+  end
   def to_s
     "Some(" + @expr.to_s + ")"
   end
@@ -578,12 +580,12 @@ class Exists < Formula
 end
 def some(e)
   Exists.new(e)
-end 
+end
 
 class Not < Formula
   def initialize(e)
     @expr = e
-  end  
+  end
   def to_s
     "Not(" + @expr.to_s + ")"
   end
@@ -596,12 +598,12 @@ class Not < Formula
 end
 def neg(e)
   Not.new(e)
-end 
+end
 
 class No < Formula
   def initialize(e)
     @expr = e
-  end  
+  end
   def to_s
     "No(" + @expr.to_s + ")"
   end
@@ -614,7 +616,7 @@ class No < Formula
 end
 def no(e)
   No.new(e)
-end 
+end
 
 class And < Formula
   attr_accessor :left, :right
@@ -637,7 +639,7 @@ class And < Formula
       expr
     elsif lformula == rformula
       lformula
-    else      
+    else
       enclose(lformula + " and " + rformula)
     end
   end
@@ -703,7 +705,7 @@ class Or < Formula
       str += wrap("or", ctx[:nesting] + 1)
       str += wrap("#{rformula}", ctx[:nesting] + 1)
       str += tab(")", ctx[:nesting] + 1)
-#      str = enclose(lformula + " or " + rformula)       
+#      str = enclose(lformula + " or " + rformula)
     end
     str
   end
@@ -723,7 +725,7 @@ def union(flst1, flst2)
     flst2
   elsif flst2.empty?
     flst1
-  else 
+  else
     [disj(flst1.inject(Unit.new) { |r, f| conj(r, f)},
           flst2.inject(Unit.new) { |r, f| conj(r, f)})]
   end
@@ -763,16 +765,16 @@ class Pred2App < Formula
     pred = @pred.to_alloy(ctx)
     a1 = @a1.to_alloy(ctx)
     a2 = @a2.to_alloy(ctx)
-    
+
     if pred == "triggeredBy"
       if @a2.is_a? Union
         ctx[:trigger] = @a2.listify(ctx)
-      else        
+      else
         ctx[:trigger] = [a2.to_sym]
       end
     end
     pred + "[" + a1 + "," + a2 + "]"
-  end  
+  end
 
   def rewrite(ctx)
     pred = @pred.rewrite(ctx)

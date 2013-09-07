@@ -8,6 +8,10 @@ module Seculloy
 
     module OperationStatic
       def [](*args)
+        some(*args)
+      end
+
+      def some(*args, &block)
         hash =
           if args.size == 1 && Hash === args.first
             args.first
@@ -20,14 +24,16 @@ module Seculloy
               acc
             end
           end
-        constr = get_field_values_constraint(hash)
-        OpConstr.new self, constr
+        constrs = get_field_values_constraint(hash)
+        constrs += get_appended_facts(&block)
+        OpConstr.new self, constrs
       end
 
       protected
 
       def get_field_values_constraint(hash)
-        target = Alloy::Ast::Fun.dummy_instance_expr(self, "o")
+        inst = Alloy::Ast::Fun.dummy_instance(self)
+        target = inst.make_me_op_expr
         conjs = []
         hash.each do |fld_name, fld_val|
           fld = meta.field(fld_name)
@@ -36,6 +42,16 @@ module Seculloy
           conjs << (target.apply_join(fld.to_alloy_expr) == fld_val)
         end
         conjs
+      end
+
+      def get_appended_facts(&block)
+        return [] if block.nil?
+        msg = "appended block arity is #{block.arity} but only " +
+              "#{meta.fields.size} args found in #{self}"
+        raise ArgumentError, msg if block.arity > meta.fields.size
+        flds = meta.fields[0...block.arity].map(&:to_alloy_expr)
+        ans = block.call *flds
+        [ans]
       end
     end
 
@@ -55,6 +71,12 @@ module Seculloy
           expr
         end
         Alloy::Ast::Expr.as_atom(self, name)
+        self
+      end
+
+      def make_me_op_expr
+        make_me_sym_expr("o")
+        self.singleton_class.send :include, OpExpr
         self
       end
 
@@ -83,10 +105,20 @@ module Seculloy
       end
     end
 
+    module OpExpr
+    end
+
     module TrigExpr
     end
 
+    class ArgOfExpr < Alloy::Ast::Expr::UnaryExpr
+      def initialize(sub) super("arg", sub) end
+    end
+
     module ArgExpr
+      def apply_join(other)
+        ArgOfExpr.new(other)
+      end
     end
 
     module ParentModExpr
