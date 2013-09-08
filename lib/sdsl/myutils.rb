@@ -252,6 +252,10 @@ end
 # Expressions
 
 class Expr
+  def product other
+    Product.new(self, otherExpr)
+  end
+  
   def join otherExpr
     Join.new(self, otherExpr)
   end
@@ -464,31 +468,37 @@ def nav(m, i)
   Nav.new(m, i)
 end
 
-class Join < Expr
+class BinOp < Expr
   def initialize(r, c)
     @rel = r
     @col = c
   end
+  def op() fail "Must override" end
   def to_s
-    @rel.to_s + "." + @col.to_s
+    @rel.to_s + op() + @col.to_s
   end
   def to_alloy(ctx=nil)
     e1 = @rel.to_alloy(ctx)
     e2 = @col.to_alloy(ctx)
-
     if not UNIVERSAL_FIELDS.include? e2
       if e1 == "o"
         e2 = "(#{ctx[:op]} <: " + e2 + ")"
       elsif e1 == "o.trigger"
         e2 = enclose(ctx[:trigger].map { |t| enclose "#{t} <: #{e2}" }.join(" + "))
       end
-
     end
-    e1 + "." + e2
+    e1 + op() + e2
   end
   def rewrite(ctx)
-    Join.new(@rel.rewrite(ctx), @col.rewrite(ctx))
+    self.class.new(@rel.rewrite(ctx), @col.rewrite(ctx))
   end
+end
+
+class Join < BinOp
+  def op() "." end
+end
+class Product < BinOp
+  def op() " -> " end
 end
 
 def arg(arg, op = nil)
