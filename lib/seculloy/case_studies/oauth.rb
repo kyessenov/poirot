@@ -12,7 +12,7 @@ Seculloy::Dsl.view :OAuth do
   data Resource     < Payload
   data OtherPayload < Payload
   data Addr
-  data URI[addr: Addr, vals: (set Payload)]
+  data URI[addr: Addr, params: (set Payload)]
 
   critical Resource
 
@@ -64,7 +64,7 @@ Seculloy::Dsl.view :OAuth do
       sends {
         UserAgent::Redirect() { |redirectUri|
           redirectUri.addr == uri.addr &&
-          authGrants[cred].in?(redirectUri.vals)
+          authGrants[cred].in?(redirectUri.params)
         }
       }
     end

@@ -150,11 +150,16 @@ module Seculloy
           target = evis.visit(ce.target)
           arg = evis.visit(ce.args.first)
           hasKey(target, arg)
-        when :in?
-          fail "expected 1 arg for :in?, got #{ce.args.size}" unless ce.args.size == 1
+        when :in?, :has?, :include?, :member?
+          msg = "expected 1 arg for #{ce.fun.inspect}, got #{ce.args.size}"
+          fail msg unless ce.args.size == 1
           target = evis.visit(ce.target)
           arg = evis.visit(ce.args.first)
-          arg.contains(target)
+          if [:in?].member? ce.fun
+            arg.contains(target)
+          else
+            target.contains(arg)
+          end
         else
           fail "unknown method call: #{ce.fun}"
         end
@@ -168,7 +173,8 @@ module Seculloy
         if lhs.respond_to? meth
           lhs.send meth, rhs
         else
-          fail "#{lhs}:#{lhs.class} does not respond to #{meth}"
+          fail "cannot convert\n #{be}\n" +
+               "`#{lhs}:#{lhs.class}' does not respond to #{meth}"
         end
       end
 
