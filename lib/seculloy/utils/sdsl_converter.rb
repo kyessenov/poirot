@@ -78,6 +78,9 @@ module Seculloy
           mb.invokes_ops *ops.map(&method(:convert_op_to_invokes)).flatten,
           *meta.triggers.map(&method(:convert_trigger))
 
+          # set unque
+          mb.setUniq(!meta.common?)
+
           mb.build mod.relative_name
         end
       end

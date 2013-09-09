@@ -28,7 +28,7 @@ module Seculloy
         meta.add_lazy_operation lambda{
           ans = Alloy::Dsl::SigBuilder.new(
             :superclass => Seculloy::Model::Operation,
-            :scope_class => self,
+            :scope_class => self
           ).sig(*args, &body)
           # TODO: check that all fields are of type Data
           ops = (Array === ans) ? ans : [ans]
@@ -55,6 +55,8 @@ module Seculloy
     module AlloySigMetaModuleExt
       include SDGUtils::Caching::SearchableAttr
 
+      attr_hier_searchable :operation, :trigger
+
       def creates()             @creates ||= [] end
       def add_creates(data_cls)
         msg = "Use `add_creates' to add a *Data* instance"
@@ -65,17 +67,12 @@ module Seculloy
       def trusted?()    !!@trusted end
       def set_trusted() @trusted = true end
 
-      attr_hier_searchable :operation, :trigger
+      def common?()     !!@common end
+      def set_common()  @common = true end
 
-      def operation(name)
-        sig_cls.const_get name
-      end
-
-      def add_lazy_operation(proc)
-        lazy_ops << proc
-      end
-
-      def eval_lazy_operations
+      def operation(name)          sig_cls.const_get name end
+      def add_lazy_operation(proc) lazy_ops << proc end
+      def eval_lazy_operations()
         lazy_ops.each do |proc|
           proc.call()
         end

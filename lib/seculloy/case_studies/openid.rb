@@ -3,7 +3,7 @@ require 'seculloy/seculloy_dsl'
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OpenID_Stateless do
-  abstract_data Payload
+  abstract data Payload
 
   data Credential   < Payload
   data OpenId       < Payload

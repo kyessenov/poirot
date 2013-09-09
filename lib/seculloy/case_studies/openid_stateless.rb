@@ -3,7 +3,7 @@ require 'seculloy/seculloy_dsl'
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OpenID_Stateless do
-  abstract_data Payload
+  abstract data Payload
 
   data Credential   < Payload
   data OpenId       < Payload
@@ -30,7 +30,7 @@ Seculloy::Dsl.view :OpenID_Stateless do
 
   trusted UserAgent do
     operation RedirectToProvider[addr: Addr] do
-      sends { IdentityProvider::Authenticate[addr] }
+      sends { IdentityProvider::RequestAuth[addr] }
     end
 
     operation RequestCredential[id: Addr] do
@@ -38,7 +38,7 @@ Seculloy::Dsl.view :OpenID_Stateless do
     end
 
     operation EnterCred[id: Addr, cred: Credential] do
-      sends { IdentityProvider::ReqAuth[id, cred] }
+      sends { IdentityProvider::ReceiveCred[id, cred] }
     end
 
     operation ReceiveOpenID[id: Addr, openId: OpenId] do
@@ -66,12 +66,12 @@ Seculloy::Dsl.view :OpenID_Stateless do
     credentials: Addr * Credential,
     identities: Addr * OpenId
   } do
-    operation Authenticate[id: Addr] do
+    operation RequestAuth[id: Addr] do
       guard { identities.key? id }
       sends { UserAgent::RequestCredential[id] }
     end
 
-    operation ReqAuth[id: Addr, cred: Credential] do
+    operation ReceiveCred[id: Addr, cred: Credential] do
       guard { credentials.include? (id * cred) }
       sends { UserAgent::ReceiveOpenID[id, identities[id]] }
     end

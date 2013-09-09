@@ -3,8 +3,8 @@ require 'seculloy/seculloy_dsl'
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OAuth do
-  abstract_data Payload
-  abstract_data AuthGrant < Payload
+  abstract data Payload
+  abstract data AuthGrant < Payload
 
   data AuthCode     < AuthGrant
   data Credential   < Payload

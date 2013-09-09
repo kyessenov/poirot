@@ -17,11 +17,15 @@ class ViewTest < Test::Unit::TestCase
   def test_data
     assert_set_equal [Payload, OtherPayload, Credential, AuthCode, Addr,
                       URI, AuthGrant, AccessToken, Resource], oauth.data
+    assert_set_equal [Payload, AuthGrant], oauth.data.select(&:abstract?)
   end
 
   def test_mod
     assert_set_equal [ClientServer, UserAgent, EndUser,
                       AuthServer, ResourceServer], oauth.modules
+    assert_set_equal [ClientServer, UserAgent, EndUser,
+                      AuthServer, ResourceServer], oauth.modules.select(&:trusted?)
+    assert_set_equal [], oauth.modules.select(&:common?)
   end
 
   def assert_fields(actual, expected)
