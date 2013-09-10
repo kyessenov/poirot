@@ -24,33 +24,33 @@ module Seculloy
               acc
             end
           end
-        constrs = get_field_values_constraint(hash)
-        constrs += get_appended_facts(&block)
-        OpConstr.new self, constrs
+        inst = Alloy::Ast::Fun.dummy_instance(self)
+        inst_expr = inst.make_me_op_expr
+        constrs = get_field_values_constraint(inst_expr, hash)
+        constrs += get_appended_facts(inst_expr, &block)
+        OpConstr.new inst_expr, constrs
       end
 
       protected
 
-      def get_field_values_constraint(hash)
-        inst = Alloy::Ast::Fun.dummy_instance(self)
-        target = inst.make_me_op_expr
+      def get_field_values_constraint(inst_expr, hash)
         conjs = []
         hash.each do |fld_name, fld_val|
           fld = meta.field(fld_name)
           msg = "field #{fld_name} not found in #{self.class.name}"
           raise ArgumentError, msg unless fld
-          conjs << (target.apply_join(fld.to_alloy_expr) == fld_val)
+          conjs << (inst_expr.apply_join(fld.to_alloy_expr) == fld_val)
         end
         conjs
       end
 
-      def get_appended_facts(&block)
-        return [] if block.nil?
-        msg = "appended block arity is #{block.arity} but only " +
+      def get_appended_facts(inst_expr, &blk)
+        return [] if blk.nil?
+        msg = "appended block arity is #{blk.arity} but only " +
               "#{meta.fields.size} args found in #{self}"
-        raise ArgumentError, msg if block.arity > meta.fields.size
-        flds = meta.fields[0...block.arity].map(&:to_alloy_expr)
-        ans = block.call *flds
+        raise ArgumentError, msg if blk.arity > meta.fields.size
+        flds = meta.fields[0...blk.arity].map{|f| inst_expr.apply_join(f.to_alloy_expr)}
+        ans = blk.call *flds
         [ans]
       end
     end
@@ -63,12 +63,11 @@ module Seculloy
 
       def make_me_sym_expr(name="self")
         p = __parent()
-        if Alloy::Ast::ASig === p
-          expr = p.make_me_sym_expr("_")
-          if Seculloy::Model::Module === p
-            expr.singleton_class.send :include, ParentModExpr
-          end
-          expr
+        if Seculloy::Model::Module === p
+          p.make_me_parent_mod_expr
+        else
+          fail "Didn't expect operation to have a parent that is not Module " +
+               "(it's #{p}:#{p.class} instead)"
         end
         Alloy::Ast::Expr.as_atom(self, name)
         self
@@ -98,17 +97,23 @@ module Seculloy
     class OpConstr
       include Alloy::Ast::Expr::MExpr
 
-      attr_reader :target_op, :constr
+      attr_reader :op_inst, :constr
 
-      def initialize(target_op, constr)
-        @target_op, @constr = target_op, constr
+      def initialize(op_inst, constr)
+        @op_inst, @constr = op_inst, constr
+      end
+
+      def target_op
+        @op_inst.class
       end
     end
 
     module OpExpr
+      include Alloy::Ast::Expr::MExpr
     end
 
     module TrigExpr
+      include Alloy::Ast::Expr::MExpr
     end
 
     class ArgOfExpr < Alloy::Ast::Expr::UnaryExpr
@@ -116,14 +121,9 @@ module Seculloy
     end
 
     module ArgExpr
+      include Alloy::Ast::Expr::MExpr
       def apply_join(other)
         ArgOfExpr.new(other)
-      end
-    end
-
-    module ParentModExpr
-      def apply_join(other)
-        other
       end
     end
 
