@@ -365,7 +365,11 @@ end
 # sub is the module refining
 # sup is a supertype of sub
 def refineMod(sup, sub, exportsRel, invokesRel)
-  name = sup.name
+  if sup.name == sub.name
+    name = ("#{sup.name}_").to_sym
+  else 
+    name = sup.name
+  end
   # refinement
   exports = refineExports(sup, sub, exportsRel)  
   invokes = refineInvokes(sup, sub, invokesRel)
@@ -441,17 +445,22 @@ def buildMapping(v1, v2, refineRel)
   modRel.each do |from, to|
     sup = v1.findMod(from)
     sub = v2.findMod(to)
-    if sup.name == sub.name      
-      newMod = mergeMod(sup, sub, exportsRel, invokesRel)
-      moduleMap[sup] = newMod
-      moduleMap[sub] = newMod
-    else
-      newMod = refineMod(sup, sub, exportsRel, invokesRel)
-      moduleMap[sup] = newMod
-      moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
-      moduleMap[sub].isAbstract = true
-      moduleMap[sub].isUniq = false      
-    end
+#     if sup.name == sub.name      
+#       newMod = mergeMod(sup, sub, exportsRel, invokesRel)
+#       moduleMap[sup] = newMod
+#       moduleMap[sub] = newMod
+#     else
+#       newMod = refineMod(sup, sub, exportsRel, invokesRel)
+#       moduleMap[sup] = newMod
+#       moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
+#       moduleMap[sub].isAbstract = true
+#       moduleMap[sub].isUniq = false      
+#     end
+    newMod = refineMod(sup, sub, exportsRel, invokesRel)
+    moduleMap[sup] = newMod
+    moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
+    moduleMap[sub].isAbstract = true
+    moduleMap[sub].isUniq = false      
   end
 
   dataMap.update(opMap).update(moduleMap)

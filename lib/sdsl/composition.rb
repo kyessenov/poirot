@@ -1,5 +1,8 @@
 # composition.rb
 #
+$LOAD_PATH << File.expand_path('../../../lib', __FILE__)
+$SDSL_EXE = 1
+
 require 'sdsl/oauth.rb'
 require 'sdsl/attack_open_redirector.rb'
 require 'sdsl/attack_csrf.rb'
@@ -16,13 +19,13 @@ mv = composeViews(VIEW_OAUTH, VIEW_OPEN_REDIRECTOR,
                              :sendAuthResp => :httpReq,
                              :reqAuth => :httpReq,
                              :redirect => :httpResp,
-                             :enterCred => :visit
+                             :enterCred => :visitB
                            }, 
                            :Invokes => {
                              :sendAuthResp => :httpReq,
                              :reqAuth => :httpReq,
                              :redirect => :httpResp,
-                             :enterCred => :visit
+                             :enterCred => :visitB
                            },
                            :Data => {
                              
@@ -42,13 +45,13 @@ mv2 = composeViews(VIEW_OAUTH, VIEW_CSRF,
                              :sendAuthResp => :httpReq,
                              :reqAuth => :httpReq,
                              :redirect => :httpResp,
-                             :enterCred => :visit
+                             :enterCred => :visitB
                            }, 
                            :Invokes => {
                              :sendAuthResp => :httpReq,
                              :reqAuth => :httpReq,
                              :redirect => :httpResp,
-                             :enterCred => :visit
+                             :enterCred => :visitB
                            },
                            :Data => {
                              
@@ -64,18 +67,19 @@ mergedClient = composeViews(VIEW_OPEN_REDIRECTOR, VIEW_CSRF,
                               :Client => :Client
                             },
                             :Exports => {
-                              :httpReq => :httpReq,
-                              :httpReq2 => :httpReq2,
-                              :httpResp => :httpResp,
-                              :visit => :visit
+#                              :httpReqB => :httpReqA,
+                              :httpReqB2 => :httpReqA2,
+                              :httpRespB => :httpRespA,
+                              :visitB => :visitA
                             },
                             :Invokes => {
-                              :httpReq => :httpReq,
-                              :httpReq2 => :httpReq2,
-                              :httpResp => :httpResp,
-                              :visit => :visit
+ #                             :httpReqB => :httpReqA,
+                              :httpReqB2 => :httpReqA2,
+                              :httpRespB => :httpRespA,
+                              :visitB => :visitA
                             },
                             :Data => {
+                              
                             }
                             )
 drawView mergedClient, "merged_client.dot"

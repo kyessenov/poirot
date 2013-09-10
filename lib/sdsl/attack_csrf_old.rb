@@ -5,7 +5,7 @@ require 'sdsl/view.rb'
 
 u = mod :User do
   stores set(:intentsA, :URI)
-  invokes(:visitA,
+  invokes(:visit,
           # user only types dest address that he/she intends to visit
           :when => [:intentsA.contains(o.destA)])
 end
@@ -38,7 +38,7 @@ end
 
 goodClient = mod :Client do
   stores :cookies, :URI, :Cookie
-  exports(:visitA,
+  exports(:visit,
           :args => [item(:destA, :URI)])
   exports(:httpRespA,
           :args => [item(:dom, :DOM),
@@ -51,7 +51,7 @@ goodClient = mod :Client do
                     disj(
                          # sends a http request only when
                          # the user initiates a connection 
-                         conj(triggeredBy(:visitA), 
+                         conj(triggeredBy(:visit), 
                               o.addrA.eq(trig.destA)),
                          # or in response to a src tag
                          conjs([triggeredBy(:httpRespA),
