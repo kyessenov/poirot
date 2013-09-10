@@ -21,7 +21,7 @@ class ReplayAttackTest < Test::Unit::TestCase
   def test_mod
     assert_set_equal [EndPoint, Channel, Eavesdropper], view.modules
     assert_set_equal [EndPoint, Channel, Eavesdropper], view.modules.select(&:trusted?)
-    assert_set_equal [EndPoint], view.modules.select(&:common?)
+    assert_set_equal [EndPoint], view.modules.select(&:many?)
   end
 
   def test_to_sdsl

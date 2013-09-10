@@ -38,8 +38,8 @@ module Seculloy
         blder.apply_modifier("trusted", Seculloy::Model::Module, &blk)
       end
 
-      def common(blder, &block)
-        blder.apply_modifier("common", Seculloy::Model::Module, &block)
+      def many(blder, &block)
+        blder.apply_modifier("many", Seculloy::Model::Module, &block)
       end
 
       def abstract(blder, &block)

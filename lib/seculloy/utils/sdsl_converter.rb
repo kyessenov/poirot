@@ -22,7 +22,7 @@ module Seculloy
         # add all modules
         vb.modules *view.modules.map(&method(:convert_module))
 
-        @pera = 1
+        # @must_find_in_cache = 1
 
         # set critical datatypes
         vb.critical *view.critical.map(&method(:convert_data))
@@ -44,12 +44,12 @@ module Seculloy
           db.setAbstract if meta.abstract?
 
           # super
-          db.extends meta.parent_sig.relative_name
+          db.extends _data_name(meta.parent_sig)
 
           # fields
           db.fields *meta.fields.map(&method(:convert_arg))
 
-          db.build(data.relative_name)
+          db.build(_data_name(data))
         end
       end
 
@@ -61,10 +61,10 @@ module Seculloy
           mb = ModuleBuilder.new
 
           # extends
-          mb.extends(meta.parent_sig.relative_name) unless meta.oldest_ancestor.nil?
+          mb.extends(_mod_name(meta.parent_sig)) unless meta.oldest_ancestor.nil?
 
           # creates
-          mb.creates *meta.creates.map(&:relative_name)
+          mb.creates *meta.creates.map(&method(:_mod_name))
 
           # stores
           meta.fields.each{|fld| mb.stores convert_arg(fld)}
@@ -79,16 +79,16 @@ module Seculloy
           *meta.triggers.map(&method(:convert_trigger))
 
           # set unque
-          mb.setUniq(!meta.common?)
+          mb.setUniq(!meta.many?)
 
-          mb.build mod.relative_name
+          mb.build _mod_name(mod)
         end
       end
 
       # @param op [Class(? < Seculloy::Model::Operation)]
       # @return [Op]
       def convert_op_to_exports(op)
-        Op.new op.relative_name,
+        Op.new "#{_op_name op}",
           :args => op.meta.fields.map(&method(:convert_arg)),
           :when => op.meta.guards.map(&:sym_exe_export).map(&method(:convert_expr))
       end
@@ -115,15 +115,15 @@ module Seculloy
             fail "unexpected trigger body; expected OpConstr, got #{body}:#{body.class}"
           end
         when_constr = []
-        when_constr << triggeredBy(op.relative_name.to_sym) if op
+        when_constr << triggeredBy(_op_name(op).to_sym) if op
         when_constr += trig_constr.constr.map(&method(:convert_expr))
-        Op.new trig_constr.target_op.relative_name, :when => when_constr
+        Op.new _op_name(trig_constr.target_op), :when => when_constr
       end
 
       # @param arg [Alloy::Ast::Arg]
       # @return [Item, Bag]
       def convert_arg(arg)
-        name = arg.name
+        name = _arg_name(arg)
         col_types = arg.type.map(&:short_name)
         if arg.type.unary?
           if arg.type.scalar?
@@ -153,7 +153,7 @@ module Seculloy
           target = evis.visit(ce.target)
           arg = evis.visit(ce.args.first)
           hasKey(target, arg)
-        when :in?, :has?, :include?, :member?
+        when :in?, :has?, :include?, :member?, :contains?
           msg = "expected 1 arg for #{ce.fun.inspect}, got #{ce.args.size}"
           fail msg unless ce.args.size == 1
           target = evis.visit(ce.target)
@@ -181,6 +181,10 @@ module Seculloy
         end
       end
 
+      def convert_fieldexpr(f)
+        e(_arg_name(f.field))
+      end
+
       def convert_mvarexpr(v)
         e(v.name.to_sym)
       end
@@ -202,6 +206,31 @@ module Seculloy
       end
 
       protected
+
+      def _sig_name(sig_cls)
+        case
+        when sig_cls < Seculloy::Model::Operation; _op_name(sig_cls)
+        when sig_cls < Seculloy::Model::Module;    _mod_name(sig_cls)
+        when sig_cls < Seculloy::Model::Data;      _data_name(sig_cls)
+        else
+          fail "Unknown sig cls: #{sig_cls}"
+        end
+      end
+      def _op_name(op_cls)
+        "#{op_cls.__parent().relative_name}__#{op_cls.relative_name}"
+      end
+      def _data_name(data_cls) data_cls.relative_name end
+      def _mod_name(mod_cls)   mod_cls.relative_name end
+      def _arg_name(arg)
+        case arg
+        when Alloy::Ast::Field
+          "#{_sig_name arg.parent}__#{arg.name}"
+        when Alloy::Ast::Arg
+          arg.name
+        else
+          raise ArgumentError, "not an Arg: #{arg}:#{arg.class}"
+        end
+      end
 
       def evis()
         @evis ||= SDGUtils::Visitors::TypeDelegatingVisitor.new(self,

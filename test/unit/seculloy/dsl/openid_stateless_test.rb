@@ -23,7 +23,7 @@ class OpenIdStatelessTest < Test::Unit::TestCase
     mods = [EndUser, UserAgent, RelyingParty, IdentityProvider]
     assert_set_equal mods, view.modules
     assert_set_equal mods, view.modules.select(&:trusted?)
-    assert_set_equal [], view.modules.select(&:common?)
+    assert_set_equal [], view.modules.select(&:many?)
   end
 
   def test_to_sdsl

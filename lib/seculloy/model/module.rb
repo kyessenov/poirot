@@ -11,10 +11,10 @@ module Seculloy
 
       def self.trusted?() meta.trusted? end
       def self.unique?()  !meta.common? end
-      def self.common?()  meta.common? end
+      def self.many?()    meta.many? end
 
       def self.set_trusted() meta.set_trusted end
-      def self.set_common() meta.set_common end
+      def self.set_many() meta.set_many end
 
       def make_me_parent_mod_expr
         make_me_sym_expr("_")

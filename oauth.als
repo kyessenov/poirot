@@ -3,52 +3,52 @@ open models/crypto[Data]
 
 -- module EndUser
 one sig EndUser extends Module {
-	cred : lone Credential,
+	EndUser__cred : lone Credential,
 }{
-	all o : this.sends[EnterCred] | triggeredBy[o,PromptForCred]
-	all o : this.sends[EnterCred] | o.(EnterCred <: cred) = cred
-	all o : this.sends[EnterCred] | o.(EnterCred <: uri) = o.trigger.((PromptForCred <: uri))
+	all o : this.sends[UserAgent__EnterCred] | triggeredBy[o,EndUser__PromptForCred]
+	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__cred) = EndUser__cred
+	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__uri) = o.trigger.((EndUser__PromptForCred <: EndUser__PromptForCred__uri))
 }
 
 -- module UserAgent
 one sig UserAgent extends Module {
 }{
-	all o : this.sends[PromptForCred] | triggeredBy[o,InitFlow]
-	all o : this.sends[PromptForCred] | o.(PromptForCred <: uri) = o.trigger.((InitFlow <: redirectURI))
-	all o : this.sends[ReqAuth] | triggeredBy[o,EnterCred]
-	all o : this.sends[ReqAuth] | o.(ReqAuth <: cred) = o.trigger.((EnterCred <: cred))
-	all o : this.sends[ReqAuth] | o.(ReqAuth <: uri) = o.trigger.((EnterCred <: uri))
-	all o : this.sends[SendAuthResp] | triggeredBy[o,Redirect]
-	all o : this.sends[SendAuthResp] | o.(SendAuthResp <: uri) = o.trigger.((Redirect <: uri))
+	all o : this.sends[EndUser__PromptForCred] | triggeredBy[o,UserAgent__InitFlow]
+	all o : this.sends[EndUser__PromptForCred] | o.(EndUser__PromptForCred <: EndUser__PromptForCred__uri) = o.trigger.((UserAgent__InitFlow <: UserAgent__InitFlow__redirectURI))
+	all o : this.sends[AuthServer__ReqAuth] | triggeredBy[o,UserAgent__EnterCred]
+	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__cred))
+	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__uri) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__uri))
+	all o : this.sends[ClientServer__SendAuthResp] | triggeredBy[o,UserAgent__Redirect]
+	all o : this.sends[ClientServer__SendAuthResp] | o.(ClientServer__SendAuthResp <: ClientServer__SendAuthResp__uri) = o.trigger.((UserAgent__Redirect <: UserAgent__Redirect__uri))
 }
 
 -- module ClientServer
 one sig ClientServer extends Module {
-	addr : lone Addr,
+	ClientServer__addr : lone Addr,
 }{
-	all o : this.sends[InitFlow] | o.(InitFlow <: redirectURI) = addr
+	all o : this.sends[UserAgent__InitFlow] | o.(UserAgent__InitFlow <: UserAgent__InitFlow__redirectURI) = ClientServer__addr
 }
 
 -- module AuthServer
 one sig AuthServer extends Module {
-	authGrants : Credential -> AuthGrant,
-	accessTokens : AuthGrant -> AccessToken,
+	AuthServer__authGrants : Credential -> AuthGrant,
+	AuthServer__accessTokens : AuthGrant -> AccessToken,
 }{
-	all o : this.receives[ReqAuth] | (some authGrants[arg[o.(ReqAuth <: cred)]])
-	all o : this.receives[ReqAccessToken] | (some accessTokens[arg[o.(ReqAccessToken <: authGrant)]])
-	all o : this.sends[Redirect] | triggeredBy[o,ReqAuth]
-	all o : this.sends[Redirect] | (o.(Redirect <: uri).addr = o.trigger.((ReqAuth <: uri)).addr and (some (o.(Redirect <: uri).vals & o.trigger.((ReqAuth <: cred)).authGrants)))
-	all o : this.sends[SendAccessToken] | triggeredBy[o,ReqAccessToken]
-	all o : this.sends[SendAccessToken] | o.(SendAccessToken <: token) = o.trigger.((ReqAccessToken <: authGrant)).accessTokens
+	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
+	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
+	all o : this.sends[UserAgent__Redirect] | triggeredBy[o,AuthServer__ReqAuth]
+	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)).AuthServer__authGrants)))
+	all o : this.sends[ClientServer__SendAccessToken] | triggeredBy[o,AuthServer__ReqAccessToken]
+	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)).AuthServer__accessTokens
 }
 
 -- module ResourceServer
 one sig ResourceServer extends Module {
-	resources : AccessToken -> Resource,
+	ResourceServer__resources : AccessToken -> Resource,
 }{
-	all o : this.receives[ReqResource] | (some resources[arg[o.(ReqResource <: accessToken)]])
-	all o : this.sends[SendResource] | triggeredBy[o,ReqResource]
-	all o : this.sends[SendResource] | o.(SendResource <: data) = o.trigger.((ReqResource <: accessToken)).resources
+	all o : this.receives[ResourceServer__ReqResource] | (some ResourceServer__resources[arg[o.(ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)]])
+	all o : this.sends[ClientServer__SendResource] | triggeredBy[o,ResourceServer__ReqResource]
+	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__data) = o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)).ResourceServer__resources
 }
 
 
@@ -57,94 +57,94 @@ fact trustedModuleFacts {
 	TrustedModule = EndUser + UserAgent + ClientServer + AuthServer + ResourceServer
 }
 
--- operation PromptForCred
-sig PromptForCred extends Op {
-	uri : lone URI,
+-- operation EndUser__PromptForCred
+sig EndUser__PromptForCred extends Op {
+	EndUser__PromptForCred__uri : lone URI,
 }{
-	args = uri
+	args = EndUser__PromptForCred__uri
 	sender in UserAgent
 	receiver in EndUser
 }
 
--- operation InitFlow
-sig InitFlow extends Op {
-	redirectURI : lone URI,
+-- operation UserAgent__InitFlow
+sig UserAgent__InitFlow extends Op {
+	UserAgent__InitFlow__redirectURI : lone URI,
 }{
-	args = redirectURI
+	args = UserAgent__InitFlow__redirectURI
 	sender in ClientServer
 	receiver in UserAgent
 }
 
--- operation EnterCred
-sig EnterCred extends Op {
-	cred : lone Credential,
-	uri : lone URI,
+-- operation UserAgent__EnterCred
+sig UserAgent__EnterCred extends Op {
+	UserAgent__EnterCred__cred : lone Credential,
+	UserAgent__EnterCred__uri : lone URI,
 }{
-	args = cred + uri
+	args = UserAgent__EnterCred__cred + UserAgent__EnterCred__uri
 	sender in EndUser
 	receiver in UserAgent
 }
 
--- operation Redirect
-sig Redirect extends Op {
-	uri : lone URI,
+-- operation UserAgent__Redirect
+sig UserAgent__Redirect extends Op {
+	UserAgent__Redirect__uri : lone URI,
 }{
-	args = uri
+	args = UserAgent__Redirect__uri
 	sender in AuthServer
 	receiver in UserAgent
 }
 
--- operation SendAuthResp
-sig SendAuthResp extends Op {
-	uri : lone URI,
+-- operation ClientServer__SendAuthResp
+sig ClientServer__SendAuthResp extends Op {
+	ClientServer__SendAuthResp__uri : lone URI,
 }{
-	args = uri
+	args = ClientServer__SendAuthResp__uri
 	sender in UserAgent
 	receiver in ClientServer
 }
 
--- operation SendAccessToken
-sig SendAccessToken extends Op {
-	token : lone AccessToken,
+-- operation ClientServer__SendAccessToken
+sig ClientServer__SendAccessToken extends Op {
+	ClientServer__SendAccessToken__token : lone AccessToken,
 }{
-	args = token
+	args = ClientServer__SendAccessToken__token
 	sender in AuthServer
 	receiver in ClientServer
 }
 
--- operation SendResource
-sig SendResource extends Op {
-	data : lone Payload,
+-- operation ClientServer__SendResource
+sig ClientServer__SendResource extends Op {
+	ClientServer__SendResource__data : lone Payload,
 }{
-	args = data
+	args = ClientServer__SendResource__data
 	sender in ResourceServer
 	receiver in ClientServer
 }
 
--- operation ReqAuth
-sig ReqAuth extends Op {
-	cred : lone Credential,
-	uri : lone URI,
+-- operation AuthServer__ReqAuth
+sig AuthServer__ReqAuth extends Op {
+	AuthServer__ReqAuth__cred : lone Credential,
+	AuthServer__ReqAuth__uri : lone URI,
 }{
-	args = cred + uri
+	args = AuthServer__ReqAuth__cred + AuthServer__ReqAuth__uri
 	sender in UserAgent
 	receiver in AuthServer
 }
 
--- operation ReqAccessToken
-sig ReqAccessToken extends Op {
-	authGrant : lone AuthGrant,
+-- operation AuthServer__ReqAccessToken
+sig AuthServer__ReqAccessToken extends Op {
+	AuthServer__ReqAccessToken__authGrant : lone AuthGrant,
 }{
-	args = authGrant
+	args = AuthServer__ReqAccessToken__authGrant
 	sender in ClientServer
 	receiver in AuthServer
 }
 
--- operation ReqResource
-sig ReqResource extends Op {
-	accessToken : lone AccessToken,
+-- operation ResourceServer__ReqResource
+sig ResourceServer__ReqResource extends Op {
+	ResourceServer__ReqResource__accessToken : lone AccessToken,
 }{
-	args = accessToken
+	args = ResourceServer__ReqResource__accessToken
 	sender in ClientServer
 	receiver in ResourceServer
 }
@@ -190,10 +190,10 @@ sig Addr extends Data {
 	no fields
 }
 sig URI extends Data {
-	addr : lone Addr,
-	vals : set Payload,
+	URI__addr : lone Addr,
+	URI__params : set Payload,
 }{
-	fields = addr + vals
+	fields = URI__addr + URI__params
 }
 sig OtherData extends Data {}{ no fields }
 

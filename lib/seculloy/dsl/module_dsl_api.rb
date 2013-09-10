@@ -67,8 +67,8 @@ module Seculloy
       def trusted?()    !!@trusted end
       def set_trusted() @trusted = true end
 
-      def common?()     !!@common end
-      def set_common()  @common = true end
+      def many?()     !!@many end
+      def set_many()  @many = true end
 
       def operation(name)          sig_cls.const_get name end
       def add_lazy_operation(proc) lazy_ops << proc end

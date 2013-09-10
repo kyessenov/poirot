@@ -25,7 +25,7 @@ class ViewTest < Test::Unit::TestCase
                       AuthServer, ResourceServer], oauth.modules
     assert_set_equal [ClientServer, UserAgent, EndUser,
                       AuthServer, ResourceServer], oauth.modules.select(&:trusted?)
-    assert_set_equal [], oauth.modules.select(&:common?)
+    assert_set_equal [], oauth.modules.select(&:many?)
   end
 
   def assert_fields(actual, expected)

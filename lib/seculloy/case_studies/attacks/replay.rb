@@ -5,7 +5,7 @@ include Seculloy::Dsl
 Seculloy::Dsl.view :ReplayAttack do
   data Packet
 
-  common trusted EndPoint do
+  many trusted EndPoint do
     creates Packet
 
     operation Deliver[packets: (set Packet)]

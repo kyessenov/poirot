@@ -22,7 +22,7 @@ class ReplayAttackTest < Test::Unit::TestCase
     mods = [EndpointA, EndpointB, Channel, Eavesdropper]
     assert_set_equal mods, view.modules
     assert_set_equal mods, view.modules.select(&:trusted?)
-    assert_set_equal [], view.modules.select(&:common?)
+    assert_set_equal [], view.modules.select(&:many?)
   end
 
 
