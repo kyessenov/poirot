@@ -252,7 +252,7 @@ end
 # Expressions
 
 class Expr
-  def product other
+  def product otherExpr
     Product.new(self, otherExpr)
   end
   
@@ -667,7 +667,8 @@ def conj(f1, f2)
   And.new(f1, f2)
 end
 def conjs(fs)
-  fs.inject(Unit.new) { |r, e| And.new(r, e) }
+  return Unit.new if fs.empty?
+  fs[1..-1].inject(fs[0]) { |r, e| And.new(r, e) }
 end
 
 class Implies < Formula
@@ -730,6 +731,10 @@ class Or < Formula
 end
 def disj(f1, f2)
   Or.new(f1, f2)
+end
+def disjs(fs)
+  return Unit.new if fs.empty?
+  fs[1..-1].inject(fs[0]) { |r, e| Or.new(r, e) }
 end
 
 def union(flst1, flst2)
