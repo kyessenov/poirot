@@ -75,8 +75,12 @@ module Seculloy
           mb.exports_ops *ops.map(&method(:convert_op_to_exports))
 
           # invokes
-          mb.invokes_ops *ops.map(&method(:convert_op_to_invokes)).flatten,
-          *meta.triggers.map(&method(:convert_trigger))
+          trigger_ops = ops.map(&method(:convert_op_to_invokes)).flatten + 
+                        meta.triggers.map(&method(:convert_trigger)).flatten
+          mb.invokes_ops *group_by_op_name(trigger_ops)
+
+          # assumes
+          mb.assumes *meta.guards.map(&method(:convert_guard))
 
           # set unque
           mb.setUniq(!meta.many?)
@@ -85,35 +89,68 @@ module Seculloy
         end
       end
 
+      # @param trigger_ops [Array(Op)]
+      # @return [Array(Op)]
+      def group_by_op_name(trigger_ops)
+        # this is only for invokes, so no args
+        trigger_ops.group_by(&:name).map { |op_name, ops|
+          if ops.size == 1
+            ops.first
+          else
+            non_empty_whens = ops.map{|o| o.constraints[:when]}.reject(&:empty?)
+            Op.new op_name, 
+              :args => [], 
+              :when => [disjs(non_empty_whens.map{|cstrs| conjs(cstrs)})]
+          end
+        }
+      end
+
       # @param op [Class(? < Seculloy::Model::Operation)]
       # @return [Op]
       def convert_op_to_exports(op)
         Op.new "#{_op_name op}",
           :args => op.meta.fields.map(&method(:convert_arg)),
-          :when => op.meta.guards.map(&:sym_exe_export).map(&method(:convert_expr))
+          :when => op.meta.guards.map(&method(:convert_guard))
       end
 
       # @param op [Class(? < Seculloy::Model::Operation)]
-      # @return [Op]
+      # @return [Array(Op)]
       def convert_op_to_invokes(op)
-        op.meta.triggers.map do |fun|
+        op.meta.triggers.map { |fun|
           convert_trigger(fun, op)
+        }.flatten
+      end
+
+      # @param guard_fun [Alloy::Ast::Fun]
+      # @return [Expr]
+      def convert_guard(guard_fun)
+        convert_expr(guard_fun.sym_exe_export)
+      end
+
+      # @param trigger_fun [Alloy::Ast::Fun]
+      # @param op [Class(? < Seculloy::Model::Operation)]
+      # @return [Array(Op)]
+      def convert_trigger(trigger_fun, op=nil)
+        body = trigger_fun.sym_exe_invoke
+        case
+        when Seculloy::Model::OpConstr === body
+          [convert_trigger_expr(body, op)]
+        when ::Class === body && body < Seculloy::Model::Operation
+          [convert_trigger_expr(body.some(), op)]
+        when Array === body
+          body.map{|e| convert_trigger_expr(e, op) }
+        else
+          fail "unexpected trigger body: #{body}:#{body.class}"
         end
       end
 
-      # @param op [Alloy::Ast::Fun]
+      # @param trig_constr [Alloy::Ast::MExpr]
+      # @param op [Class(? < Seculloy::Model::Operation)]
       # @return [Op]
-      def convert_trigger(fun, op=nil)
-        body = fun.sym_exe_invoke
-        trig_constr =
-          case
-          when Seculloy::Model::OpConstr === body
-            body
-          when ::Class === body && body < Seculloy::Model::Operation
-            body.some()
-          else
-            fail "unexpected trigger body; expected OpConstr, got #{body}:#{body.class}"
-          end
+      def convert_trigger_expr(trig_constr, op=nil)
+        msg = "unexpected trigger expr: " + 
+              "expected OpConstr, got #{trig_constr}:#{trig_constr.class}"
+        fail msg unless Seculloy::Model::OpConstr === trig_constr
         when_constr = []
         when_constr << triggeredBy(_op_name(op).to_sym) if op
         when_constr += trig_constr.constr.map(&method(:convert_expr))
@@ -168,11 +205,23 @@ module Seculloy
         end
       end
 
+      # @param be [Alloy::Ast::Expr::UnaryExpression]
+      def convert_unaryexpr(ue)
+        sub = evis.visit(ue.sub)
+        meth = ue.op.name
+        if sub.respond_to? meth
+          sub.send meth
+        else
+          fail "cannot convert\n #{ue}\n" +
+               "`#{sub}:#{sub.class}' does not respond to #{meth}"
+        end
+      end
+
       # @param be [Alloy::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
         lhs = evis.visit(be.lhs)
         rhs = evis.visit(be.rhs)
-        meth = be.op.name.to_sym
+        meth = be.op.name
         if lhs.respond_to? meth
           lhs.send meth, rhs
         else

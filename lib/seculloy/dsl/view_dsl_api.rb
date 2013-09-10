@@ -53,9 +53,6 @@ module Seculloy
       end
 
       def __finish
-        meta.modules.each do |mod|
-          mod.meta.eval_lazy_operations
-        end
       end
 
       def __create_model(scope_module)

@@ -6,6 +6,7 @@ require 'sdg_utils/random'
 require 'sdg_utils/string_utils'
 
 require 'seculloy/dsl/trigger_helper'
+require 'seculloy/dsl/guard_helper'
 
 module Seculloy
   module Dsl
@@ -13,21 +14,7 @@ module Seculloy
     module OperationDslApi
       include Alloy::Dsl::SigDslApi
       include Seculloy::Dsl::TriggerHelper
-
-      def guard(hash={}, &block)
-        hash.empty? || _check_single_fld_hash(hash)
-        name = "guard"
-        name += "_#{SDGUtils::StringUtils.to_iden hash.values.first}" unless hash.empty?
-        name += "_#{SDGUtils::Random.salted_timestamp}"
-        g = pred(name, hash, nil, &block)
-        g.instance_eval <<-RUBY, __FILE__, __LINE__+1
-          def sym_exe_export
-            op_inst = Alloy::Ast::Fun.dummy_instance(@owner)
-            __sym_exe op_inst.make_me_arg_expr
-          end
-        RUBY
-        meta.add_guard g
-      end
+      include Seculloy::Dsl::GuardHelper
 
       private
 
