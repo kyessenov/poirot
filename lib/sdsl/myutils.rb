@@ -533,6 +533,10 @@ class Formula
     Implies.new(self, other)
   end
 
+  def not
+    Not.new(self)
+  end
+
   def ==(other)
     other.equal?(self) ||
     (other.instance_of?(self.class) &&
