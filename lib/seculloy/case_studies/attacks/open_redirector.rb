@@ -21,17 +21,17 @@ Seculloy::Dsl.view :OpenRedirector do
 
   trusted Client do
     operation Visit[dest: URI] do
-      sends {[
-        TrustedServer::HttpReq[dest],
+      sends {
+        TrustedServer::HttpReq[dest] or
         MaliciousServer::HttpReq[dest]
-      ]}
+      }
     end
 
     operation HttpResp[redirectTo: URI] do 
-      sends {[
-        TrustedServer::HttpReq[redirectTo],
+      sends {
+        TrustedServer::HttpReq[redirectTo] or
         MaliciousServer::HttpReq[redirectTo]
-      ]}
+      }
     end
   end
 

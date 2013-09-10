@@ -133,28 +133,34 @@ module Seculloy
       def convert_trigger(trigger_fun, op=nil)
         body = trigger_fun.sym_exe_invoke
         case
-        when Seculloy::Model::OpConstr === body
-          [convert_trigger_expr(body, op)]
         when ::Class === body && body < Seculloy::Model::Operation
-          [convert_trigger_expr(body.some(), op)]
-        when Array === body
-          body.map{|e| convert_trigger_expr(e, op) }
+          convert_trigger_expr(body.some(), op)
+        when ::Array === body
+          body.map{|e| convert_trigger_expr(e, op)}.flatten
         else
-          fail "unexpected trigger body: #{body}:#{body.class}"
+          convert_trigger_expr(body, op)
         end
       end
 
       # @param trig_constr [Alloy::Ast::MExpr]
       # @param op [Class(? < Seculloy::Model::Operation)]
       # @return [Op]
-      def convert_trigger_expr(trig_constr, op=nil)
-        msg = "unexpected trigger expr: " + 
-              "expected OpConstr, got #{trig_constr}:#{trig_constr.class}"
-        fail msg unless Seculloy::Model::OpConstr === trig_constr
-        when_constr = []
-        when_constr << triggeredBy(_op_name(op).to_sym) if op
-        when_constr += trig_constr.constr.map(&method(:convert_expr))
-        Op.new _op_name(trig_constr.target_op), :when => when_constr
+      def convert_trigger_expr(trig_expr, op=nil)
+        case
+        when Seculloy::Model::OpConstr === trig_expr
+          when_constr = []
+          when_constr << triggeredBy(_op_name(op).to_sym) if op
+          when_constr += trig_expr.constr.map(&method(:convert_expr))
+          op = Op.new _op_name(trig_expr.target_op), :when => when_constr
+          [op]
+        when Alloy::Ast::Expr::BinaryExpr === trig_expr && trig_expr.op.name == "or"
+          convert_trigger_expr(trig_expr.lhs, op) +
+          convert_trigger_expr(trig_expr.rhs, op)
+        else
+          binding.pry
+          fail "unexpected trigger expr: " + 
+               "expected OpConstr, got #{trig_expr}:#{trig_expr.class}"
+         end
       end
 
       # @param arg [Alloy::Ast::Arg]

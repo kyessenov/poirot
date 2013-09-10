@@ -1,15 +1,15 @@
 require 'test_helper'
-require 'seculloy/case_studies/openid_stateless'
+require 'seculloy/case_studies/openid'
 
 class OpenIdStatelessTest < Test::Unit::TestCase
   include SDGUtils::Testing::SmartSetup
   include SDGUtils::Testing::Assertions
-  include OpenID_Stateless
+  include OpenIdAttack
 
-  def view() OpenID_Stateless.meta end
+  def view() OpenIdAttack.meta end
 
   def test1
-    assert OpenID_Stateless
+    assert OpenIdAttack
     assert view
   end
 

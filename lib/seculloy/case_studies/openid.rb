@@ -2,7 +2,7 @@ require 'seculloy/seculloy_dsl'
 
 include Seculloy::Dsl
 
-Seculloy::Dsl.view :OpenID_Stateless do
+Seculloy::Dsl.view :OpenIdAttack do
   abstract data Payload
 
   data Credential   < Payload
@@ -24,57 +24,59 @@ Seculloy::Dsl.view :OpenID_Stateless do
       guard { forId == id }
       sends { UserAgent::EnterCred[cred, id] }
     end
+
+    sends { RelyingParty::RequestLogIn[id] }
   end
 
   trusted UserAgent do
     operation RedirectToProvider[addr: Addr] do
-      sends { IdentityProvider::Authenticate[addr] }
+      sends { IdentityProvider::RequestAuth[addr] }
     end
 
-    operation RequestCredential do
+    operation RequestCredential[id: Addr] do
       sends { EndUser::PromptCredential[id] }
     end
 
     operation EnterCred[id: Addr, cred: Credential] do
-      sends { IdentityProvider::ReqAuth[id, cred] }
+      sends { IdentityProvider::ReceiveCred[id, cred] }
     end
 
-    operation ReceiveOpenID[id: Addr, openId: OpenID] do
-      sends { RelyingParty::ReceiveOpenID[id, openId] }
+    operation ReceiveOpenID[id: Addr, openId: OpenId] do
+      sends { RelyingParty::LogIn[id, openId] }
     end
 
     operation LoginSuccessful
   end
 
   trusted RelyingParty do
-    operation LogIn[id: Addr] do
+    operation RequestLogIn[id: Addr] do
       sends { UserAgent::RedirectToProvider[id] }
     end
 
-    operation ReceiveOpenID[id, openId] do
+    operation LogIn[id: Addr, openId: OpenId] do
       sends { IdentityProvider::CheckAuth[id, openId] }
     end
 
-    operation AuthVerified[id, openId] do
+    operation AuthVerified[id: Addr, openId: OpenId] do
       sends { UserAgent::LoginSuccessful }
     end
   end
 
   trusted IdentityProvider, {
-    credentials: Addr -> Credential
-    identities: Addr -> OpenID,
+    credentials: Addr * Credential,
+    identities: Addr * OpenId
   } do
-    operation Authenticate[id] do
+    operation RequestAuth[id: Addr] do
       guard { identities.key? id }
       sends { UserAgent::RequestCredential[id] }
     end
 
-    operation ReqAuth[id: Addr, cred: Credential] do
+    operation ReceiveCred[id: Addr, cred: Credential] do
       guard { credentials.include? (id * cred) }
       sends { UserAgent::ReceiveOpenID[id, identities[id]] }
     end
 
-    operation CheckAuth[id, openId] do
+    operation CheckAuth[id: Addr, openId: OpenId] do
       guard { identities.include? (id * openId) }
       sends { RelyingParty::AuthVerified[id, openId] }
     end
