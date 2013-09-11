@@ -12,11 +12,11 @@ Seculloy::Dsl.view :OpenRedirector do
       not intents.contains?(MaliciousServer.addr)
     }
 
-    sends { 
-      Client::Visit() { |dest|
-        dest.in? intents
+    sends {
+      Client::Visit() { |v|
+        v.dest.in? intents
       }
-    } 
+    }
   end
 
   trusted Client do
@@ -27,7 +27,7 @@ Seculloy::Dsl.view :OpenRedirector do
       }
     end
 
-    operation HttpResp[redirectTo: URI] do 
+    operation HttpResp[redirectTo: URI] do
       sends {
         TrustedServer::HttpReq[redirectTo] or
         MaliciousServer::HttpReq[redirectTo]

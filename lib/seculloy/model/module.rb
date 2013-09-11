@@ -7,6 +7,8 @@ module Seculloy
     class Module < Alloy::Ast::Sig
       extend Seculloy::Dsl::ModuleDslApi
 
+      _define_meta
+
       meta.set_placeholder
 
       def self.trusted?() meta.trusted? end

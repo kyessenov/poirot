@@ -255,7 +255,7 @@ class Expr
   def product otherExpr
     Product.new(self, otherExpr)
   end
-  
+
   def join otherExpr
     Join.new(self, otherExpr)
   end
@@ -267,6 +267,10 @@ class Expr
 
   def eq otherExpr
     Equals.new(self, otherExpr)
+  end
+
+  def in otherExpr
+    otherExpr.contains(self)
   end
 
   alias_method :equals, :eq

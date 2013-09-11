@@ -29,16 +29,16 @@ def translate_case_study(case_study_name, out_file=nil)
                 gsub(/([A-Z])/){|c| c.downcase}
   file_name_no_underscore = file_name.gsub /_/, ""
 
-  patterns = ["lib/seculloy/case_studies/**/#{file_name}.rb", 
+  patterns = ["lib/seculloy/case_studies/**/#{file_name}.rb",
               "lib/seculloy/case_studies/**/#{file_name_no_underscore}.rb"]
   sources = Dir[*patterns].uniq
-  fail "Case study source file not found. Search pattern: #{patterns}" if sources.empty? 
+  fail "Case study source file not found. Search pattern: #{patterns}" if sources.empty?
   fail "Multiple sources found: #{sources.join('; ')}" if sources.size > 1
   src = sources.first.gsub /^lib\//, ""
   fail "Cannot load `#{src}'" unless require src
   puts "  loaded #{src}"
-  
-  view = 
+
+  view =
     (eval(case_study_name) rescue nil) ||
     (eval("#{case_study_name}Attack") rescue nil)
 
@@ -52,7 +52,7 @@ def translate_case_study(case_study_name, out_file=nil)
   puts "Alloy file saved in #{out_file}"
 end
 
-ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector)
+ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF)
 
 if ARGV.empty? || (ARGV.size == 1 && ARGV[0] == "all")
   ALL_STUDIES.each &method(:translate_case_study)

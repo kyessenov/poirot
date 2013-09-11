@@ -75,7 +75,7 @@ module Seculloy
           mb.exports_ops *ops.map(&method(:convert_op_to_exports))
 
           # invokes
-          trigger_ops = ops.map(&method(:convert_op_to_invokes)).flatten + 
+          trigger_ops = ops.map(&method(:convert_op_to_invokes)).flatten +
                         meta.triggers.map(&method(:convert_trigger)).flatten
           mb.invokes_ops *group_by_op_name(trigger_ops)
 
@@ -98,8 +98,8 @@ module Seculloy
             ops.first
           else
             non_empty_whens = ops.map{|o| o.constraints[:when]}.reject(&:empty?)
-            Op.new op_name, 
-              :args => [], 
+            Op.new op_name,
+              :args => [],
               :when => [disjs(non_empty_whens.map{|cstrs| conjs(cstrs)})]
           end
         }
@@ -157,8 +157,7 @@ module Seculloy
           convert_trigger_expr(trig_expr.lhs, op) +
           convert_trigger_expr(trig_expr.rhs, op)
         else
-          binding.pry
-          fail "unexpected trigger expr: " + 
+          fail "unexpected trigger expr: " +
                "expected OpConstr, got #{trig_expr}:#{trig_expr.class}"
          end
       end
@@ -167,7 +166,7 @@ module Seculloy
       # @return [Item, Bag]
       def convert_arg(arg)
         name = _arg_name(arg)
-        col_types = arg.type.map(&:short_name)
+        col_types = arg.type.map(&:klass).map(&method(:_sig_name))
         if arg.type.unary?
           if arg.type.scalar?
             item name, *col_types
@@ -211,9 +210,27 @@ module Seculloy
         end
       end
 
+      def convert_iteexpr(ite)
+        cond = convert_expr(ite.cond)
+        ans = []
+        if ite.then_expr && !Alloy::Ast::Expr::BoolConst.True?(ite.then_expr)
+          then_expr = convert_expr(ite.then_expr)
+          ans << implies(cond, then_expr)
+        end
+        if ite.else_expr && !Alloy::Ast::Expr::BoolConst.True?(ite.else_expr)
+          else_expr = convert_expr(ite.else_expr)
+          ans << implies(neg(cond), else_expr)
+        end
+        case ans.size
+        when 0; raise "ITEExpr with neither then nor else branch"
+        when 1; ans.first
+        when 2; conj(*ans)
+        end
+      end
+
       # @param be [Alloy::Ast::Expr::UnaryExpression]
       def convert_unaryexpr(ue)
-        sub = evis.visit(ue.sub)
+        sub = convert_expr(ue.sub)
         meth = ue.op.name
         if sub.respond_to? meth
           sub.send meth
@@ -225,6 +242,7 @@ module Seculloy
 
       # @param be [Alloy::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
+        binding.pry if $pera
         lhs = evis.visit(be.lhs)
         rhs = evis.visit(be.rhs)
         meth = be.op.name
@@ -257,13 +275,14 @@ module Seculloy
       end
 
       def convert_argexpr(ar)
-        fail "ArgExpr should not exist on its own"
+        o() #return the operation
       end
 
       protected
 
       def _sig_name(sig_cls)
         case
+        when sig_cls == Seculloy::Model::Operation; "Op"
         when sig_cls < Seculloy::Model::Operation; _op_name(sig_cls)
         when sig_cls < Seculloy::Model::Module;    _mod_name(sig_cls)
         when sig_cls < Seculloy::Model::Data;      _data_name(sig_cls)
