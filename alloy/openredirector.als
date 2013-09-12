@@ -9,51 +9,36 @@ one sig User extends Module {
 	(not (some (User__intents & MaliciousServer.MaliciousServer__addr)))
 }
 
+-- module TrustedServer
+one sig TrustedServer extends Module {
+	TrustedServer__addr : lone URI,
+}{
+	all o : this.sends[Client__HttpResp] | triggeredBy[o,TrustedServer__HttpReq]
+}
+
+-- module MaliciousServer
+one sig MaliciousServer extends Module {
+	MaliciousServer__addr : lone URI,
+}
 -- module Client
 one sig Client extends Module {
 }{
-	all o : this.sends[TrustedServer__HttpReq] | 
+	all o : this.sends[TrustedServer__HttpReq] |
 		((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		(triggeredBy[o,Client__HttpResp] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__HttpResp <: Client__HttpResp__redirectTo)))
 		)
-	all o : this.sends[MaliciousServer__HttpReq] | 
+	all o : this.sends[MaliciousServer__HttpReq] |
 		((triggeredBy[o,Client__Visit] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		(triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__HttpResp <: Client__HttpResp__redirectTo)))
 		)
 }
 
--- module TrustedServer
-one sig TrustedServer extends Module {
-	TrustedServer__addr : lone URI,
-}
--- module MaliciousServer
-one sig MaliciousServer extends Module {
-	MaliciousServer__addr : lone URI,
-}
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
-	TrustedModule = User + Client + TrustedServer
-}
-
--- operation Client__Visit
-sig Client__Visit extends Op {
-	Client__Visit__dest : lone URI,
-}{
-	args = Client__Visit__dest
-	sender in User
-	receiver in Client
-}
-
--- operation Client__HttpResp
-sig Client__HttpResp extends Op {
-	Client__HttpResp__redirectTo : lone URI,
-}{
-	args = Client__HttpResp__redirectTo
-	sender in TrustedServer + MaliciousServer
-	receiver in Client
+	TrustedModule = User + TrustedServer + Client
 }
 
 -- operation TrustedServer__HttpReq
@@ -72,6 +57,24 @@ sig MaliciousServer__HttpReq extends Op {
 	args = MaliciousServer__HttpReq__addr
 	sender in Client
 	receiver in MaliciousServer
+}
+
+-- operation Client__Visit
+sig Client__Visit extends Op {
+	Client__Visit__dest : lone URI,
+}{
+	args = Client__Visit__dest
+	sender in User
+	receiver in Client
+}
+
+-- operation Client__HttpResp
+sig Client__HttpResp extends Op {
+	Client__HttpResp__redirectTo : lone URI,
+}{
+	args = Client__HttpResp__redirectTo
+	sender in TrustedServer + MaliciousServer
+	receiver in Client
 }
 
 -- datatype declarations

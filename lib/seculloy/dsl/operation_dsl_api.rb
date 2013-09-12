@@ -16,6 +16,8 @@ module Seculloy
       include Seculloy::Dsl::TriggerHelper
       include Seculloy::Dsl::GuardHelper
 
+      alias_method :response, :sends
+
       private
 
       # Extend the existing Alloy::Ast::SigMeta class with some extra

@@ -60,7 +60,8 @@ Seculloy::Dsl.view :CSRF do
   } do
     operation Visit[dest: URI] do
       sends {
-        # TODO: CHECK what about some(cookies[dest]) ?
+        # TODO: CHECK what about some(cookies[dest])? e.g.
+        #   c = Cookie.some { |c| c = cookies[dest] if some cookies[dest] }
         c = cookies[dest]
         TrustedServer::HttpReq[c, dest] or
         MaliciousServer::HttpReq[c, dest]

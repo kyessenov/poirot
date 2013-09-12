@@ -19,6 +19,9 @@ module Seculloy
       include Seculloy::Dsl::TriggerHelper
       include Seculloy::Dsl::GuardHelper
 
+      alias_method :assumption, :guard
+      alias_method :invokes, :sends
+
       def creates(*data_classes)
         data_classes.each do |data_cls|
           meta.add_creates(data_cls)

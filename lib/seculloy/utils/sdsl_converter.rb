@@ -153,9 +153,8 @@ module Seculloy
           when_constr += trig_expr.constr.map(&method(:convert_expr))
           op = Op.new _op_name(trig_expr.target_op), :when => when_constr
           [op]
-        when Alloy::Ast::Expr::BinaryExpr === trig_expr && trig_expr.op.name == "or"
-          convert_trigger_expr(trig_expr.lhs, op) +
-          convert_trigger_expr(trig_expr.rhs, op)
+        when trig_expr.is_disjunction
+          trig_expr.children.reduce([]){|acc, e| acc += convert_trigger_expr(e, op)}
         else
           fail "unexpected trigger expr: " +
                "expected OpConstr, got #{trig_expr}:#{trig_expr.class}"
