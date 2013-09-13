@@ -42,10 +42,6 @@ module Seculloy
         blder.apply_modifier("many", Seculloy::Model::Module, &block)
       end
 
-      def abstract(blder, &block)
-        blder.apply_modifier("abstract", nil, &block)
-      end
-
       def critical(*data_classes)
         data_classes.each do |data_cls|
           meta.add_critical(data_cls)

@@ -23,12 +23,12 @@ one sig MaliciousServer extends Module {
 -- module Client
 one sig Client extends Module {
 }{
-	all o : this.sends[TrustedServer__HttpReq] |
+	all o : this.sends[TrustedServer__HttpReq] | 
 		((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		(triggeredBy[o,Client__HttpResp] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__HttpResp <: Client__HttpResp__redirectTo)))
 		)
-	all o : this.sends[MaliciousServer__HttpReq] |
+	all o : this.sends[MaliciousServer__HttpReq] | 
 		((triggeredBy[o,Client__Visit] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		(triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__HttpResp <: Client__HttpResp__redirectTo)))

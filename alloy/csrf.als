@@ -29,12 +29,12 @@ one sig MaliciousServer extends Module {
 one sig Client extends Module {
 	Client__cookies : URI -> Cookie,
 }{
-	all o : this.sends[TrustedServer__HttpReq] |
+	all o : this.sends[TrustedServer__HttpReq] | 
 		(((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = o.trigger.((Client__Visit <: Client__Visit__dest)).Client__cookies) and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		((triggeredBy[o,Client__HttpResp] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = o.trigger.((Client__HttpResp <: Client__HttpResp__addr)).Client__cookies) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr))))
 		)
-	all o : this.sends[MaliciousServer__HttpReq] |
+	all o : this.sends[MaliciousServer__HttpReq] | 
 		(((triggeredBy[o,Client__Visit] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = o.trigger.((Client__Visit <: Client__Visit__dest)).Client__cookies) and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
 		((triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = o.trigger.((Client__HttpResp <: Client__HttpResp__addr)).Client__cookies) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr))))
