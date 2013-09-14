@@ -51,7 +51,7 @@ one sig IdentityProvider extends Module {
 	all o : this.sends[UserAgent__RequestCredential] | o.(UserAgent__RequestCredential <: UserAgent__RequestCredential__id) = o.trigger.((IdentityProvider__RequestAuth <: IdentityProvider__RequestAuth__id))
 	all o : this.sends[UserAgent__ReceiveOpenID] | triggeredBy[o,IdentityProvider__ReceiveCred]
 	all o : this.sends[UserAgent__ReceiveOpenID] | o.(UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__id) = o.trigger.((IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id))
-	all o : this.sends[UserAgent__ReceiveOpenID] | o.(UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__openId) = o.trigger.((IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id)).IdentityProvider__identities
+	all o : this.sends[UserAgent__ReceiveOpenID] | o.(UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__openId) = IdentityProvider__identities[o.trigger.((IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id))]
 	all o : this.sends[RelyingParty__AuthVerified] | triggeredBy[o,IdentityProvider__CheckAuth]
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__id) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id))
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__openId) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId))

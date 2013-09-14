@@ -280,6 +280,8 @@ class Expr
     Nav.new(self, key)
   end
 
+  alias_method :select, :[]
+
   def method_missing(n, *args, &block)
     self.join(expr(n))
   end

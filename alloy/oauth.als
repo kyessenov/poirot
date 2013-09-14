@@ -37,9 +37,9 @@ one sig AuthServer extends Module {
 	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
 	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
 	all o : this.sends[UserAgent__Redirect] | triggeredBy[o,AuthServer__ReqAuth]
-	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)).AuthServer__authGrants)))
+	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & AuthServer__authGrants[o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred))])))
 	all o : this.sends[ClientServer__SendAccessToken] | triggeredBy[o,AuthServer__ReqAccessToken]
-	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)).AuthServer__accessTokens
+	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = AuthServer__accessTokens[o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant))]
 }
 
 -- module ResourceServer
@@ -48,7 +48,7 @@ one sig ResourceServer extends Module {
 }{
 	all o : this.receives[ResourceServer__ReqResource] | (some ResourceServer__resources[arg[o.(ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)]])
 	all o : this.sends[ClientServer__SendResource] | triggeredBy[o,ResourceServer__ReqResource]
-	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__data) = o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)).ResourceServer__resources
+	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__data) = ResourceServer__resources[o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken))]
 }
 
 
