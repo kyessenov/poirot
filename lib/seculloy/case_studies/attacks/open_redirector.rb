@@ -30,10 +30,10 @@ Seculloy::Dsl.view :OpenRedirector do
     addr: URI
   } do
     # accepts any requests
-    operation HttpReq[addr: URI] {
+    operation HttpReq[addr: URI] do
       # sends +Client::HttpResp+ only in response to +HttpReq+
       response { Client::HttpResp }
-    }
+    end
   end
 
   mod MaliciousServer, {
