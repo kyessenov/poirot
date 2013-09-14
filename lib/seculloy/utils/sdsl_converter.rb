@@ -254,11 +254,11 @@ module Seculloy
       end
 
       def convert_fieldexpr(f)
-        e(_arg_name(f.field))
+        e(_arg_name(f.__field))
       end
 
       def convert_mvarexpr(v)
-        e(v.name.to_sym)
+        e(v.__name.to_sym)
       end
 
       def convert_opexpr(op)
