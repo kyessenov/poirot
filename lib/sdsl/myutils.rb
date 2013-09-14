@@ -539,6 +539,8 @@ class Formula
     Implies.new(self, other)
   end
 
+  alias_method :implies, :then
+
   def not
     Not.new(self)
   end
