@@ -30,7 +30,7 @@ Seculloy::Dsl.view :CSRF do
   end
 
   trusted TrustedServer, {
-    cookies:      Operation * Cookie,
+    cookies:      Operation ** Cookie,
     addr:         Hostname,
     protectedOps: (set Operation)
   } do
@@ -56,7 +56,7 @@ Seculloy::Dsl.view :CSRF do
   end
 
   trusted Client, {
-    cookies: URI * Cookie
+    cookies: URI ** Cookie
   } do
     operation Visit[dest: URI] do
       sends {

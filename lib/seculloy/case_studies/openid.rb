@@ -63,8 +63,8 @@ Seculloy::Dsl.view :OpenIdAttack do
   end
 
   trusted IdentityProvider, {
-    credentials: Addr * Credential,
-    identities: Addr * OpenId
+    credentials: Addr ** Credential,
+    identities: Addr ** OpenId
   } do
     operation RequestAuth[id: Addr] do
       guard { identities.key? id }
@@ -72,12 +72,12 @@ Seculloy::Dsl.view :OpenIdAttack do
     end
 
     operation ReceiveCred[id: Addr, cred: Credential] do
-      guard { credentials.include? (id * cred) }
+      guard { credentials.include? (id ** cred) }
       sends { UserAgent::ReceiveOpenID[id, identities[id]] }
     end
 
     operation CheckAuth[id: Addr, openId: OpenId] do
-      guard { identities.include? (id * openId) }
+      guard { identities.include? (id ** openId) }
       sends { RelyingParty::AuthVerified[id, openId] }
     end
   end

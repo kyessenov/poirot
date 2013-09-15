@@ -53,8 +53,8 @@ Seculloy::Dsl.view :OAuth do
   end
 
   trusted AuthServer, {
-    authGrants: Credential * AuthGrant,
-    accessTokens: AuthGrant * AccessToken
+    authGrants: Credential ** AuthGrant,
+    accessTokens: AuthGrant ** AccessToken
   } do
     creates AuthGrant, AccessToken
 
@@ -76,7 +76,7 @@ Seculloy::Dsl.view :OAuth do
   end
 
   trusted ResourceServer, {
-    resources: AccessToken * Resource
+    resources: AccessToken ** Resource
   } do
     creates Resource
 
