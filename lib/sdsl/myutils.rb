@@ -252,6 +252,10 @@ end
 # Expressions
 
 class Expr
+  def product otherExpr
+    Product.new(self, otherExpr)
+  end
+
   def join otherExpr
     Join.new(self, otherExpr)
   end
@@ -265,12 +269,18 @@ class Expr
     Equals.new(self, otherExpr)
   end
 
+  def in otherExpr
+    otherExpr.contains(self)
+  end
+
   alias_method :equals, :eq
 
   def [] key
     if not key.is_a? Expr then key = expr(key) end
     Nav.new(self, key)
   end
+
+  alias_method :select, :[]
 
   def method_missing(n, *args, &block)
     self.join(expr(n))
@@ -464,31 +474,37 @@ def nav(m, i)
   Nav.new(m, i)
 end
 
-class Join < Expr
+class BinOp < Expr
   def initialize(r, c)
     @rel = r
     @col = c
   end
+  def op() fail "Must override" end
   def to_s
-    @rel.to_s + "." + @col.to_s
+    @rel.to_s + op() + @col.to_s
   end
   def to_alloy(ctx=nil)
     e1 = @rel.to_alloy(ctx)
     e2 = @col.to_alloy(ctx)
-
     if not UNIVERSAL_FIELDS.include? e2
       if e1 == "o"
         e2 = "(#{ctx[:op]} <: " + e2 + ")"
       elsif e1 == "o.trigger"
         e2 = enclose(ctx[:trigger].map { |t| enclose "#{t} <: #{e2}" }.join(" + "))
       end
-
     end
-    e1 + "." + e2
+    e1 + op() + e2
   end
   def rewrite(ctx)
-    Join.new(@rel.rewrite(ctx), @col.rewrite(ctx))
+    self.class.new(@rel.rewrite(ctx), @col.rewrite(ctx))
   end
+end
+
+class Join < BinOp
+  def op() "." end
+end
+class Product < BinOp
+  def op() " -> " end
 end
 
 def arg(arg, op = nil)
@@ -521,6 +537,12 @@ class Formula
 
   def then other
     Implies.new(self, other)
+  end
+
+  alias_method :implies, :then
+
+  def not
+    Not.new(self)
   end
 
   def ==(other)
@@ -653,7 +675,8 @@ def conj(f1, f2)
   And.new(f1, f2)
 end
 def conjs(fs)
-  fs.inject(Unit.new) { |r, e| And.new(r, e) }
+  return Unit.new if fs.empty?
+  fs[1..-1].inject(fs[0]) { |r, e| And.new(r, e) }
 end
 
 class Implies < Formula
@@ -716,6 +739,10 @@ class Or < Formula
 end
 def disj(f1, f2)
   Or.new(f1, f2)
+end
+def disjs(fs)
+  return Unit.new if fs.empty?
+  fs[1..-1].inject(fs[0]) { |r, e| Or.new(r, e) }
 end
 
 def union(flst1, flst2)

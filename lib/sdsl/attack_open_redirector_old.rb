@@ -5,8 +5,8 @@ require 'sdsl/view.rb'
 
 u = mod :User do
   stores set(:intentsB, :URI)
-  invokes(:visitB,
-          # user only types dest address that he/she intends to visitB
+  invokes(:visit,
+          # user only types dest address that he/she intends to visit
           :when => [:intentsB.contains(o.destB)])
   # assumption: the user doesn't type addresses of a malicious site
   assumes(neg(:intentsB.contains(:MaliciousServer.addrB)))
@@ -29,7 +29,7 @@ bs = mod :MaliciousServer do
 end
 
 c = mod :Client do 
-  exports(:visitB,
+  exports(:visit,
           :args => [item(:destB, :URI)])
   # exports responses with redirects
   exports(:httpRespB,
@@ -39,7 +39,7 @@ c = mod :Client do
           # sends a http request only when
           :when => [disj(
                          # the user initiates a connection or
-                         conj(triggeredBy(:visitB), o.addrB.eq(trig.destB)),
+                         conj(triggeredBy(:visit), o.addrB.eq(trig.destB)),
                          # receives a redirect header from the server
                          conj(triggeredBy(:httpRespB),
                               o.addrB.eq(trig.redirectTo)))])

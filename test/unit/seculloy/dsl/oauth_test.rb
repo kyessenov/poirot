@@ -1,93 +1,5 @@
 require 'test_helper'
-require 'seculloy/seculloy_dsl'
-
-include Seculloy::Dsl
-
-Seculloy::Dsl.view :OAuth do
-  abstract_data Payload
-  abstract_data AuthGrant < Payload
-
-  data AuthCode     < AuthGrant
-
-  data Credential   < Payload
-  data AccessToken  < Payload
-  data Resource     < Payload
-  data OtherPayload < Payload
-
-  data Addr
-
-  data URI[addr: Addr, vals: (set Payload)]
-
-  mod EndUser, {
-    cred: Credential
-  } do
-    creates Credential
-
-    operation PromptForCred[uri: URI] do
-      sends { UserAgent::EnterCred[cred, uri] }
-    end
-  end
-
-  mod UserAgent do
-    operation InitFlow[redirectURI: URI] do
-      sends { EndUser::PromptForCred[redirectURI] }
-    end
-
-    operation EnterCred[cred: Credential, uri: URI] do
-      sends { AuthServer::ReqAuth[cred, uri] }
-    end
-
-    operation Redirect[uri: URI] do
-      sends { ClientServer::SendAuthResp[uri] }
-    end
-  end
-
-  mod ClientServer, {
-    addr: Addr
-  } do
-    operation SendAuthResp[uri: URI]
-    operation SendAccessToken[token: AccessToken]
-    operation SendResource[data: Payload]
-
-    # affects(agent: UserAgent) { agent.initFlow(addr) }
-    # affects reqResource
-    # affects reqAccessToken
-  end
-
-  mod AuthServer, {
-    authGrants: Credential * AuthGrant,
-    accessTokens: AuthGrant * AccessToken
-  } do
-    creates AuthGrant, AccessToken
-
-    operation ReqAuth[cred: Credential, uri: URI]  do
-      guard { authGrants.key? cred }
-
-      sends {
-        UserAgent::Redirect() { |redirectUri|
-          redirectUri == uri &&
-          authGrants[cred].in?(redirectUri.vals)
-        }
-      }
-    end
-
-    operation ReqAccessToken[authGrant: AuthGrant]  do
-      guard { accessTokens.key? authGrant }
-      sends { ClientServer::SendAccessToken[accessTokens[authGrant]] }
-    end
-  end
-
-  mod ResourceServer, {
-    resources: AccessToken * Resource
-  } do
-    creates Resource
-
-    operation ReqResource[accessToken: AccessToken]  do
-      guard { resources.key? accessToken }
-      sends { ClientServer::SendResource[resources[accessToken]] }
-    end
-  end
-end
+require 'seculloy/case_studies/oauth'
 
 class ViewTest < Test::Unit::TestCase
   include SDGUtils::Testing::SmartSetup
@@ -105,11 +17,15 @@ class ViewTest < Test::Unit::TestCase
   def test_data
     assert_set_equal [Payload, OtherPayload, Credential, AuthCode, Addr,
                       URI, AuthGrant, AccessToken, Resource], oauth.data
+    assert_set_equal [Payload, AuthGrant], oauth.data.select(&:abstract?)
   end
 
   def test_mod
     assert_set_equal [ClientServer, UserAgent, EndUser,
                       AuthServer, ResourceServer], oauth.modules
+    assert_set_equal [ClientServer, UserAgent, EndUser,
+                      AuthServer, ResourceServer], oauth.modules.select(&:trusted?)
+    assert_set_equal [], oauth.modules.select(&:many?)
   end
 
   def assert_fields(actual, expected)
@@ -195,7 +111,6 @@ class ViewTest < Test::Unit::TestCase
 
   def test_AuthServer_ops
     op = AuthServer::ReqAuth
-    $pera = 1
     do_test_op op, {cred:Credential, :uri => URI}, [{}], [{:agent => UserAgent}]
     op = AuthServer::ReqAccessToken
     do_test_op op, {:authGrant => AuthGrant}, [{}], [{:client => ClientServer}]

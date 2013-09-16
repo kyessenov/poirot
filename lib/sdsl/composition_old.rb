@@ -1,5 +1,8 @@
 # composition.rb
 #
+$LOAD_PATH << File.expand_path('../../../lib', __FILE__)
+$SDSL_EXE = 1
+
 require 'sdsl/oauth_old.rb'
 require 'sdsl/network.rb'
 require 'sdsl/attack_csrf.rb'
