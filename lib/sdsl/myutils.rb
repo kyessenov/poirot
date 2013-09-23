@@ -31,6 +31,7 @@ check Integrity {
    Integrity
 } for 1 but 9 Data, 10 Step, 9 Op
 "
+STEP_TYPE = :Step
 
 class Array
   def to_alloy(ctx=nil)
@@ -165,7 +166,9 @@ class Item < Rel
      other.name == self.name &&
      other.type == self.type)
   end
-
+  def dynamic 
+    Map.new(name, type, STEP_TYPE, :lone, :some)
+  end
 end
 def item(n, t)
   Item.new(n, t)
@@ -193,27 +196,32 @@ class Bag < Rel
      other.name == self.name &&
      other.type == self.type)
   end
+  def dynamic 
+    Map.new(name, type, STEP_TYPE, :some, :some)
+  end
 end
 def set(n, t)
   Bag.new(n, t)
 end
 
-# Functions
+# Binary Rel
 class Map < Rel
-  attr_reader :name, :type1, :type2
-  def initialize(n, t1, t2)
+  attr_reader :name, :type1, :type2, :constr1, :constr2
+  def initialize(n, t1, t2, c1=:some, c2=:lone)
     @name = n
     @type1 = t1
     @type2 = t2
-  end
+    @constr1 = c1
+    @constr2 = c2
+  end  
   def to_s
     @name.to_s
   end
   def to_alloy(ctx=nil)
-    @name.to_s + " : " + @type1.to_s + " -> " + @type2.to_s
+    "#{@name} : #{@type1} #{@constr1} -> #{@constr2} #{type2}"
   end
   def rewrite(ctx)
-    Map.new(@name,@type1,@type2)
+    Map.new(@name,@type1,@type2, @constr1, @constr2)
   end
 
   def ==(other)
@@ -221,9 +229,50 @@ class Map < Rel
     (other.instance_of?(self.class) &&
      other.name == self.name &&
      other.type1 == self.type1 &&
-     other.type2 == self.type2)
+     other.type2 == self.type2 &&
+     other.constr1 == self.constr1 &&
+     other.constr2 == self.constr2)
+  end
+
+  def dynamic
+    TernaryRel.new(name, type1, type2, STEP_TYPE, constr1, constr2, :some)
   end
 end
+
+class TernaryRel < Rel
+  attr_reader :name, :type1, :type2, :type3, :constr1, :constr2, :constr3
+  def initialize(n, t1, t2, t3, c1=:some, c2=:some, c3=:some)
+    @name = n
+    @type1 = t1
+    @type2 = t2
+    @type3 = t3
+    @constr1 = c1
+    @constr2 = c2
+    @constr3 = c3
+  end  
+  def to_s
+    @name.to_s
+  end
+  def to_alloy(ctx=nil)
+    "#{@name} : (#{@type1} #{@constr1} -> #{@constr2} #{type2}) -> #{@constr3} #{type3}"
+  end
+  def rewrite(ctx)
+    Map.new(@name,@type1,@type2, @type3, @constr1, @constr2, @constr3)
+  end
+
+  def ==(other)
+    other.equal?(self) ||
+    (other.instance_of?(self.class) &&
+     other.name == self.name &&
+     other.type1 == self.type1 &&
+     other.type2 == self.type2 &&
+     other.type3 == self.type3 &&
+     other.constr1 == self.constr1 &&
+     other.constr2 == self.constr2 &&
+     other.constr3 == self.constr3)
+  end
+end
+
 def hasKey(m, i)
   if not m.is_a? Expr then m = expr(m) end
   if not i.is_a? Expr then i = expr(i) end
