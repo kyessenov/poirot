@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 $LOAD_PATH << File.expand_path('../lib', __FILE__)
+$LOAD_PATH << File.expand_path('../../alloy_ruby/lib', __FILE__)
 
 require 'sdsl/myutils'
 

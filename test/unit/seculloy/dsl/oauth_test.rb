@@ -73,7 +73,7 @@ class ViewTest < Test::Unit::TestCase
       expected_guard = guards[idx]
       assert_equal expected_guard.size, guard.args.size
 
-      puts guard.sym_exe.to_s
+      guard.sym_exe
 
       expected_guard.each do |name, cls|
         assert_equal cls, guard.arg(name).type.klass
@@ -82,7 +82,7 @@ class ViewTest < Test::Unit::TestCase
 
     assert_equal effects.size, op.meta.triggers.size
     op.meta.triggers.each do |t|
-      puts t.sym_exe.to_s
+      t.sym_exe
     end
   end
 
