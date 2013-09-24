@@ -1,10 +1,11 @@
 require 'seculloy/seculloy_dsl'
-
+  
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OAuth do
 
   data AuthCode
+  data AuthGrant
   data Credential
   data AccessToken
   data Resource
