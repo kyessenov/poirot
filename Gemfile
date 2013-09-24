@@ -1,4 +1,4 @@
 source "http://rubygems.org"
 
-gem 'alloy_ruby', :git => 'https://github.com/aleksandarmilicevic/alloy_ruby.git'
+gem 'arby' #, :git => 'https://github.com/aleksandarmilicevic/arby.git'
 gem 'docile'

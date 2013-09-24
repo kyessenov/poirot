@@ -85,6 +85,11 @@ module Seculloy
           # set unque
           mb.setUniq(!meta.many?)
 
+          # set dynamic fields
+          mb.dynamics *meta.fields.select{|fld|
+            fld.type.has_modifier?(:dynamic)
+          }.map(&:name)
+
           mb.build _mod_name(mod)
         end
       end

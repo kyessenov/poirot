@@ -41,8 +41,8 @@ one sig RelyingParty extends Module {
 
 -- module IdentityProvider
 one sig IdentityProvider extends Module {
-	IdentityProvider__credentials : Addr -> Credential,
-	IdentityProvider__identities : Addr -> OpenId,
+	IdentityProvider__credentials : Addr some -> lone Credential,
+	IdentityProvider__identities : Addr some -> lone OpenId,
 }{
 	all o : this.receives[IdentityProvider__RequestAuth] | (some IdentityProvider__identities[arg[o.(IdentityProvider__RequestAuth <: IdentityProvider__RequestAuth__id)]])
 	all o : this.receives[IdentityProvider__ReceiveCred] | (some (IdentityProvider__credentials & arg[o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id)] -> arg[o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__cred)]))

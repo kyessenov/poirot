@@ -1,4 +1,5 @@
 require 'alloy/dsl/model_api'
+require 'seculloy/dsl/type_mod_helper'
 require 'seculloy/model/data'
 require 'seculloy/model/module'
 require 'seculloy/model/view'
@@ -9,24 +10,21 @@ module Seculloy
 
     module ViewDslApi
       include Alloy::Dsl::ModelDslApi
+      include Seculloy::Dsl::TypeModHelper
       extend self
 
-      @@data_builder = Alloy::Dsl::SigBuilder.new(
-        :superclass => Seculloy::Model::Data,
-        :return     => :builder
-      )
-
-      @@mod_builder = Alloy::Dsl::SigBuilder.new(
-        :superclass => Seculloy::Model::Module,
-        :return     => :builder
-      )
-
       def data(*args)
-        @@data_builder.sig(*args)
+        Alloy::Dsl::SigBuilder.new(
+          :superclass => Seculloy::Model::Data,
+          :return     => :builder
+        ).sig(*args)
       end
 
       def mod(*args, &block)
-        @@mod_builder.sig(*args, &block)
+        Alloy::Dsl::SigBuilder.new(
+          :superclass => Seculloy::Model::Module,
+          :return     => :builder
+        ).sig(*args, &block)
       end
 
       def trusted(*args, &block)

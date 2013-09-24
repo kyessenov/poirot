@@ -15,9 +15,9 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_data
-    assert_set_equal [Payload, OtherPayload, Credential, AuthCode, Addr,
+    assert_set_equal [Credential, AuthCode, ClientID, Scope,
                       URI, AuthGrant, AccessToken, Resource], oauth.data
-    assert_set_equal [Payload, AuthGrant], oauth.data.select(&:abstract?)
+    assert_set_equal [], oauth.data.select(&:abstract?)
   end
 
   def test_mod
@@ -47,7 +47,9 @@ class ViewTest < Test::Unit::TestCase
   def test_fields
     assert_fields UserAgent.meta.fields, {}
     assert_fields EndUser.meta.fields,        :cred => Credential
-    assert_fields ClientServer.meta.fields,   :addr => Addr
+    assert_fields ClientServer.meta.fields,   :addr  => URI, 
+                                              :id    => ClientID,
+                                              :scope => Scope
     assert_fields AuthServer.meta.fields,     :authGrants => "Credential -> AuthGrant",
                                               :accessTokens => "AuthGrant -> AccessToken"
     assert_fields ResourceServer.meta.fields, :resources => "AccessToken -> Resource"
@@ -88,7 +90,8 @@ class ViewTest < Test::Unit::TestCase
 
   def test_UserAgent_ops
     op = UserAgent::InitFlow
-    do_test_op op, {:redirectURI => URI}, [], [{:user => EndUser}]
+    do_test_op op, {:redirect => URI, :id => ClientID, scope: Scope}, 
+                   [], [{:user => EndUser}]
     op = UserAgent::EnterCred
     do_test_op op, {:cred => Credential, :uri => URI}, [], [{:client => ClientServer}]
     op = UserAgent::Redirect
@@ -106,7 +109,7 @@ class ViewTest < Test::Unit::TestCase
     op = ClientServer::SendAccessToken
     do_test_op op, {:token => AccessToken}, [], []
     op = ClientServer::SendResource
-    do_test_op op, {:data => Payload}, [], []
+    do_test_op op, {:res => Resource}, [], []
   end
 
   def test_AuthServer_ops

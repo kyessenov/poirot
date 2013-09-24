@@ -33,8 +33,8 @@ one sig ClientServer extends Module {
 
 -- module AuthServer
 one sig AuthServer extends Module {
-	AuthServer__authGrants : Credential -> AuthGrant,
-	AuthServer__accessTokens : AuthGrant -> AccessToken,
+	AuthServer__authGrants : Credential some -> lone AuthGrant,
+	AuthServer__accessTokens : AuthGrant some -> lone AccessToken,
 }{
 	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
 	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
@@ -46,11 +46,11 @@ one sig AuthServer extends Module {
 
 -- module ResourceServer
 one sig ResourceServer extends Module {
-	ResourceServer__resources : AccessToken -> Resource,
+	ResourceServer__resources : AccessToken some -> lone Resource,
 }{
 	all o : this.receives[ResourceServer__ReqResource] | (some ResourceServer__resources[arg[o.(ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)]])
 	all o : this.sends[ClientServer__SendResource] | triggeredBy[o,ResourceServer__ReqResource]
-	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__data) = ResourceServer__resources[o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken))]
+	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__res) = ResourceServer__resources[o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken))]
 }
 
 
@@ -118,9 +118,9 @@ sig ClientServer__SendAccessToken extends Op {
 
 -- operation ClientServer__SendResource
 sig ClientServer__SendResource extends Op {
-	ClientServer__SendResource__data : lone Payload,
+	ClientServer__SendResource__res : lone Resource,
 }{
-	args = ClientServer__SendResource__data
+	args = ClientServer__SendResource__res
 	sender in ResourceServer
 	receiver in ClientServer
 }
@@ -155,7 +155,6 @@ sig ResourceServer__ReqResource extends Op {
 
 -- fact dataFacts
 fact dataFacts {
-	creates.Payload in EndUser + AuthServer + AuthServer + ResourceServer
 	creates.AuthGrant in AuthServer
 	creates.Credential in EndUser
 	creates.AccessToken in AuthServer
@@ -163,29 +162,23 @@ fact dataFacts {
 }
 
 -- datatype declarations
-abstract sig Payload extends Data {
-}{
-}
-abstract sig AuthGrant extends Payload {
-}{
-}
-sig AuthCode extends AuthGrant {
+sig AuthCode extends Data {
 }{
 	no fields
 }
-sig Credential extends Payload {
+sig AuthGrant extends Data {
 }{
 	no fields
 }
-sig AccessToken extends Payload {
+sig Credential extends Data {
 }{
 	no fields
 }
-sig Resource extends Payload {
+sig AccessToken extends Data {
 }{
 	no fields
 }
-sig OtherPayload extends Payload {
+sig Resource extends Data {
 }{
 	no fields
 }

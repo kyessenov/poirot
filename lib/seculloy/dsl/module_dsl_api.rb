@@ -5,8 +5,9 @@ require 'alloy/dsl/sig_api'
 require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
 
-require 'seculloy/dsl/trigger_helper'
 require 'seculloy/dsl/guard_helper'
+require 'seculloy/dsl/trigger_helper'
+require 'seculloy/dsl/type_mod_helper'
 require 'seculloy/model/data'
 require 'seculloy/model/operation'
 require 'seculloy/model/invocation'
@@ -18,6 +19,7 @@ module Seculloy
       include Alloy::Dsl::SigDslApi
       include Seculloy::Dsl::TriggerHelper
       include Seculloy::Dsl::GuardHelper
+      include Seculloy::Dsl::TypeModHelper
 
       alias_method :assumption, :guard
       alias_method :invokes, :sends

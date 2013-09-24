@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH << File.expand_path('../lib', __FILE__)
-$LOAD_PATH << File.expand_path('../../alloy_ruby/lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../../alloy_ruby/lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../../arby/lib', __FILE__)
 
 require 'sdsl/myutils'
 
@@ -53,7 +54,7 @@ def translate_case_study(case_study_name, out_file=nil)
   puts "Alloy file saved in #{out_file}"
 end
 
-ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF)
+ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF Paywall)
 
 if ARGV.empty? || (ARGV.size == 1 && ARGV[0] == "all")
   ALL_STUDIES.each &method(:translate_case_study)
