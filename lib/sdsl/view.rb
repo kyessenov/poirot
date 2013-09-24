@@ -379,9 +379,10 @@ def refineMod(sup, sub, exportsRel, invokesRel)
   extends = [sub]
   isAbstract = false
   isUniq = sup.isUniq  #TODO: Fix it later
+  dynamics = sup.dynamics
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
-          extends, isAbstract, isUniq)
+          extends, isAbstract, isUniq, dynamics)
 end
 
 def mergeMod(m1, m2, exportsRel, invokesRel)
@@ -395,9 +396,10 @@ def mergeMod(m1, m2, exportsRel, invokesRel)
   extends = m1
   isAbstract = false
   isUniq = m1.isUniq #TODO: Fix it later
+  dynamic = myuniq(m2.dynamics + m1.dynamics)
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
-          [], isAbstract, isUniq)
+          [], isAbstract, isUniq, dynamics)
 end
 
 def buildMapping(v1, v2, refineRel)

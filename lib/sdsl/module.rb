@@ -8,7 +8,8 @@ require 'sdsl/datatype'
 
 Mod = Struct.new(:name, :exports, :invokes, :assumptions, 
                  :stores, :creates,
-                 :extends, :isAbstract, :isUniq)
+                 :extends, :isAbstract, :isUniq,
+                 :dynamics)
 Op = Struct.new(:name, :constraints, :parent, :child)
 
 class Mod
@@ -25,7 +26,7 @@ class Mod
     Mod.new(self.name, self.exports.clone, self.invokes.clone,
             self.assumptions.clone, self.stores.clone, 
             self.creates.clone, self.extends.clone, 
-            self.isAbstract, self.isUniq)
+            self.isAbstract, self.isUniq, self.dynamics.clone)
   end
 
   def to_alloy(ctx)
@@ -104,6 +105,7 @@ class ModuleBuilder
     @extends = []
     @isAbstract = false
     @isUniq = true
+    @dynamics = []
   end
 
   def exports(op, constraints = {})   
@@ -173,9 +175,13 @@ class ModuleBuilder
     @isUniq = b
   end
 
+  def dynamics (*fields) 
+    @dynamics += fields
+  end
+
   def build name
     Mod.new(name, @exports, @invokes, @assumptions, @stores, 
-            @creates, @extends, @isAbstract, @isUniq)
+            @creates, @extends, @isAbstract, @isUniq, @dynamics)
   end
 end
 

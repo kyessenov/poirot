@@ -14,7 +14,7 @@ one sig EndUser extends Module {
 one sig UserAgent extends Module {
 }{
 	all o : this.sends[EndUser__PromptForCred] | triggeredBy[o,UserAgent__InitFlow]
-	all o : this.sends[EndUser__PromptForCred] | o.(EndUser__PromptForCred <: EndUser__PromptForCred__uri) = o.trigger.((UserAgent__InitFlow <: UserAgent__InitFlow__redirectURI))
+	all o : this.sends[EndUser__PromptForCred] | o.(EndUser__PromptForCred <: EndUser__PromptForCred__uri) = o.trigger.((UserAgent__InitFlow <: UserAgent__InitFlow__redirect))
 	all o : this.sends[AuthServer__ReqAuth] | triggeredBy[o,UserAgent__EnterCred]
 	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__cred))
 	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__uri) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__uri))
@@ -24,9 +24,11 @@ one sig UserAgent extends Module {
 
 -- module ClientServer
 one sig ClientServer extends Module {
-	ClientServer__addr : lone Addr,
+	ClientServer__addr : lone URI,
+	ClientServer__id : lone ClientID,
+	ClientServer__scope : lone Scope,
 }{
-	all o : this.sends[UserAgent__InitFlow] | o.(UserAgent__InitFlow <: UserAgent__InitFlow__redirectURI) = ClientServer__addr
+	all o : this.sends[UserAgent__InitFlow] | o.(UserAgent__InitFlow <: UserAgent__InitFlow__redirect) = ClientServer__addr
 }
 
 -- module AuthServer
@@ -37,7 +39,7 @@ one sig AuthServer extends Module {
 	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
 	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
 	all o : this.sends[UserAgent__Redirect] | triggeredBy[o,AuthServer__ReqAuth]
-	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & AuthServer__authGrants[o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred))])))
+	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri) = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)) and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri) & AuthServer__authGrants[o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred))])))
 	all o : this.sends[ClientServer__SendAccessToken] | triggeredBy[o,AuthServer__ReqAccessToken]
 	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = AuthServer__accessTokens[o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant))]
 }
@@ -68,9 +70,11 @@ sig EndUser__PromptForCred extends Op {
 
 -- operation UserAgent__InitFlow
 sig UserAgent__InitFlow extends Op {
-	UserAgent__InitFlow__redirectURI : lone URI,
+	UserAgent__InitFlow__redirect : lone URI,
+	UserAgent__InitFlow__id : lone ClientID,
+	UserAgent__InitFlow__scope : lone Scope,
 }{
-	args = UserAgent__InitFlow__redirectURI
+	args = UserAgent__InitFlow__redirect + UserAgent__InitFlow__id + UserAgent__InitFlow__scope
 	sender in ClientServer
 	receiver in UserAgent
 }
@@ -185,15 +189,17 @@ sig OtherPayload extends Payload {
 }{
 	no fields
 }
-sig Addr extends Data {
+sig ClientID extends Data {
+}{
+	no fields
+}
+sig Scope extends Data {
 }{
 	no fields
 }
 sig URI extends Data {
-	URI__addr : lone Addr,
-	URI__params : set Payload,
 }{
-	fields = URI__addr + URI__params
+	no fields
 }
 sig OtherData extends Data {}{ no fields }
 

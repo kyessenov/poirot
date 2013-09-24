@@ -3,16 +3,14 @@ require 'seculloy/seculloy_dsl'
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OAuth do
-  abstract data Payload
-  abstract data AuthGrant < Payload
 
-  data AuthCode     < AuthGrant
-  data Credential   < Payload
-  data AccessToken  < Payload
-  data Resource     < Payload
-  data OtherPayload < Payload
-  data Addr
-  data URI[addr: Addr, params: (set Payload)]
+  data AuthCode
+  data Credential
+  data AccessToken
+  data Resource
+  data ClientID
+  data Scope
+  data URI
 
   critical Resource
 
@@ -27,8 +25,8 @@ Seculloy::Dsl.view :OAuth do
   end
 
   trusted UserAgent do
-    operation InitFlow[redirectURI: URI] do
-      sends { EndUser::PromptForCred[redirectURI] }
+    operation InitFlow[redirect: URI, id: ClientID, scope: Scope] do
+      sends { EndUser::PromptForCred[redirect] }
     end
 
     operation EnterCred[cred: Credential, uri: URI] do
@@ -41,11 +39,13 @@ Seculloy::Dsl.view :OAuth do
   end
 
   trusted ClientServer, {
-    addr: Addr
+    addr: URI,
+    id: ClientID,
+    scope: Scope
   } do
     operation SendAuthResp[uri: URI]
     operation SendAccessToken[token: AccessToken]
-    operation SendResource[data: Payload]
+    operation SendResource[res: Resource]
 
     sends { UserAgent::InitFlow[addr] }
     sends { ResourceServer::ReqResource }
@@ -63,8 +63,8 @@ Seculloy::Dsl.view :OAuth do
 
       sends {
         UserAgent::Redirect() { |redirect|
-          redirect.uri.addr == uri.addr &&
-          authGrants[cred].in?(redirect.uri.params)
+          redirect.uri == uri and
+          authGrants[cred].in?(redirect.uri)
         }
       }
     end
