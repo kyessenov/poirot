@@ -17,7 +17,7 @@ Seculloy::Dsl.view :OAuth do
   critical Resource
 
   trusted EndUser, {
-    cred: Credential
+    cred: (dynamic set Credential)
   } do
     creates Credential
 

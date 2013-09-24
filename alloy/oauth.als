@@ -3,7 +3,7 @@ open models/crypto[Data]
 
 -- module EndUser
 one sig EndUser extends Module {
-	EndUser__cred : lone Credential,
+	EndUser__cred : set Credential,
 }{
 	all o : this.sends[UserAgent__EnterCred] | triggeredBy[o,EndUser__PromptForCred]
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__cred) = EndUser__cred
