@@ -1,5 +1,5 @@
 require 'seculloy/seculloy_dsl'
-  
+
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :OAuth do
@@ -16,7 +16,7 @@ Seculloy::Dsl.view :OAuth do
   critical Resource
 
   trusted EndUser, {
-    cred: (dynamic set Credential)
+    cred: Credential
   } do
     creates Credential
 

@@ -54,7 +54,7 @@ def translate_case_study(case_study_name, out_file=nil)
   puts "Alloy file saved in #{out_file}"
 end
 
-ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF)
+ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF Paywall)
 
 if ARGV.empty? || (ARGV.size == 1 && ARGV[0] == "all")
   ALL_STUDIES.each &method(:translate_case_study)

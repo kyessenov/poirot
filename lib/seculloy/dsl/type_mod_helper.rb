@@ -1,3 +1,5 @@
+require 'alloy/ast/types'
+
 module Seculloy
   module Dsl
 
@@ -8,7 +10,7 @@ module Seculloy
     # ================================================================
     module TypeModHelper
       extend self
-      def dynamic(type)  type.apply_modifier(:dynamic) end
+      def dynamic(type)  Alloy::Ast::AType.get(type).apply_modifier(:dynamic) end
     end
 
   end

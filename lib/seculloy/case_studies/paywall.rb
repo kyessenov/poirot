@@ -6,43 +6,40 @@ Seculloy::Dsl.view :Paywall do
 
   data Article
   data ArticleID
-  abstract data Number 
+  abstract data Number
   data BelowLimit < Number
   data AboveLimit < Number
 
   critical Article
 
-  trusted NYTimes {
+  trusted NYTimes [
     articles: ArticleID ** Article
-  } do 
+  ] do
     creates Article
- 
-    operation GetArticle[articleID: ArticleID, numAccessed: Number] do 
+
+    operation GetArticle[articleID: ArticleID, numAccessed: Number] do
       guard { numAccessed.in?(BelowLimit) }
       sends { Browser::SendArticle[articles[articleID]] }
     end
   end
 
-  trusted Browser, {
-    numAccessed: Number
-  } do
-    
-    # doesn't work
-    #dynamic numAccessed
+  trusted Browser [
+    numAccessed: (dynamic Number)
+  ] do
 
-    operation SendArticle[article: Article] do     
+    operation SendArticle[article: Article] do
       sends { Reader::Display[article] }
     end
-    
+
     operation SelectArticle[articleID: ArticleID] do
       sends { NYTimes::GetArticle[articleID, numAccessed] }
     end
   end
 
-  mod Reader, {} do
+  mod Reader do
     operation Display[article: Article] do end
-    
-    sends { Browser::SelectArticle }    
+
+    sends { Browser::SelectArticle }
   end
 
 end
