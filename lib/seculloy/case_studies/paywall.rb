@@ -24,7 +24,7 @@ Seculloy::Dsl.view :Paywall do
   end
 
   trusted Browser, {
-    numAccessed: Number
+    numAccessed: (dynamic Number)
   } do
     
     # doesn't work
