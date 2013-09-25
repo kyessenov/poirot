@@ -77,8 +77,12 @@ class Mod
     end
 
     # fields      
-    fields.each do |f|
-      alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
+    fields.each do |f|      
+      if dynamics.map{|e| "#{name}__#{e}"}.include? f.name
+        alloyChunk += wrap(f.dynamic.to_alloy(ctx) + ",", 1)
+      else
+        alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
+      end
     end
     alloyChunk += "}"
     # signature facts

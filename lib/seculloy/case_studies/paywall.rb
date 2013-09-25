@@ -24,21 +24,21 @@ Seculloy::Dsl.view :Paywall do
   end
 
   trusted Browser [
-    numAccessed: (dynamic Number)
+    numAccessed: Number
   ] do
 
-    operation SendArticle[article: Article] do
-      sends { Reader::Display[article] }
-    end
+    operation SendArticle[article: Article] do end
 
     operation SelectArticle[articleID: ArticleID] do
       sends { NYTimes::GetArticle[articleID, numAccessed] }
     end
+    
+    sends { Reader::Display }
+
   end
 
   mod Reader do
     operation Display[article: Article] do end
-
     sends { Browser::SelectArticle }
   end
 

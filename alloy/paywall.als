@@ -14,8 +14,6 @@ one sig NYTimes extends Module {
 one sig Browser extends Module {
 	Browser__numAccessed : lone Number,
 }{
-	all o : this.sends[Reader__Display] | triggeredBy[o,Browser__SendArticle]
-	all o : this.sends[Reader__Display] | o.(Reader__Display <: Reader__Display__article) = o.trigger.((Browser__SendArticle <: Browser__SendArticle__article))
 	all o : this.sends[NYTimes__GetArticle] | triggeredBy[o,Browser__SelectArticle]
 	all o : this.sends[NYTimes__GetArticle] | o.(NYTimes__GetArticle <: NYTimes__GetArticle__articleID) = o.trigger.((Browser__SelectArticle <: Browser__SelectArticle__articleID))
 	all o : this.sends[NYTimes__GetArticle] | o.(NYTimes__GetArticle <: NYTimes__GetArticle__numAccessed) = Browser__numAccessed

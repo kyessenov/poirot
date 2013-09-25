@@ -47,8 +47,10 @@ def translate_case_study(case_study_name, out_file=nil)
   fail "Case study view class not found: #{case_study_name}" unless view
 
   out_file ||= "alloy/#{case_study_name.downcase}.als"
+  dot_out_file ||= "alloy/#{case_study_name.downcase}.dot"
 
   sdsl_view = view.meta.to_sdsl
+  drawView(sdsl_view, dot_out_file)
   dumpAlloy(sdsl_view, out_file)
 
   puts "Alloy file saved in #{out_file}"
