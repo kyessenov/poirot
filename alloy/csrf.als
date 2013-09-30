@@ -88,7 +88,6 @@ sig Client__HttpResp extends Op {
 
 -- fact dataFacts
 fact dataFacts {
-	creates.Payload in TrustedServer + TrustedServer + MaliciousServer
 	creates.Cookie in TrustedServer
 	creates.DOM in TrustedServer + MaliciousServer
 }

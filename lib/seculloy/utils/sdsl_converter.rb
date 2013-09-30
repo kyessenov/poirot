@@ -209,6 +209,10 @@ module Seculloy
           else
             target.contains(arg)
           end
+        when Alloy::Ast::Fun
+          target = convert_expr(ce.target)
+          lhs = target.join(ae _fun_name ce.fun)
+          FuncApp.new(lhs, *ce.args.map(&method(:convert_expr)))
         else
           fail "unknown method call: #{ce.fun}"
         end
@@ -308,6 +312,9 @@ module Seculloy
         else
           raise ArgumentError, "not an Arg: #{arg}:#{arg.class}"
         end
+      end
+      def _fun_name(fun)
+        "#{_sig_name(fun.owner)}___#{fun.name}"
       end
 
       def evis()
