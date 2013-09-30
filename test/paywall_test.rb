@@ -6,9 +6,9 @@ $LOAD_PATH.unshift File.expand_path('../../../arby/lib', __FILE__)
 
 require 'sdsl/myutils'
 
-require "seculloy/case_studies/paywall"
-require "seculloy/case_studies/http"
-require "seculloy/case_studies/referer"
+require "seculloy/case_studies/paywall/paywall"
+require "seculloy/case_studies/paywall/http"
+require "seculloy/case_studies/paywall/referer"
 
 def dump(view, name)
   dumpAlloy(view, "../alloy/#{name}.als")
@@ -23,21 +23,21 @@ dump(http_view, "http")
 
 mv = composeViews(paywall_view, http_view,
                   :Module => {
-                   	 "NYTimes" => "Server",
-                  	  "Browser" => "Client"
+                    "NYTimes" => "Server",
+                    "Browser" => "Client"
                   },
                   :Exports => {
-              		"NYTimes__GetArticle" => "Server__SendReq",
-              		"Browser__SendArticle" => "Client__SendResp"
+                    "NYTimes__GetArticle" => "Server__SendReq",
+                    "Browser__SendArticle" => "Client__SendResp"
                   }, 
                   :Invokes => {
-                	"NYTimes__GetArticle" => "Server__SendReq",
-                	"Browser__SendArticle" => "Client__SendResp"
+#                	"NYTimes__GetArticle" => "Server__SendReq",
+#                	"Browser__SendArticle" => "Client__SendResp"
                   },
                   :Data => {
-                    	"Article" => "Str",
-                	"ArticleID" => "Str",
-                    	"Number" => "Str"
+                    "Article" => "Str",
+                    "ArticleID" => "Str",
+                    "Number" => "Str"
                   })
 
 dump(mv, "merged")

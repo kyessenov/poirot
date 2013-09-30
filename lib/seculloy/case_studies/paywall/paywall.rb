@@ -27,13 +27,13 @@ Seculloy::Dsl.view :Paywall do
     numAccessed: Number
   ] do
 
-    operation SendArticle[article: Article] do end
+    operation SendArticle[article: Article] do 
+      sends { Reader::Display[article] }
+    end
 
     operation SelectArticle[articleID: ArticleID] do
       sends { NYTimes::GetArticle[articleID, numAccessed] }
     end
-    
-    sends { Reader::Display }
 
   end
 

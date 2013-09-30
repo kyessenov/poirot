@@ -21,6 +21,7 @@ Seculloy::Dsl.view :NYT do
 
   trusted NYTUser do
     operation SendArticle[article: Article]
+    sends { NYTimes::GetArticle }
   end
 end
 
@@ -41,5 +42,6 @@ Seculloy::Dsl.view :WP do
 
   trusted WPUser do
     operation SendArticle[n: News]
+    sends { WPost::GetLatestNews }
   end
 end

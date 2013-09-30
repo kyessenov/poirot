@@ -15,10 +15,6 @@ class View
     (data.select { |d| d.name == s})[0]
   end
 
-  def findModsWithExport n
-    (modules.select { |m| m.exports.any? { |e| e.name == n }})
-  end
-
   def to_alloy
     # type: opname -> list(modules)
     invokers = {}
@@ -28,6 +24,7 @@ class View
     creators = {}
     decls = {}  # declarations
     sigfacts = {} # signature facts 
+    parentOps = [] # parent operations
     fields = {}     
 
     # for pretty printing purposes only
@@ -52,7 +49,8 @@ class View
         
         if o.parent
           decls[n] = o.parent.name.to_s
-        else 
+          parentOps << o.parent.name.to_s
+        else
           decls[n] = "Op"
         end
 
@@ -87,11 +85,11 @@ class View
       m.creates.each do |d|
         if not creators.has_key? d then creators[d] = [] end
         creators[d] << modn
-        superdata = findData(d).extends
-        if not superdata == :Data
-          if not creators.has_key? superdata then creators[superdata] = [] end
-          creators[superdata] << modn
-        end
+        # superdata = findData(d).extends
+        # if not superdata == :Data
+        #   if not creators.has_key? superdata then creators[superdata] = [] end
+        #   creators[superdata] << modn
+        # end
       end
     end
 
@@ -126,7 +124,10 @@ class View
 
     # write op declarations
     decls.each do |k, v|
-      alloyChunk += writeComment("operation #{k}")
+      alloyChunk += writeComment("operation #{k}")     
+      if parentOps.include? k
+        alloyChunk += "abstract "
+      end
       alloyChunk += wrap("sig " + k + " extends " + v + " {")
       # fields      
       fields[k].each do |f|
@@ -546,11 +547,36 @@ def merge(v1, v2, mapping, refineRel)
         o.parent.child = true
       end
     end
+
+    m.invokes.each do |o1|
+      if m.extends[0]
+        m.extends[0].invokes.each do |o2|        
+          emod1 = (findModsWithExport(modules, o1.name))[0]
+          eop1 = emod1.findExport o1.name
+          if eop1.parent and eop1.parent.name == o2.name
+            if o1.constraints[:when].empty? or o2.constraints[:when].empty?
+              newConstraints = []
+            else               
+              newConstraints =  union(o1.constraints[:when], 
+                                      o2.constraints[:when])
+            end
+            o1.constraints = 
+              {:args => o1.constraints[:args],
+              :when => newConstraints}
+          end
+        end
+      end
+    end
   end
 
   View.new(:MergedView, modules, trusted, data, v1.critical, 
            assumptions, v1.protected, ctx)
 end
+
+def findModsWithExport(modules, n)
+  (modules.select { |m| m.exports.any? { |e| e.name == n }})
+end
+
 
 def composeViews(v1, v2, refineRel = {})
   puts "*** Attempting to merge #{v1.name} and #{v2.name} ***:"
