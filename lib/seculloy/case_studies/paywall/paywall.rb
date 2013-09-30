@@ -34,7 +34,6 @@ Seculloy::Dsl.view :Paywall do
     operation SelectArticle[articleID: ArticleID] do
       sends { NYTimes::GetArticle[articleID, numAccessed] }
     end
-
   end
 
   mod Reader do

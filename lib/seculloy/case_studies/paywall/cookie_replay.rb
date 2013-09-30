@@ -31,14 +31,14 @@ Seculloy::Dsl.view :CookieReplay do
       sends { User::Display[cookies[addr]] }
     end
 
-    operation SendResponse[headers: AMap, body: Str] do 
+    operation SendResp[headers: AMap, body: Str] do 
       sends { User::Display[body] }
     end
     
     operation Visit[url: URL] do
       sends { Server::SendReq() { |op|
-          op.url == url and
-          op.headers.get(NameCookie) == cookies[url.addr]
+          op.url == url #and
+#          op.headers.get(NameCookie) == cookies[url.addr]
         }
       }
     end
@@ -48,7 +48,7 @@ Seculloy::Dsl.view :CookieReplay do
     session: URL ** Cookie
   ] do
     operation SendReq[url: URL, headers: AMap] do      
-      sends { Client::SendResponse }
+      sends { Client::SendResp }
     end
   end
 
