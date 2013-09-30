@@ -8,12 +8,13 @@ Seculloy::Dsl.view :CookieReplay do
   data Addr < Str
   data Name < Str
   data Pair[n: Name, v: Str] < Str
-  data AMap[entries: (set Pair)] < Str do
-    fun get[k: Name] do
-      {e : entries | e.n == k}.v
-    end
-      #entries.select {|p| p.n == k }
-  end
+  data AMap[entries: (set Pair)] < Str 
+  # do
+  #   fun get[k: Name] do
+  #     {e : entries | e.n == k}.v
+  #   end
+  #     #entries.select {|p| p.n == k }
+  # end
 
   data URL[addr: Addr, queries: AMap] < Str
   data Cookie[domain: Addr, content: Pair] < Str
@@ -32,14 +33,14 @@ Seculloy::Dsl.view :CookieReplay do
       sends { User::Display[cookies[addr]] }
     end
 
-    operation SendResponse[headers: AMap, body: Str] do 
+    operation SendResp[headers: AMap, body: Str] do 
       sends { User::Display[body] }
     end
     
     operation Visit[url: URL] do
       sends { Server::SendReq() { |op|
-          op.url == url and
-          op.headers.get(NameCookie) == cookies[url.addr]
+          op.url == url #and
+#          op.headers.get(NameCookie) == cookies[url.addr]
         }
       }
     end
@@ -49,7 +50,7 @@ Seculloy::Dsl.view :CookieReplay do
     session: URL ** Cookie
   ] do
     operation SendReq[url: URL, headers: AMap] do      
-      sends { Client::SendResponse }
+      sends { Client::SendResp }
     end
   end
 

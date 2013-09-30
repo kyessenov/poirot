@@ -4,7 +4,7 @@
 require 'sdsl/module.rb'
 
 View = Struct.new(:name, :modules, :trusted, :data, :critical, :assumptions,
-                  :protected, :ctx)
+                  :protected, :ctx, :appendix)
 
 class View
   def findMod s
@@ -182,8 +182,17 @@ class View
       alloyChunk += writeFacts("assumptions", 
                                assumptions.map { |a| a.to_alloy(ctx)})
     end
+      
+    # append any other extra Alloy expressions
+    appendix.each do |a|
+      alloyChunk += a
+    end
    
     alloyChunk
+  end
+
+  def appendFun f
+    appendix << f
   end
   # View
 end
@@ -197,6 +206,7 @@ class ViewBuilder
     @assumptions = []
     @protected = []
     @ctx = {}
+    @appendix = []
   end
   
   def data(*data)
@@ -247,7 +257,7 @@ class ViewBuilder
   def build name
     checkWellformedness
     View.new(name, @modules, @trusted, @data, @critical, @assumptions, 
-             @protected, @ctx)
+             @protected, @ctx, @appendix)
   end
 end
 
@@ -570,7 +580,7 @@ def merge(v1, v2, mapping, refineRel)
   end
 
   View.new(:MergedView, modules, trusted, data, v1.critical, 
-           assumptions, v1.protected, ctx)
+           assumptions, v1.protected, ctx, v1.appendix + v2.appendix)
 end
 
 def findModsWithExport(modules, n)

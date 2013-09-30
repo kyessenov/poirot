@@ -24,18 +24,35 @@ dump(paywall_view, "paywall")
 dump(http_view, "http")
 dump(cookie_replay_view, "cookie_replay")
 
-mv = composeViews(paywall_view, http_view,
+# mv = composeViews(paywall_view, http_view,
+#                   :Module => {
+#                     "NYTimes" => "Server",
+#                     "Browser" => "Client"
+#                   },
+#                   :Exports => {
+#                     "NYTimes__GetArticle" => "Server__SendReq",
+#                     "Browser__SendArticle" => "Client__SendResp"
+#                   }, 
+#                   :Invokes => {
+#                   },
+#                   :Data => {
+#                     "Article" => "Str",
+#                     "ArticleID" => "Str",
+#                     "Number" => "Str"
+#                   })
+
+mv = composeViews(paywall_view, cookie_replay_view,
                   :Module => {
                     "NYTimes" => "Server",
-                    "Browser" => "Client"
+                    "Browser" => "Client",
+                    "Reader" => "User"
                   },
                   :Exports => {
                     "NYTimes__GetArticle" => "Server__SendReq",
-                    "Browser__SendArticle" => "Client__SendResp"
+                    "Browser__SendArticle" => "Client__SendResp",
+                    "Browser__SelectArticle" => "Client__Visit"
                   }, 
                   :Invokes => {
-#                	"NYTimes__GetArticle" => "Server__SendReq",
-#                	"Browser__SendArticle" => "Client__SendResp"
                   },
                   :Data => {
                     "Article" => "Str",
