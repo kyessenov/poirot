@@ -3,20 +3,22 @@ require 'seculloy/seculloy_dsl'
 include Seculloy::Dsl
 
 Seculloy::Dsl.view :CookieReplay do
-  data Cookie[domain: Addr, content: Pair]
+
+  abstract data Str
   data Addr < Str
   data Name < Str
   data Value < Str
-  data Pair[n: Name, v: Value] 
-  data URL[addr: Addr, queries: (set Pair)]
-  data Str
+  data Pair[n: Name, v: Value] < Str
+  data URL[addr: Addr, queries: (set Pair)] < Str
+  data Cookie[domain: Addr, content: Pair] < Str
 
-  trusted Client {
-    cookies : Addr ** Cookie
-  } do
+  trusted Client [
+    cookies: Addr ** Cookie
+  ] do
     creates Cookie
 
-    operation SetCookie[addr: Addr, cookie: Cookie] do
+    operation SetCookie[addr: Addr, cookie: Cookie] do      
+      guard { cookies[addr] == cookie }
     end
 
     operation GetCookie[addr: Addr] do
@@ -29,16 +31,16 @@ Seculloy::Dsl.view :CookieReplay do
   end
 
 
-  trusted Server {
-    session : URL ** Cookie
-  } do
+  trusted Server [
+    session: URL ** Cookie
+  ] do
     operation SendReq[url: URL, headers: (set Pair)] do      
-      sends { SendResponse }
+      sends { Client::SendResponse }
     end
   end
 
   mod User do
-    operation DisplayCookies[text : Str] do end
+    operation Display[text: Str] do end
   end
 
 end

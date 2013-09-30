@@ -9,6 +9,7 @@ require 'sdsl/myutils'
 require "seculloy/case_studies/paywall/paywall"
 require "seculloy/case_studies/paywall/http"
 require "seculloy/case_studies/paywall/referer"
+require "seculloy/case_studies/paywall/cookie_replay"
 
 def dump(view, name)
   dumpAlloy(view, "../alloy/#{name}.als")
@@ -17,9 +18,11 @@ end
 
 paywall_view = eval("Paywall").meta.to_sdsl
 http_view = eval("HTTP").meta.to_sdsl
+cookie_replay_view = eval("CookieReplay").meta.to_sdsl
 
 dump(paywall_view, "paywall")
 dump(http_view, "http")
+dump(cookie_replay_view, "cookie_replay")
 
 mv = composeViews(paywall_view, http_view,
                   :Module => {
