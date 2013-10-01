@@ -24,7 +24,7 @@ class View
     creators = {}
     decls = {}  # declarations
     sigfacts = {} # signature facts 
-    parentOps = [] # parent operations
+    abstractOps = [] # parent operations
     fields = {}     
 
     # for pretty printing purposes only
@@ -46,10 +46,13 @@ class View
       # exports
       m.exports.each do |o|
         n = o.name.to_s
-        
+                
         if o.parent
-          decls[n] = o.parent.name.to_s
-          parentOps << o.parent.name.to_s
+          p = o.parent.name.to_s
+          if o.parent.isAbstract 
+            abstractOps << p
+          end       
+          decls[n] = p
         else
           decls[n] = "Op"
         end
@@ -125,8 +128,8 @@ class View
     # write op declarations
     decls.each do |k, v|
       alloyChunk += writeComment("operation #{k}")     
-      if parentOps.include? k
-        alloyChunk += "abstract "
+      if abstractOps.include? k
+         alloyChunk += "abstract "
       end
       alloyChunk += wrap("sig " + k + " extends " + v + " {")
       # fields      
@@ -282,10 +285,14 @@ def refineExports(sup, sub, exportsRel)
     if exportsRel.has_key? n 
       matches = sub.exports.select { |o2| o2.name == exportsRel[n] }      
       if not matches.empty?
-        o2 = matches[0]   
+        o2 = matches[0].clone
         exports << Op.new(n, 
                           {:when => (o.constraints[:when]),
-                            :args => (o.constraints[:args])}, o2, nil)
+                            :args => (o.constraints[:args])}, o2, 
+                          nil, false)
+        if exportsRel.has_key? o2.name
+          o2.isAbstract = true
+        end
 # TODO: Is this right? Too weak?       
 #        subExports.delete(o2)
         next
@@ -309,7 +316,7 @@ def refineInvokes(sup, sub, invokesRel)
         o2 = matches[0]    
         invokes << Op.new(n, 
                           {:when => (o.constraints[:when])},
-                          o2, nil)  
+                          o2, nil, false)  
 # TODO: Is this right? Too weak?        
 #        subInvokes.delete(o2)
         next
@@ -334,7 +341,9 @@ def abstractExports(m1, m2, exportsRel)
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when]),
                             :args => myuniq(o.constraints[:args] + 
-                                            o2.constraints[:args])}, nil, nil)
+                                            o2.constraints[:args])}, 
+                          nil, nil,
+                          false)
         m2Exports.delete(o2)
         next
       end
@@ -360,7 +369,8 @@ def abstractInvokes(m1, m2, invokesRel)
         invokes << Op.new(n, #mkMixedName(n, o2.name),
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when])},
-                          nil, nil)
+                          nil, nil,
+                          false)
         m2Invokes.delete(o2)
         next
       end
@@ -564,6 +574,10 @@ def merge(v1, v2, mapping, refineRel)
           emod1 = (findModsWithExport(modules, o1.name))[0]
           eop1 = emod1.findExport o1.name
           if eop1.parent and eop1.parent.name == o2.name
+            if o1.parent and o1.parent.name == eop1.parent.name
+              next
+            end
+
             if o1.constraints[:when].empty? or o2.constraints[:when].empty?
               newConstraints = []
             else               

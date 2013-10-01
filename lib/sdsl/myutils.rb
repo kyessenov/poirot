@@ -11,6 +11,8 @@ DOT_FILE = "out.dot"
 ALLOY_FILE = "out.als"
 FONTNAME = "courier"
 UNIT = "UNIT"
+SUPER_COLOR="gold"
+CHILD_COLOR="beige"
 UNIVERSAL_FIELDS = ["trigger"]
 ALLOY_CMDS = "
 fun RelevantOp : Op -> Step {
@@ -83,16 +85,34 @@ def writeFacts(fname, facts)
   end
 end
 
-def dotModule m
-  "#{m.name} [shape=component];"
+def dotModule (m, color=nil)
+  if m.extends.empty? 
+    "#{m.name} [shape=component,style=\"filled\",color=\"#{color}\"];"
+  else     
+    "#{m.name}_#{m.extends[0].name} [shape=component," +
+      "label=\n" +
+      "<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n" +
+      "<TR><TD BGCOLOR=\"#{CHILD_COLOR}\">#{m.name}</TD></TR>\n" +
+      "<TR><TD BGCOLOR=\"#{SUPER_COLOR}\">#{m.extends[0].name}</TD></TR>\n" +
+      "</TABLE>>];\n"
+  end
 end
 
-def dotOpName(m, o)
-  "#{m.name}_#{o.name}"
+def dotOpName(mname, o)
+  "#{mname}_#{o.name}"
 end
 
-def dotOp(m, o)
-  "#{dotOpName(m, o)} [label=\"#{o.name}\",shape=rectangle,style=\"rounded\"];"
+def dotOp(mname, o, color=nil)
+  abridged = "#{o.name}"[o.name.to_s.index("__") + 2..-1]
+  "#{dotOpName(mname, o)} [label=\"#{abridged}\",shape=rectangle,fillcolor=\"#{color}\",style=\"filled,rounded\"];"
+end
+
+def mkModname m
+  if m.extends.empty?
+    "#{m.name}"
+  else
+    "#{m.name}_#{m.extends[0].name}"
+  end
 end
 
 def writeDot(mods, dotFile)
@@ -101,22 +121,76 @@ def writeDot(mods, dotFile)
   f.puts 'graph[fontname="' + FONTNAME + '", splines=true, concentrate=true];'
   f.puts 'node[fontname="' + FONTNAME + '"];'
   f.puts 'edge[fontname="' + FONTNAME + '", len=1.0];'
+
+  # type: mod -> list str
+  modnames = {}
   mods.each do |m|
+    if m.isAbstract
+      next
+    end
+    if not m.extends.empty?
+      parent = m.extends[0].name
+      n = "#{m.name}_#{m.extends[0].name}"
+      modnames[m.name] = [n]
+      if not modnames[parent] then modnames[parent] = [] end
+      modnames[parent] << n
+    else
+      modnames[m.name] = [m.name.to_s]
+    end
+  end
+
+  mods.each do |m|
+    # if m.extends and not m.extends.empty?
+    #   puts "#{m.name} extends #{m.extends[0].name}"
+    # else 
+    #   puts m.name
+    # end
+    if m.isAbstract
+      next
+    end       
+    mname = modnames[m.name][0]
+
+    # draw incoming connections
     f.puts "subgraph cluster_#{m.name} { "
     f.puts "style=filled; color=lightgrey;"
     f.puts(dotModule m)
     m.exports.each do |e|
-      f.puts(dotOp(m, e))
-      f.puts("#{m.name} -> #{dotOpName(m, e)} [style=dashed,dir=none];")
+      f.puts(dotOp(mname, e, CHILD_COLOR))
+      f.puts("#{mname} -> #{dotOpName(mname, e)} [style=dashed,dir=none];")
+    end
+    # draw incoming connections for module that m extends, if any
+    if not m.extends.empty?
+      parent = m.extends[0]
+      parent.exports.each do |e|
+        f.puts(dotOp(mname, e, SUPER_COLOR))
+        f.puts("#{mname} -> #{dotOpName(mname, e)} [style=dashed,dir=none];")
+      end
     end
     f.puts "}"
+
+    # draw outgoing connections
     m.invokes.each do |i|
       mods.each do |m2|
         if m2.exports.any? { |i2| i2.name == i.name}
-          f.puts("#{m.name} -> #{dotOpName(m2, i)};")
+          m2name = modnames[m2.name][0]          
+          f.puts("#{mname} -> #{dotOpName(m2name, i)};")
         end
       end
     end
+    # draw outgoing connections for module that m extends
+    if not m.extends.empty?
+      parent = m.extends[0]
+      parent.invokes.each do |i|
+        mods.each do |m2|
+          if m2.exports.any? { |i2| i2.name == i.name}
+            modnames[m2.name].each do | m2name |
+              f.puts("#{mname} -> #{dotOpName(m2name, i)};")
+            end
+          end
+        end
+      end
+    end    
+    
   end
   f.puts "}"
   f.close

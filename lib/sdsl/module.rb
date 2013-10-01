@@ -10,7 +10,7 @@ Mod = Struct.new(:name, :exports, :invokes, :assumptions,
                  :stores, :creates,
                  :extends, :isAbstract, :isUniq,
                  :dynamics)
-Op = Struct.new(:name, :constraints, :parent, :child)
+Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract)
 
 class Mod
 
@@ -114,7 +114,7 @@ class ModuleBuilder
 
   def exports(op, constraints = {})   
     if constraints.empty?
-      @exports << Op.new(op, {:when => [], :args => []})
+      @exports << Op.new(op, {:when => [], :args => []}, nil, nil, false)
     else
       if not constraints.has_key? :args
         constraints[:args] = []
@@ -122,7 +122,7 @@ class ModuleBuilder
       if not constraints.has_key? :when
         constraints[:when] = []
       end
-      @exports << Op.new(op, constraints)
+      @exports << Op.new(op, constraints, nil, nil, false)
     end
   end
 
@@ -136,14 +136,14 @@ class ModuleBuilder
 
     opnames.each do |o|    
       if constraints.empty?
-        @invokes << Op.new(o, :when => []) 
+        @invokes << Op.new(o, {:when => []}, nil, nil, false)
       else 
         if not constraints.has_key? :when
           constraints[:when] = []
         end
-        @invokes << Op.new(o, constraints)
+        @invokes << Op.new(o, constraints, nil, nil, false)
       end
-    end    
+    end
   end
 
   def exports_ops(*ops) @exports += ops end

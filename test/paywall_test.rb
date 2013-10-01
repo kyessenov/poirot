@@ -50,9 +50,11 @@ mv = composeViews(paywall_view, cookie_replay_view,
                   :Exports => {
                     "NYTimes__GetArticle" => "Server__SendReq",
                     "Browser__SendArticle" => "Client__SendResp",
+                  #  "Client__SendResp" => "Browser__SendArticle",
                     "Browser__SelectArticle" => "Client__Visit"
                   }, 
                   :Invokes => {
+                    "Browser__SendArticle" => "Client__SendResp"
                   },
                   :Data => {
                     "Article" => "Str",
