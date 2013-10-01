@@ -1,3 +1,5 @@
+require 'alloy/utils/alloy_printer'
+
 require 'sdg_utils/visitors/visitor'
 
 require 'sdsl/datatype'
@@ -30,7 +32,14 @@ module Seculloy
         # set trusted modules
         vb.trusted *view.modules.select(&:trusted?).map(&method(:convert_module))
 
-        vb.build(view.name)
+        ans = vb.build(view.name)
+
+        # add alloy funs
+        all_sigs = view.data
+        all_funs = all_sigs.map{|s| s.meta.all_funs}.flatten
+        ans.appendFun all_funs.map(&method(:to_als)).join("\n ")
+
+        ans
       end
 
       # @param data [Class(? < Seculloy::Model::Data)]
@@ -209,6 +218,10 @@ module Seculloy
           else
             target.contains(arg)
           end
+        when Alloy::Ast::Fun
+          target = convert_expr(ce.target)
+          lhs = target.join(ae _fun_name ce.fun)
+          FuncApp.new(lhs, *ce.args.map(&method(:convert_expr)))
         else
           fail "unknown method call: #{ce.fun}"
         end
@@ -284,6 +297,16 @@ module Seculloy
 
       protected
 
+      def to_als(*args)
+        ans = Alloy::Utils::AlloyPrinter.new({
+          :sig_namer => method(:_sig_name).to_proc,
+          :fun_namer => method(:_fun_name).to_proc,
+          :arg_namer => method(:_arg_name).to_proc
+        }).export_to_als(*args)
+        binding.pry
+        ans
+      end
+
       def _sig_name(sig_cls)
         case
         when sig_cls == Seculloy::Model::Operation; "Op"
@@ -308,6 +331,9 @@ module Seculloy
         else
           raise ArgumentError, "not an Arg: #{arg}:#{arg.class}"
         end
+      end
+      def _fun_name(fun)
+        "#{_sig_name(fun.owner)}___#{fun.name}"
       end
 
       def evis()

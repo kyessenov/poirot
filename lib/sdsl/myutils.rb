@@ -464,18 +464,19 @@ def e(e)
 end
 
 class FuncApp < Expr
-  def initialize(f, e)
+  def initialize(f, *e)
     @f = f
     @e = e
   end
   def to_s
-    "#{@f.to_s}[#{@e.to_s}]"
+    args = @e.map(&:to_s).join(', ')
+    "#{@f.to_s}[#{args}]"
   end
   def to_alloy(ctx=nil)
-    @f.to_alloy(ctx) + "[" + @e.to_alloy(ctx) +"]"
+    @f.to_alloy(ctx) + "[" + @e.map{|ee| ee.to_alloy(ctx)}.join(', ') +"]"
   end
   def rewrite(ctx)
-    FuncApp.new(@f.rewrite(ctx), @e.rewrite(ctx))
+    FuncApp.new(@f.rewrite(ctx), *@e.map{|ee| ee.rewrite(ctx)})
   end
 end
 

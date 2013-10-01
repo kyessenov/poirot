@@ -8,13 +8,11 @@ Seculloy::Dsl.view :CookieReplay do
   data Addr < Str
   data Name < Str
   data Pair[n: Name, v: Str] < Str
-  data AMap[entries: (set Pair)] < Str 
-  # do
-  #   fun get[k: Name] do
-  #     {e : entries | e.n == k}.v
-  #   end
-  #     #entries.select {|p| p.n == k }
-  # end
+  data AMap[entries: (set Pair)] < Str do
+    fun get[k: Name][Str] {
+      entries.select{|p| p.n == k }.v
+    }
+  end
 
   data URL[addr: Addr, queries: AMap] < Str
   data Cookie[domain: Addr, content: Pair] < Str

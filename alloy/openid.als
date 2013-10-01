@@ -178,7 +178,6 @@ sig IdentityProvider__CheckAuth extends Op {
 
 -- fact dataFacts
 fact dataFacts {
-	creates.Payload in EndUser
 	creates.Credential in EndUser
 	no creates.OpenId
 }

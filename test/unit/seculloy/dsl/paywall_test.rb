@@ -1,8 +1,8 @@
 require 'test_helper'
 
-require 'seculloy/case_studies/http'
-require 'seculloy/case_studies/paywall'
-require 'seculloy/case_studies/referer'
+require 'seculloy/case_studies/paywall/http'
+require 'seculloy/case_studies/paywall/paywall'
+require 'seculloy/case_studies/paywall/referer'
 
 require 'sdsl/myutils'
 
