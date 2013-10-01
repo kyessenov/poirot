@@ -10,7 +10,7 @@ Seculloy::Dsl.view :CookieReplay do
   data Pair[n: Name, v: Str] < Str
   data AMap[entries: (set Pair)] < Str do
     fun get[k: Name][Str] {
-      entries.select{|p| p.n == k }.v
+      entries.select{|p| p.n == k}.v
     }
   end
 
