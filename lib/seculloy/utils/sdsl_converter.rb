@@ -16,6 +16,8 @@ module Seculloy
       # @param view [Module(? < Seculloy::Model::View)]
       # @return [View]
       def convert_view(view)
+        @must_find_in_cache = nil
+
         vb = ViewBuilder.new
 
         # add all datatypes
@@ -24,14 +26,15 @@ module Seculloy
         # add all modules
         vb.modules *view.modules.map(&method(:convert_module))
 
-        # @must_find_in_cache = 1
+        @must_find_in_cache = 1
 
         # set critical datatypes
         vb.critical *view.critical.map(&method(:convert_data))
 
         # set trusted modules
         vb.trusted *view.modules.select(&:trusted?).map(&method(:convert_module))
-
+        
+        # build
         ans = vb.build(view.name)
 
         # add alloy funs
@@ -40,6 +43,8 @@ module Seculloy
         ans.appendFun all_funs.map(&method(:to_als)).join("\n ")
 
         ans
+      ensure
+        @must_find_in_cache = nil
       end
 
       # @param data [Class(? < Seculloy::Model::Data)]
