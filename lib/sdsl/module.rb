@@ -23,10 +23,14 @@ class Mod
   end
 
   def deepclone 
-    Mod.new(self.name, self.exports.clone, self.invokes.clone,
+    Mod.new(self.name, self.exports.deepclone, self.invokes.deepclone,
             self.assumptions.clone, self.stores.clone, 
             self.creates.clone, self.extends.clone, 
             self.isAbstract, self.isUniq, self.dynamics.clone)
+  end
+
+  def setAbstract
+    self.isAbstract = true
   end
 
   def to_alloy(ctx)

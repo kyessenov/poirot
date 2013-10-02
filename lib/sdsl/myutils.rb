@@ -39,6 +39,12 @@ class Array
   def to_alloy(ctx=nil)
     self.map { |e| e.to_alloy(ctx) }.join(" and ")
   end
+  
+  def deepclone
+    a = []
+    each { |x| a << x.clone }
+    a
+  end
 end
 
 class Symbol
@@ -92,19 +98,29 @@ def dotModule (m, color=nil)
     "#{m.name}_#{m.extends[0].name} [shape=component," +
       "label=\n" +
       "<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n" +
-      "<TR><TD BGCOLOR=\"#{CHILD_COLOR}\">#{m.name}</TD></TR>\n" +
+      "<TR><TD BGCOLOR=\"#{color}\">#{m.name}</TD></TR>\n" +
       "<TR><TD BGCOLOR=\"#{SUPER_COLOR}\">#{m.extends[0].name}</TD></TR>\n" +
       "</TABLE>>];\n"
   end
 end
 
-def dotOpName(mname, o)
-  "#{mname}_#{o.name}"
+def dotOpName(mname, opname)
+  "#{mname}_#{opname}"
 end
 
-def dotOp(mname, o, color=nil)
+def dotOp(mname, opname, o, color=nil)
   abridged = "#{o.name}"[o.name.to_s.index("__") + 2..-1]
-  "#{dotOpName(mname, o)} [label=\"#{abridged}\",shape=rectangle,fillcolor=\"#{color}\",style=\"filled,rounded\"];"
+  if not o.parent
+    "#{dotOpName(mname, opname)} [label=\"#{abridged}\",shape=rectangle,fillcolor=\"#{color}\",style=\"filled,rounded\"];"
+  else 
+    parentAbridged = "#{o.parent.name}"[o.parent.name.to_s.index("__") + 2..-1]
+    "#{dotOpName(mname, opname)} [shape=rectangle,style=\"rounded\"," +
+      "label=\n" +
+      "<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n" +
+      "<TR><TD BGCOLOR=\"#{color}\">#{abridged}</TD></TR>\n" +
+      "<TR><TD BGCOLOR=\"#{SUPER_COLOR}\">#{parentAbridged}</TD></TR>\n" +
+      "</TABLE>>];\n"
+  end
 end
 
 def mkModname m
@@ -115,14 +131,14 @@ def mkModname m
   end
 end
 
-def writeDot(mods, dotFile)
+def writeDot(mods, dotFile, color=CHILD_COLOR)
   f = File.new(dotFile, 'w')
   f.puts "digraph g {"
   f.puts 'graph[fontname="' + FONTNAME + '", splines=true, concentrate=true];'
   f.puts 'node[fontname="' + FONTNAME + '"];'
   f.puts 'edge[fontname="' + FONTNAME + '", len=1.0];'
 
-  # type: mod -> list str
+  # type: sym -> list str
   modnames = {}
   mods.each do |m|
     if m.isAbstract
@@ -136,6 +152,25 @@ def writeDot(mods, dotFile)
       modnames[parent] << n
     else
       modnames[m.name] = [m.name.to_s]
+    end
+  end
+
+  # type: sym -> list str
+  opnames = {}
+  mods.each do |m|
+    m.exports.each do |e|
+      if e.isAbstract
+        next
+      end
+      if e.parent
+        pname = e.parent.name
+        ename = "#{e.name}_#{pname}"
+        opnames[e.name] = [ename]
+        if not opnames[pname] then opnames[pname] = [] end
+        opnames[pname] << ename
+      else
+        opnames[e.name] = [e.name.to_s] 
+      end
     end
   end
 
@@ -153,17 +188,25 @@ def writeDot(mods, dotFile)
     # draw incoming connections
     f.puts "subgraph cluster_#{m.name} { "
     f.puts "style=filled; color=lightgrey;"
-    f.puts(dotModule m)
+    f.puts(dotModule(m, color))
     m.exports.each do |e|
-      f.puts(dotOp(mname, e, CHILD_COLOR))
-      f.puts("#{mname} -> #{dotOpName(mname, e)} [style=dashed,dir=none];")
+      opnames[e.name].each do |opname|
+        f.puts(dotOp(mname, opname, e, color))
+        f.puts("#{mname} -> #{dotOpName(mname, opname)} [style=dashed,dir=none];")
+      end
     end
+
     # draw incoming connections for module that m extends, if any
     if not m.extends.empty?
       parent = m.extends[0]
       parent.exports.each do |e|
-        f.puts(dotOp(mname, e, SUPER_COLOR))
-        f.puts("#{mname} -> #{dotOpName(mname, e)} [style=dashed,dir=none];")
+        if not e.isAbstract
+          opnames[e.name].each do |opname|
+            f.puts(dotOp(mname, opname, e, SUPER_COLOR))
+            f.puts("#{mname} -> #{dotOpName(mname, opname)}" + 
+                   " [style=dashed,dir=none];")
+          end
+        end
       end
     end
     f.puts "}"
@@ -172,8 +215,10 @@ def writeDot(mods, dotFile)
     m.invokes.each do |i|
       mods.each do |m2|
         if m2.exports.any? { |i2| i2.name == i.name}
-          m2name = modnames[m2.name][0]          
-          f.puts("#{mname} -> #{dotOpName(m2name, i)};")
+          opnames[i.name].each do |opname|
+            m2name = modnames[m2.name][0]          
+            f.puts("#{mname} -> #{dotOpName(m2name, opname)};")
+          end
         end
       end
     end
@@ -183,8 +228,10 @@ def writeDot(mods, dotFile)
       parent.invokes.each do |i|
         mods.each do |m2|
           if m2.exports.any? { |i2| i2.name == i.name}
-            modnames[m2.name].each do | m2name |
-              f.puts("#{mname} -> #{dotOpName(m2name, i)};")
+            opnames[i.name].each do |opname|
+              modnames[m2.name].each do |m2name|
+                f.puts("#{mname} -> #{dotOpName(m2name, opname)};")
+              end
             end
           end
         end

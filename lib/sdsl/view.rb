@@ -285,7 +285,7 @@ def refineExports(sup, sub, exportsRel)
     if exportsRel.has_key? n 
       matches = sub.exports.select { |o2| o2.name == exportsRel[n] }      
       if not matches.empty?
-        o2 = matches[0].clone
+        o2 = matches[0]
         exports << Op.new(n, 
                           {:when => (o.constraints[:when]),
                             :args => (o.constraints[:args])}, o2, 
@@ -466,7 +466,7 @@ def buildMapping(v1, v2, refineRel)
 
   modRel = refineRel[:Module]
   modRel.each do |from, to|
-    sup = v1.findMod(from)
+    sup = v1.findMod(from)    
     sub = v2.findMod(to)
 #     if sup.name == sub.name      
 #       newMod = mergeMod(sup, sub, exportsRel, invokesRel)
@@ -479,10 +479,11 @@ def buildMapping(v1, v2, refineRel)
 #       moduleMap[sub].isAbstract = true
 #       moduleMap[sub].isUniq = false      
 #     end
-    newMod = refineMod(sup, sub, exportsRel, invokesRel)
+    sub2 = sub.deepclone
+    newMod = refineMod(sup, sub2, exportsRel, invokesRel)
     moduleMap[sup] = newMod
-    moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
-    moduleMap[sub].isAbstract = true
+    moduleMap[sub] = sub2 #TODO: too strong, fix later
+    moduleMap[sub].setAbstract
     moduleMap[sub].isUniq = false      
   end
 

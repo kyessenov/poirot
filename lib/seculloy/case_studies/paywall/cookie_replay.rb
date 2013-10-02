@@ -19,12 +19,15 @@ Seculloy::Dsl.view :CookieReplay do
   data NameCookie < Name
 
   trusted Client [
-    cookies: Addr ** Cookie
+    cookies: (dynamic Addr ** Cookie)
   ] do
     creates Cookie
 
     operation SetCookie[addr: Addr, cookie: Cookie] do      
-      guard { cookies[addr] == cookie }
+      #guard { cookies[addr] == cookie }
+      
+      # in Alloy: should produce "cookies.post == cookies.pre + addr -> cookie"
+      effect { cookies := cookies + addr ** cookie }
     end
 
     operation GetCookie[addr: Addr] do
@@ -37,8 +40,8 @@ Seculloy::Dsl.view :CookieReplay do
     
     operation Visit[url: URL] do
       sends { Server::SendReq() { |op|
-          op.url == url #and
-#          op.headers.get(NameCookie) == cookies[url.addr]
+          op.url == url and
+          op.headers.get(NameCookie) == cookies[url.addr]
         }
       }
     end
@@ -55,6 +58,8 @@ Seculloy::Dsl.view :CookieReplay do
   mod User do
     operation Display[text: Str] do end
     sends { Client::Visit }
+    sends { Client::GetCookie }
+    sends { Client::SetCookie }
   end
 
 end

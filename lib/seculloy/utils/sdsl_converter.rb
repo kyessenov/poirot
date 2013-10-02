@@ -259,7 +259,6 @@ module Seculloy
 
       # @param be [Alloy::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
-        binding.pry if $pera
         lhs = evis.visit(be.lhs)
         rhs = evis.visit(be.rhs)
         meth = be.op.name
@@ -303,7 +302,6 @@ module Seculloy
           :fun_namer => method(:_fun_name).to_proc,
           :arg_namer => method(:_arg_name).to_proc
         }).export_to_als(*args)
-        binding.pry
         ans
       end
 
