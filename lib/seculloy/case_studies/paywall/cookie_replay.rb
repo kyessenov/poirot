@@ -13,7 +13,7 @@ Seculloy::Dsl.view :CookieReplay do
       entries.select{|p| p.n == k}.v
     }
   end
-
+  
   data URL[addr: Addr, queries: AMap] < Str
   data Cookie[domain: Addr, content: Pair] < Str
   data NameCookie < Name

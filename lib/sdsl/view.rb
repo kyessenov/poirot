@@ -575,6 +575,10 @@ def merge(v1, v2, mapping, refineRel)
           emod1 = (findModsWithExport(modules, o1.name))[0]
           eop1 = emod1.findExport o1.name
           if eop1.parent and eop1.parent.name == o2.name
+            if eop1.parent.isAbstract
+              next
+            end
+
             if o1.parent and o1.parent.name == eop1.parent.name
               next
             end

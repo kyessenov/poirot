@@ -1,4 +1,4 @@
-seculloy
+sLang
 ========
 
-Alloy for security
+A Ruby embeded DSL for security. 

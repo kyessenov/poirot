@@ -24,6 +24,10 @@ run SanityCheck {
 		some sender.m & SuccessOp
 } for 1 but 9 Data, 10 Step, 9 Op
 
+check LimitedAccess {
+no t : Step | some UntrustedModule.accesses.t & Article and Browser.Browser__numAccessed in AboveLimit
+} for 1 but 9 Data, 10 Step, 9 Op, 1 Article
+
 check Confidentiality {
    Confidentiality
 } for 1 but 9 Data, 10 Step, 9 Op
@@ -256,8 +260,8 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.close
 end
 
-def drawView(v, dotFile=DOT_FILE)
-  writeDot v.modules, dotFile
+def drawView(v, dotFile=DOT_FILE, color=CHILD_COLOR)
+  writeDot v.modules, dotFile, color
 end
 
 #########################################

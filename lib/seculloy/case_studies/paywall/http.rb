@@ -4,22 +4,31 @@ include Seculloy::Dsl
 
 Seculloy::Dsl.view :HTTP do
 
-  abstract data Str
-  data Addr < Str
+  data Str
+  data URL[addr: Str, query: Str]
+  data HTML
 
-  data URL[addr: Addr, queries: (set Str)]
-  data HTTPReq[url: URL, headers: (set Str)] 
-  data HTTPResp[body: Str]
-
-  trusted Server do
-    operation SendReq[req: HTTPReq] do 
-      sends { Client::SendResp }
+  trusted Server [
+    responses: URL ** HTML
+  ] do
+    operation SendReq[url: URL] do 
+      sends { Client::SendResp[responses[url]]}
     end
   end
 
   trusted Client do
-    operation SendResp[resp: HTTPResp] do end
-    sends { Server::SendReq }                      
+    operation SendResp[resp: HTML] do 
+      sends { User::Display[resp] }
+    end
+    
+    operation Visit[url: URL] do
+      sends { Server::SendReq[url] }
+    end
+  end
+
+  mod User do
+    operation Display[resp: HTML] do end
+    sends { Client::Visit }
   end
 
 end
