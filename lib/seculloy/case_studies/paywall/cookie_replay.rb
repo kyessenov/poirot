@@ -28,6 +28,12 @@ Seculloy::Dsl.view :CookieReplay do
 
       # in Alloy: should produce "cookies.post == cookies.pre + addr -> cookie"
       effects {
+        # NOTE 
+        #   `cookies = cookies + ...' 
+        # doesn't work in Ruby when `cookies' is not a local variable, but instead
+        #   `cookies' is a getter method, and 
+        #   `cookies=' is a setter method
+        # (this is not specific to our DSL, it's how it is in Ruby in general)
         self.cookies = self.cookies + addr ** cookie
       }
     end
