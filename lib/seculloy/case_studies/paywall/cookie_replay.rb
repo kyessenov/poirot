@@ -13,7 +13,7 @@ Seculloy::Dsl.view :CookieReplay do
       entries.select{|p| p.n == k}.v
     }
   end
-
+  
   data URL[addr: Addr, queries: AMap] < Str
   data Cookie[domain: Addr, content: Pair] < Str
   data NameCookie < Name
@@ -24,10 +24,9 @@ Seculloy::Dsl.view :CookieReplay do
     creates Cookie
 
     operation SetCookie[addr: Addr, cookie: Cookie] do      
-      #guard { cookies[addr] == cookie }
-      
+      guard { cookies[addr] == cookie }      
       # in Alloy: should produce "cookies.post == cookies.pre + addr -> cookie"
-      effect { cookies := cookies + addr ** cookie }
+      #effect { cookies := cookies + addr ** cookie }
     end
 
     operation GetCookie[addr: Addr] do
