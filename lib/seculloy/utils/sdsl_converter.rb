@@ -33,7 +33,7 @@ module Seculloy
 
         # set trusted modules
         vb.trusted *view.modules.select(&:trusted?).map(&method(:convert_module))
-        
+
         # build
         ans = vb.build(view.name)
 
@@ -129,7 +129,8 @@ module Seculloy
       def convert_op_to_exports(op)
         Op.new "#{_op_name op}",
           :args => op.meta.fields.map(&method(:convert_arg)),
-          :when => op.meta.guards.map(&method(:convert_guard))
+          :when => (op.meta.guards.map(&method(:convert_guard)) +
+                    op.meta.effects.map(&method(:convert_effect)))
       end
 
       # @param op [Class(? < Seculloy::Model::Operation)]
@@ -144,6 +145,38 @@ module Seculloy
       # @return [Expr]
       def convert_guard(guard_fun)
         convert_expr(guard_fun.sym_exe_export)
+      end
+
+      def rebuild_expr(e, prepost)
+        Alloy::Utils::ExprRebuilder.new do |expr|
+          if Alloy::Ast::Expr::FieldExpr === expr &&
+              expr.__field.type.has_modifier?(:dynamic)
+            varname = "#{_arg_name(expr.__field)}.#{prepost}"
+            Alloy::Ast::Expr::Var.new(varname, expr.__field.type)
+          else
+            nil
+          end
+        end.rebuild(e)
+      end
+
+      # @param effect_fun [Alloy::Ast::Fun]
+      # @return [Expr]
+      def convert_effect(effect_fun)
+        Alloy.boss.clear_side_effects
+        res = effect_fun.sym_exe_export
+        seffects = Alloy.boss.clear_side_effects
+        if seffects.empty? || (seffects.last.rhs.__id__ != res.__id__ rescue true)
+          seffects << res
+        end
+        ans = seffects.map do |e|
+          ex = if e.op == Alloy::Ast::Ops::ASSIGN
+                 rebuild_expr(e.lhs, "pre") == rebuild_expr(e.rhs, "post")
+               else
+                 e
+               end
+          convert_expr ex
+        end
+        ans
       end
 
       # @param trigger_fun [Alloy::Ast::Fun]
