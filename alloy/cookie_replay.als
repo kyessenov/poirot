@@ -5,14 +5,14 @@ open models/crypto[Data]
 one sig Client extends Module {
 	Client__cookies : (Addr some -> lone Cookie) -> some Step,
 }{
-	all o : this.receives[Client__SetCookie] | Client__cookies.pre = (Client__cookies.post + arg[o.(Client__SetCookie <: Client__SetCookie__addr)] -> arg[o.(Client__SetCookie <: Client__SetCookie__cookie)])
+	all o : this.receives[Client__SetCookie] | Client__cookies.(o.post) = (Client__cookies.(o.pre) + arg[o.(Client__SetCookie <: Client__SetCookie__addr)] -> arg[o.(Client__SetCookie <: Client__SetCookie__cookie)])
 	all o : this.sends[User__Display] |
-		((triggeredBy[o,Client__GetCookie] and o.(User__Display <: User__Display__text) = Client__cookies[o.trigger.((Client__GetCookie <: Client__GetCookie__addr))])
+		((triggeredBy[o,Client__GetCookie] and o.(User__Display <: User__Display__text) = Client__cookies.(o.pre)[o.trigger.((Client__GetCookie <: Client__GetCookie__addr))])
 		or
 		(triggeredBy[o,Client__SendResp] and o.(User__Display <: User__Display__text) = o.trigger.((Client__SendResp <: Client__SendResp__body)))
 		)
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Client__Visit]
-	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Client__Visit <: Client__Visit__url)) and o.(Server__SendReq <: Server__SendReq__headers).AMap___get[NameCookie] = Client__cookies[o.trigger.((Client__Visit <: Client__Visit__url)).URL__addr])
+	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Client__Visit <: Client__Visit__url)) and o.(Server__SendReq <: Server__SendReq__headers).AMap___get[NameCookie] = Client__cookies.(o.pre)[o.trigger.((Client__Visit <: Client__Visit__url)).URL__addr])
 }
 
 -- module Server

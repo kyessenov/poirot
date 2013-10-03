@@ -13,9 +13,15 @@ module Seculloy
 
     class SdslConverter
 
+      def initialize
+        @assignlhs = false
+        @must_find_in_cache = nil
+      end
+
       # @param view [Module(? < Seculloy::Model::View)]
       # @return [View]
       def convert_view(view)
+        @assignlhs = false
         @must_find_in_cache = nil
 
         vb = ViewBuilder.new
@@ -147,17 +153,17 @@ module Seculloy
         convert_expr(guard_fun.sym_exe_export)
       end
 
-      def rebuild_expr(e, prepost)
-        Alloy::Utils::ExprRebuilder.new do |expr|
-          if Alloy::Ast::Expr::FieldExpr === expr &&
-              expr.__field.type.has_modifier?(:dynamic)
-            varname = "#{_arg_name(expr.__field)}.#{prepost}"
-            Alloy::Ast::Expr::Var.new(varname, expr.__field.type)
-          else
-            nil
-          end
-        end.rebuild(e)
-      end
+      # def rebuild_dynamic_fields(e, prepost)
+      #   Alloy::Utils::ExprRebuilder.new do |expr|
+      #     if Alloy::Ast::Expr::FieldExpr === expr &&
+      #         expr.__field.type.has_modifier?(:dynamic)
+      #       varname = "#{_arg_name(expr.__field)}.(o.#{prepost})"
+      #       Alloy::Ast::Expr::Var.new(varname, expr.__field.type)
+      #     else
+      #       nil
+      #     end
+      #   end.rebuild(e)
+      # end
 
       # @param effect_fun [Alloy::Ast::Fun]
       # @return [Expr]
@@ -165,18 +171,10 @@ module Seculloy
         Alloy.boss.clear_side_effects
         res = effect_fun.sym_exe_export
         seffects = Alloy.boss.clear_side_effects
-        if seffects.empty? || (seffects.last.rhs.__id__ != res.__id__ rescue true)
+        if seffects.empty? || (seffects.last.rhs.__neq res rescue true)
           seffects << res
         end
-        ans = seffects.map do |e|
-          ex = if e.op == Alloy::Ast::Ops::ASSIGN
-                 rebuild_expr(e.lhs, "pre") == rebuild_expr(e.rhs, "post")
-               else
-                 e
-               end
-          convert_expr ex
-        end
-        ans
+        seffects.map(&method(:convert_expr))
       end
 
       # @param trigger_fun [Alloy::Ast::Fun]
@@ -297,9 +295,12 @@ module Seculloy
 
       # @param be [Alloy::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
-        lhs = evis.visit(be.lhs)
+        is_assign_expr = be.__op == Alloy::Ast::Ops::ASSIGN
+        lhs = set_assignlhs_while(is_assign_expr) do
+          evis.visit(be.lhs)
+        end
         rhs = evis.visit(be.rhs)
-        meth = be.op.name
+        meth = is_assign_expr ? "equals" : be.__op.name
         if lhs.respond_to? meth
           lhs.send meth, rhs
         else
@@ -309,7 +310,12 @@ module Seculloy
       end
 
       def convert_fieldexpr(f)
-        e(_arg_name(f.__field))
+        fldname = _arg_name(f.__field)
+        if f.__field.type.has_modifier?(:dynamic)
+          prepost = @assignlhs ? "post" : "pre"
+          fldname = "#{fldname}.(o.#{prepost})"
+        end
+        e(fldname)
       end
 
       def convert_mvarexpr(v)
@@ -333,6 +339,16 @@ module Seculloy
       end
 
       protected
+
+      def set_assignlhs_while(val, &block)
+        old = @assignlhs
+        @assignlhs = val
+        begin
+          yield
+        ensure
+          @assignlhs = old
+        end
+      end
 
       def to_als(*args)
         ans = Alloy::Utils::AlloyPrinter.new({
