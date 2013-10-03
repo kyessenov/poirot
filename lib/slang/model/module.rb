@@ -1,0 +1,37 @@
+require 'alloy/ast/sig'
+require 'slang/dsl/module_dsl_api'
+
+module Seculloy
+  module Model
+
+    class Module < Alloy::Ast::Sig
+      extend Seculloy::Dsl::ModuleDslApi
+
+      _define_meta
+
+      meta.set_placeholder
+
+      def self.trusted?() meta.trusted? end
+      def self.unique?()  !meta.common? end
+      def self.many?()    meta.many? end
+
+      def self.set_trusted() meta.set_trusted end
+      def self.set_many() meta.set_many end
+
+      def make_me_parent_mod_expr
+        make_me_sym_expr("_")
+        self.singleton_class.send :include, ParentModExpr
+        self
+      end
+
+    end
+
+    module ParentModExpr
+      include Alloy::Ast::Expr::MExpr
+      def apply_join(other)
+        other
+      end
+    end
+
+  end
+end

@@ -3,12 +3,23 @@ open models/crypto[Data]
 
 -- module Server
 one sig Server extends Module {
+	Server__responses : URL some -> lone HTML,
 }{
 	all o : this.sends[Client__SendResp] | triggeredBy[o,Server__SendReq]
+	all o : this.sends[Client__SendResp] | o.(Client__SendResp <: Client__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
 }
 
 -- module Client
 one sig Client extends Module {
+}{
+	all o : this.sends[User__Display] | triggeredBy[o,Client__SendResp]
+	all o : this.sends[User__Display] | o.(User__Display <: User__Display__resp) = o.trigger.((Client__SendResp <: Client__SendResp__resp))
+	all o : this.sends[Server__SendReq] | triggeredBy[o,Client__Visit]
+	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Client__Visit <: Client__Visit__url))
+}
+
+-- module User
+one sig User extends Module {
 }
 
 -- fact trustedModuleFacts
@@ -18,46 +29,54 @@ fact trustedModuleFacts {
 
 -- operation Server__SendReq
 sig Server__SendReq extends Op {
-	Server__SendReq__req : lone HTTPReq,
+	Server__SendReq__url : lone URL,
 }{
-	args = Server__SendReq__req
+	args = Server__SendReq__url
 	sender in Client
 	receiver in Server
 }
 
 -- operation Client__SendResp
 sig Client__SendResp extends Op {
-	Client__SendResp__resp : lone HTTPResp,
+	Client__SendResp__resp : lone HTML,
 }{
 	args = Client__SendResp__resp
 	sender in Server
 	receiver in Client
 }
 
--- datatype declarations
-abstract sig Str extends Data {
+-- operation Client__Visit
+sig Client__Visit extends Op {
+	Client__Visit__url : lone URL,
 }{
+	args = Client__Visit__url
+	sender in User
+	receiver in Client
 }
-sig Addr extends Str {
+
+-- operation User__Display
+sig User__Display extends Op {
+	User__Display__resp : lone HTML,
+}{
+	args = User__Display__resp
+	sender in Client
+	receiver in User
+}
+
+-- datatype declarations
+sig Str extends Data {
 }{
 	no fields
 }
 sig URL extends Data {
-	URL__addr : lone Addr,
-	URL__queries : set Str,
+	URL__addr : lone Str,
+	URL__query : lone Str,
 }{
-	fields = URL__addr + URL__queries
+	fields = URL__addr + URL__query
 }
-sig HTTPReq extends Data {
-	HTTPReq__url : lone URL,
-	HTTPReq__headers : set Str,
+sig HTML extends Data {
 }{
-	fields = HTTPReq__url + HTTPReq__headers
-}
-sig HTTPResp extends Data {
-	HTTPResp__body : lone Str,
-}{
-	fields = HTTPResp__body
+	no fields
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -70,6 +89,10 @@ run SanityCheck {
 	all m : Module |
 		some sender.m & SuccessOp
 } for 1 but 9 Data, 10 Step, 9 Op
+
+check LimitedAccess {
+no t : Step | some UntrustedModule.accesses.t & Article and Browser.Browser__numAccessed in AboveLimit
+} for 1 but 9 Data, 10 Step, 9 Op, 1 Article
 
 check Confidentiality {
    Confidentiality

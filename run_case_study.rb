@@ -31,8 +31,8 @@ def translate_case_study(case_study_name, out_file=nil)
                 gsub(/([A-Z])/){|c| c.downcase}
   file_name_no_underscore = file_name.gsub /_/, ""
 
-  patterns = ["lib/seculloy/case_studies/**/#{file_name}.rb",
-              "lib/seculloy/case_studies/**/#{file_name_no_underscore}.rb"]
+  patterns = ["lib/slang/case_studies/**/#{file_name}.rb",
+              "lib/slang/case_studies/**/#{file_name_no_underscore}.rb"]
   sources = Dir[*patterns].uniq
   fail "Case study source file not found. Search pattern: #{patterns}" if sources.empty?
   fail "Multiple sources found: #{sources.join('; ')}" if sources.size > 1

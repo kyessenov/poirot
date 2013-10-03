@@ -6,7 +6,7 @@ one sig Client extends Module {
 	Client__cookies : (Addr some -> lone Cookie) -> some Step,
 }{
 	all o : this.receives[Client__SetCookie] | Client__cookies.(o.post) = (Client__cookies.(o.pre) + arg[o.(Client__SetCookie <: Client__SetCookie__addr)] -> arg[o.(Client__SetCookie <: Client__SetCookie__cookie)])
-	all o : this.sends[User__Display] |
+	all o : this.sends[User__Display] | 
 		((triggeredBy[o,Client__GetCookie] and o.(User__Display <: User__Display__text) = Client__cookies.(o.pre)[o.trigger.((Client__GetCookie <: Client__GetCookie__addr))])
 		or
 		(triggeredBy[o,Client__SendResp] and o.(User__Display <: User__Display__text) = o.trigger.((Client__SendResp <: Client__SendResp__body)))
@@ -146,6 +146,10 @@ run SanityCheck {
 	all m : Module |
 		some sender.m & SuccessOp
 } for 1 but 9 Data, 10 Step, 9 Op
+
+check LimitedAccess {
+no t : Step | some UntrustedModule.accesses.t & Article and Browser.Browser__numAccessed in AboveLimit
+} for 1 but 9 Data, 10 Step, 9 Op, 1 Article
 
 check Confidentiality {
    Confidentiality

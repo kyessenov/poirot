@@ -8,7 +8,7 @@ require 'sdsl/myutils'
 
 require 'pry'
 
-require "seculloy/case_studies/merge_test"
+require "slang/case_studies/merge_test"
 
 def dump(view, name)
   dumpAlloy(view, "../alloy/#{name}.als")
