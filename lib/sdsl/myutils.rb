@@ -43,7 +43,7 @@ class Array
   def to_alloy(ctx=nil)
     self.map { |e| e.to_alloy(ctx) }.join(" and ")
   end
-  
+
   def deepclone
     a = []
     each { |x| a << x.clone }
@@ -96,9 +96,9 @@ def writeFacts(fname, facts)
 end
 
 def dotModule (m, color=nil)
-  if m.extends.empty? 
+  if m.extends.empty?
     "#{m.name} [shape=component,style=\"filled\",color=\"#{color}\"];"
-  else     
+  else
     "#{m.name}_#{m.extends[0].name} [shape=component," +
       "label=\n" +
       "<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n" +
@@ -116,7 +116,7 @@ def dotOp(mname, opname, o, color=nil)
   abridged = "#{o.name}"[o.name.to_s.index("__") + 2..-1]
   if not o.parent
     "#{dotOpName(mname, opname)} [label=\"#{abridged}\",shape=rectangle,fillcolor=\"#{color}\",style=\"filled,rounded\"];"
-  else 
+  else
     parentAbridged = "#{o.parent.name}"[o.parent.name.to_s.index("__") + 2..-1]
     "#{dotOpName(mname, opname)} [shape=rectangle,style=\"rounded\"," +
       "label=\n" +
@@ -173,7 +173,7 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
         if not opnames[pname] then opnames[pname] = [] end
         opnames[pname] << ename
       else
-        opnames[e.name] = [e.name.to_s] 
+        opnames[e.name] = [e.name.to_s]
       end
     end
   end
@@ -181,12 +181,12 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
   mods.each do |m|
     # if m.extends and not m.extends.empty?
     #   puts "#{m.name} extends #{m.extends[0].name}"
-    # else 
+    # else
     #   puts m.name
     # end
     if m.isAbstract
       next
-    end       
+    end
     mname = modnames[m.name][0]
 
     # draw incoming connections
@@ -207,7 +207,7 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
         if not e.isAbstract
           opnames[e.name].each do |opname|
             f.puts(dotOp(mname, opname, e, SUPER_COLOR))
-            f.puts("#{mname} -> #{dotOpName(mname, opname)}" + 
+            f.puts("#{mname} -> #{dotOpName(mname, opname)}" +
                    " [style=dashed,dir=none];")
           end
         end
@@ -220,7 +220,7 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
       mods.each do |m2|
         if m2.exports.any? { |i2| i2.name == i.name}
           opnames[i.name].each do |opname|
-            m2name = modnames[m2.name][0]          
+            m2name = modnames[m2.name][0]
             f.puts("#{mname} -> #{dotOpName(m2name, opname)};")
           end
         end
@@ -240,8 +240,8 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
           end
         end
       end
-    end    
-    
+    end
+
   end
   f.puts "}"
   f.close
@@ -291,7 +291,7 @@ class Item < Rel
      other.name == self.name &&
      other.type == self.type)
   end
-  def dynamic 
+  def dynamic
     Map.new(name, type, STEP_TYPE, :lone, :some)
   end
 end
@@ -321,7 +321,7 @@ class Bag < Rel
      other.name == self.name &&
      other.type == self.type)
   end
-  def dynamic 
+  def dynamic
     Map.new(name, type, STEP_TYPE, :some, :some)
   end
 end
@@ -338,7 +338,7 @@ class Map < Rel
     @type2 = t2
     @constr1 = c1
     @constr2 = c2
-  end  
+  end
   def to_s
     @name.to_s
   end
@@ -374,7 +374,7 @@ class TernaryRel < Rel
     @constr1 = c1
     @constr2 = c2
     @constr3 = c3
-  end  
+  end
   def to_s
     @name.to_s
   end
@@ -429,6 +429,12 @@ class Expr
   def product otherExpr
     Product.new(self, otherExpr)
   end
+
+  def union otherExpr
+    Union.new(self, otherExpr)
+  end
+
+  alias_method :plus, :union
 
   def join otherExpr
     Join.new(self, otherExpr)

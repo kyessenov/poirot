@@ -37,7 +37,7 @@ Seculloy::Dsl.view :Paywall do
   end
 
   mod Reader do
-    operation Display[article: Article] do end
+    operation Display[article: Article]
     sends { Browser::SelectArticle }
   end
 

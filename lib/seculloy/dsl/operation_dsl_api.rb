@@ -5,8 +5,9 @@ require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
 require 'sdg_utils/string_utils'
 
-require 'seculloy/dsl/trigger_helper'
+require 'seculloy/dsl/effects_helper'
 require 'seculloy/dsl/guard_helper'
+require 'seculloy/dsl/trigger_helper'
 
 module Seculloy
   module Dsl
@@ -15,8 +16,10 @@ module Seculloy
       include Alloy::Dsl::SigDslApi
       include Seculloy::Dsl::TriggerHelper
       include Seculloy::Dsl::GuardHelper
+      include Seculloy::Dsl::EffectsHelper
 
       alias_method :response, :sends
+
 
       private
 
@@ -32,7 +35,7 @@ module Seculloy
     module AlloySigMetaOperationExt
       include SDGUtils::Caching::SearchableAttr
 
-      attr_hier_searchable :guard, :effect, :trigger
+      attr_hier_searchable :guard, :trigger, :effect
     end
   end
 end

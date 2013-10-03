@@ -23,20 +23,29 @@ Seculloy::Dsl.view :CookieReplay do
   ] do
     creates Cookie
 
-    operation SetCookie[addr: Addr, cookie: Cookie] do      
-      guard { cookies[addr] == cookie }      
+    operation SetCookie[addr: Addr, cookie: Cookie] do
+      #guard { cookies[addr] == cookie }
+
       # in Alloy: should produce "cookies.post == cookies.pre + addr -> cookie"
-      #effect { cookies := cookies + addr ** cookie }
+      effects {
+        # NOTE 
+        #   `cookies = cookies + ...' 
+        # doesn't work in Ruby when `cookies' is not a local variable, but instead
+        #   `cookies' is a getter method, and 
+        #   `cookies=' is a setter method
+        # (this is not specific to our DSL, it's how it is in Ruby in general)
+        self.cookies = self.cookies + addr ** cookie
+      }
     end
 
     operation GetCookie[addr: Addr] do
       sends { User::Display[cookies[addr]] }
     end
 
-    operation SendResp[headers: AMap, body: Str] do 
+    operation SendResp[headers: AMap, body: Str] do
       sends { User::Display[body] }
     end
-    
+
     operation Visit[url: URL] do
       sends { Server::SendReq() { |op|
           op.url == url and
@@ -49,7 +58,7 @@ Seculloy::Dsl.view :CookieReplay do
   trusted Server [
     session: URL ** Cookie
   ] do
-    operation SendReq[url: URL, headers: AMap] do      
+    operation SendReq[url: URL, headers: AMap] do
       sends { Client::SendResp }
     end
   end
