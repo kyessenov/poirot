@@ -293,6 +293,16 @@ module Seculloy
         end
       end
 
+      # @param be [Seculloy::Model::ParentModExpr]
+      def convert_parentmodexpr(pme)
+        fail "didn't expect to see a ParentModExpr on its own"
+      end
+
+      # @param be [Seculloy::Model::ParentModJoinExpr]
+      def convert_parentmodjoinexpr(pmje)
+        convert_expr(pmje.join_expr.rhs)
+      end
+      
       # @param be [Alloy::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
         is_assign_expr = be.__op == Alloy::Ast::Ops::ASSIGN

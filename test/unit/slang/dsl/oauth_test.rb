@@ -45,7 +45,7 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_fields
-    assert_fields UserAgent.meta.fields, {}
+    assert_fields UserAgent.meta.fields,      :knownClients => ClientID
     assert_fields EndUser.meta.fields,        :cred => Credential
     assert_fields ClientServer.meta.fields,   :addr  => URI, 
                                               :id    => ClientID,
@@ -91,7 +91,7 @@ class ViewTest < Test::Unit::TestCase
   def test_UserAgent_ops
     op = UserAgent::InitFlow
     do_test_op op, {:redirect => URI, :id => ClientID, scope: Scope}, 
-                   [], [{:user => EndUser}]
+                   [{}], [{:user => EndUser}]
     op = UserAgent::EnterCred
     do_test_op op, {:cred => Credential, :uri => URI}, [], [{:client => ClientServer}]
     op = UserAgent::Redirect

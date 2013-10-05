@@ -29,7 +29,17 @@ module Seculloy
     module ParentModExpr
       include Alloy::Ast::Expr::MExpr
       def apply_join(other)
-        other
+        join_expr = super(other)
+        ParentModJoinExpr.new(join_expr)
+      end
+    end
+
+    class ParentModJoinExpr
+      include Alloy::Ast::Expr::MExpr
+      attr_reader :join_expr
+      def initialize(join_expr)
+        super(join_expr.__type)
+        @join_expr = join_expr 
       end
     end
 

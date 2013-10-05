@@ -442,7 +442,7 @@ class Expr
 
   def contains otherExpr
     if not otherExpr.is_a? Expr then otherExpr = expr(otherExpr) end
-    some(intersect(self, otherExpr))
+    some(intersect(self, otherExpr)) #TODO: this is not equivalent to `otherExpr in self'
   end
 
   def eq otherExpr
