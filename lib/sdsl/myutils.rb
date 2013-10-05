@@ -24,10 +24,6 @@ run SanityCheck {
 		some sender.m & SuccessOp
 } for 1 but 9 Data, 10 Step, 9 Op
 
-check LimitedAccess {
-no t : Step | some UntrustedModule.accesses.t & Article and Browser.Browser__numAccessed in AboveLimit
-} for 1 but 9 Data, 10 Step, 9 Op, 1 Article
-
 check Confidentiality {
    Confidentiality
 } for 1 but 9 Data, 10 Step, 9 Op
