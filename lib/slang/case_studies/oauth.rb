@@ -4,14 +4,17 @@ include Seculloy::Dsl
 
 Seculloy::Dsl.view :OAuth do
 
-  data AuthCode
-  data AuthGrant
-  data Credential
-  data AccessToken
-  data Resource
-  data ClientID
-  data Scope
-  data URI
+  abstract data Payload
+  data AuthCode < Payload
+  data AuthGrant < Payload
+  data Credential < Payload
+  data AccessToken < Payload 
+  data Resource < Payload
+  data ClientID < Payload
+  data Scope < Payload
+
+  data Addr
+  data URI [addr: Addr, params: (set Payload)]
 
   critical Resource
 
@@ -64,8 +67,8 @@ Seculloy::Dsl.view :OAuth do
 
       sends {
         UserAgent::Redirect() { |redirect|
-          redirect.uri == uri and
-          authGrants[cred].in?(redirect.uri)
+          redirect.uri.addr == uri.addr and
+          authGrants[cred].in?(redirect.uri.params)
         }
       }
     end
