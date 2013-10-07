@@ -12,9 +12,11 @@ illustrate our appraoch.
 design a \textit{paywall} system for its online web site. A paywall
 system is used to limit readers to a set number of free articles over
 a time period, requiring them to signup for a paid subscription once
-they reach the limit. One desirable property of this paywall
-system is that \textit{readers who have already exceeded the limit
-  should not be able to access an article}.
+they reach the limit.  \aleks{At the same time, for optimal user
+  experience, new users should not be required to create an account to
+  start reading the news articles.} One desirable property of this
+paywall system is that \textit{readers who have already exceeded the
+  limit should not be able to access an article}.
 
 Alice, the chief web designer of the New York Times, devises a simple
 design of the paywall system, as shown in
@@ -22,7 +24,7 @@ Figure~\ref{fig-nytimes}(a). There are three basic participants in this
 design: the \textsf{NYTimes} server, which stores and serves articles,
 \textsf{Reader}, an end-user who wishes to access an article, and
 \textsf{Client}, which mediates the transfer of articles between
-\textsf{NYTimes} and \textsf{Client}. When \textsf{Reader} selects a
+\textsf{NYTimes} and \textsf{Reader}. When \textsf{Reader} selects a
 link to an article, \textsf{Client} forwards the request for the
 article to the \textsf{NYTimes} server, sending along a counter
 (\textsf{currCounter}) that represents the number of articles
@@ -69,17 +71,23 @@ designates \textsf{Client} to run on top of a standard web browser,
 and the access counter to be stored as a cookie inside the browser.
 
 Alice decides to explore the potential implications of these design
-decisions on the security of the system using our framework. Let us
-assume that the repository is already populated with models that
-describe different types of attacks that are applicable to web-based
-systems. For example, one type of attack that the paywall system might
-be vulnerable to is a \textit{cookie replay attack}, which involves a
-malicious user obtaining a cookie and repeating its transmission to a
-server. In this model, shown in Figure~\ref{fig-nytimes}(b),
-\textsf{Browser} communicates to \textsf{HTTPServer} by sending
-\textsf{GET} requests and receiving responses (\textsf{Resp}) in
-return. In addition, a malicious user (named \textsf{ReplayAttacker})
-interacts with \textsf{Browser} by extracting a cookie from it
+decisions on the security of the system using our framework. \fix{Let
+  us assume that the repository is already populated with models that
+  describe different types of attacks that are applicable to web-based
+  systems.}{Therefore, Alice first searches the repository for
+  security threat models defined for the category of web-based
+  system.}  \fix{For example, one type of attack that the paywall
+  system might be vulnerable to is a \textit{cookie replay
+    attack}}{She finds a model of the \textit{cookie replay attack}
+  and decides to check if her system is vulnerable to it}.
+
+The cookie replay attack involves a malicious user obtaining a cookie
+and repeating its transmission to a server.  In the corresponding
+model, shown in Figure~\ref{fig-nytimes}(b), \textsf{Browser}
+communicates to \textsf{HTTPServer} by sending \textsf{GET} requests
+and receiving responses (\textsf{Resp}) in return. In addition, a
+malicious user (named \textsf{ReplayAttacker}) interacts with
+\textsf{Browser} by extracting a cookie from it
 (\textsf{ExtractCookie}), or overwriting an existing cookie at a
 particualr address (\textsf{SetCookie}); this allows
 \textsf{ReplayAttacker} to manipulate \textsf{Browser} into sending a
@@ -129,19 +137,37 @@ whethe the elaborated system still satisfies the desired
 property. This time, the analysis engine discovers a counterexample
 that demonstrates how the system might allow the reader to access an
 article beyond the limit. In this scenario, \textsf{Reader}, now
-acting like \textsf{ReplayAttacker}, extracts a cookie that represents
-the access counter prior to reaching the limit. Then, \textsf{Reader}
-simply overwrites the existing cookie with the extracted once the
-limit is exceeded, and \textsf{NYTimes} continues to serve
-\textsf{GetPage} requests from \textsf{Client}~\footnote{The actual
-  paywall system for the New York Times suffered this type of attack
-  when it was first introduced in 2008~\cite{nytimes-attack}.}. To
-prevent this type of attack, Alice modifies the system such that when
-\textsf{NYTimes} sends back a cookie, it generates and includes a
-unique token that cannot be guessed by \textsf{Reader}, thereby
-rendering old cookies invalid.
+acting like\comment{aleks}{as?} \textsf{ReplayAttacker}, extracts a
+cookie that represents the access counter prior to reaching the
+limit. Then, \textsf{Reader} simply overwrites the existing cookie
+with the extracted once the limit is exceeded, and \textsf{NYTimes}
+continues to serve \textsf{GetPage} requests from
+\textsf{Client}~\footnote{The actual paywall system for the New York
+  Times suffered this type of attack when it was first introduced in
+  2008~\cite{nytimes-attack}.}. To prevent this type of attack, Alice
+modifies the system such that when \textsf{NYTimes} sends back a
+cookie, it generates and includes a unique token that cannot be
+guessed by \textsf{Reader}, thereby rendering old cookies invalid.
+
+\comment{aleks}{CHECK: can we say the following?}
+
+\aleks{It is important to note that, to merge her initial model with
+  the cookie replay attack, Alice did not have to explicitly specify
+  that the \textsf{Reader} should be mapped to
+  \textsf{ReplayAttacker}.  In contrast, Alice only had to specify her
+  architectural decision to implement the system on top of HTTP, which
+  meant implementing \textsf{NYTimes::GetPage} as
+  \textsf{HTTPServer::GET} and \textsf{Client::SendPage} as
+  \textsf{Browser::Resp}.  The information about potential
+  vulnerability of HTTP systems to cookie replay is inherently present
+  in the repository model, and our system is able to take advantage of
+  it.}
 
 Alice may repeat the whole process again, elaborating the system model
 with further details from other types of attack models in the
 repository, and re-running the analysis engine to discover more
 potential design flaws.
+
+\comment{aleks}{General comments: (1) renaming suggestions: GetPage
+  $\rightarrow$ GetArticle, SendPage $\rightarrow$ ReceiveArticle,
+  Client $\rightarrow$ NYTClient, Resp $\rightarrow$ ReceiveResp}
