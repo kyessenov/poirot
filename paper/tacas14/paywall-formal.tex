@@ -1,0 +1,25 @@
+\def\view{\textbf{view}\xspace}
+\def\data{\textit{data}\xspace}
+
+\def\paywall{\textsf{Paywall}}
+
+\begin{figure}[ht]
+\centering
+  \begin{slangmath}
+    view Paywall
+
+    Paywall.data = {Page, Link, Counter}
+    Paywall.mods = {NYTimes, Client, Reader}
+
+    NYTimes.exports = {GetPage}
+    NYTimes.invokes = {SendPage}
+    NYTimes.stores  = {"articles" -|-> Map[Link, Page]}
+    NYTimes.cons    = {??}
+
+    // similar for Client and Reader
+
+    GetPage.args = {"link" -|-> Link, "currCounter" -|-> Counter}
+  \end{slangmath}
+
+\caption{Formal specification of the Paywall example.\label{fig-paywall-formal}}
+\end{figure}

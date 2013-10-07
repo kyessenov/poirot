@@ -137,7 +137,7 @@ whethe the elaborated system still satisfies the desired
 property. This time, the analysis engine discovers a counterexample
 that demonstrates how the system might allow the reader to access an
 article beyond the limit. In this scenario, \textsf{Reader}, now
-acting like\comment{aleks}{as?} \textsf{ReplayAttacker}, extracts a
+acting like\am{as?} \textsf{ReplayAttacker}, extracts a
 cookie that represents the access counter prior to reaching the
 limit. Then, \textsf{Reader} simply overwrites the existing cookie
 with the extracted once the limit is exceeded, and \textsf{NYTimes}
@@ -149,7 +149,7 @@ modifies the system such that when \textsf{NYTimes} sends back a
 cookie, it generates and includes a unique token that cannot be
 guessed by \textsf{Reader}, thereby rendering old cookies invalid.
 
-\comment{aleks}{CHECK: can we say the following?}
+\am{CHECK: can we say the following?}
 
 \aleks{It is important to note that, to merge her initial model with
   the cookie replay attack, Alice did not have to explicitly specify
@@ -168,6 +168,6 @@ with further details from other types of attack models in the
 repository, and re-running the analysis engine to discover more
 potential design flaws.
 
-\comment{aleks}{General comments: (1) renaming suggestions: GetPage
+\am{General comments: (1) renaming suggestions: GetPage
   $\rightarrow$ GetArticle, SendPage $\rightarrow$ ReceiveArticle,
   Client $\rightarrow$ NYTClient, Resp $\rightarrow$ ReceiveResp}
