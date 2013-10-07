@@ -20,3 +20,4 @@ _yardoc
 doc/
 alloy/*dot
 alloy/merged.*
+alloy/*pdf

@@ -28,8 +28,16 @@ Seculloy::Dsl.view :OAuth do
     end
   end
 
-  trusted UserAgent do
+  trusted UserAgent, { 
+    knownClients: (set ClientID)
+  } do
+    assumption {
+      # knownClients.all?{ |clientId| clientId.in? ClientServer.id }
+      knownClients.in? ClientServer.id
+    }
+
     operation InitFlow[redirect: URI, id: ClientID, scope: Scope] do
+      guard { id.in? knownClients }
       sends { EndUser::PromptForCred[redirect] }
     end
 

@@ -14,6 +14,7 @@ one sig EndUser extends Module {
 one sig UserAgent extends Module {
 	UserAgent__knownClients : set ClientID,
 }{
+	all o : this.receives[UserAgent__InitFlow] | (some (UserAgent__knownClients & arg[o.(UserAgent__InitFlow <: UserAgent__InitFlow__id)]))
 	all o : this.sends[EndUser__PromptForCred] | triggeredBy[o,UserAgent__InitFlow]
 	all o : this.sends[EndUser__PromptForCred] | o.(EndUser__PromptForCred <: EndUser__PromptForCred__uri) = o.trigger.((UserAgent__InitFlow <: UserAgent__InitFlow__redirect))
 	all o : this.sends[AuthServer__ReqAuth] | triggeredBy[o,UserAgent__EnterCred]
@@ -21,6 +22,7 @@ one sig UserAgent extends Module {
 	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__uri) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__uri))
 	all o : this.sends[ClientServer__SendAuthResp] | triggeredBy[o,UserAgent__Redirect]
 	all o : this.sends[ClientServer__SendAuthResp] | o.(ClientServer__SendAuthResp <: ClientServer__SendAuthResp__uri) = o.trigger.((UserAgent__Redirect <: UserAgent__Redirect__uri))
+	(some (ClientServer.ClientServer__id & UserAgent__knownClients))
 }
 
 -- module ClientServer
@@ -40,7 +42,7 @@ one sig AuthServer extends Module {
 	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
 	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
 	all o : this.sends[UserAgent__Redirect] | triggeredBy[o,AuthServer__ReqAuth]
-	all o : this.sends[UserAgent__Redirect] | o.(UserAgent__Redirect <: UserAgent__Redirect__uri) = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri))
+	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & AuthServer__authGrants[o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred))])))
 	all o : this.sends[ClientServer__SendAccessToken] | triggeredBy[o,AuthServer__ReqAccessToken]
 	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = AuthServer__accessTokens[o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant))]
 }
@@ -163,37 +165,46 @@ fact dataFacts {
 }
 
 -- datatype declarations
-sig AuthCode extends Data {
+abstract sig Payload extends Data {
+}{
+}
+sig AuthCode extends Payload {
 }{
 	no fields
 }
-sig AuthGrant extends Data {
+sig AuthGrant extends Payload {
 }{
 	no fields
 }
-sig Credential extends Data {
+sig Credential extends Payload {
 }{
 	no fields
 }
-sig AccessToken extends Data {
+sig AccessToken extends Payload {
 }{
 	no fields
 }
-sig Resource extends Data {
+sig Resource extends Payload {
 }{
 	no fields
 }
-sig ClientID extends Data {
+sig ClientID extends Payload {
 }{
 	no fields
 }
-sig Scope extends Data {
+sig Scope extends Payload {
+}{
+	no fields
+}
+sig Addr extends Data {
 }{
 	no fields
 }
 sig URI extends Data {
+	URI__addr : lone Addr,
+	URI__params : set Payload,
 }{
-	no fields
+	fields = URI__addr + URI__params
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -211,10 +222,6 @@ run SanityCheck {
 	all m : Module |
 		some sender.m & SuccessOp
 } for 1 but 9 Data, 10 Step, 9 Op
-
-check LimitedAccess {
-no t : Step | some UntrustedModule.accesses.t & Article and Browser.Browser__numAccessed in AboveLimit
-} for 1 but 9 Data, 10 Step, 9 Op, 1 Article
 
 check Confidentiality {
    Confidentiality
