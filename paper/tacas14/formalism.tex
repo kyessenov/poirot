@@ -14,70 +14,73 @@ such as Darwin~\cite{darwin}.
 \paragraph{\textbf{Structure}} In our approach, a system consists of a set of
 modules $M$ that asynchronously communicate with each other through
 operations $O$.  Each module \textit{exports} zero or more operations
-at its interface, and \textit{stores} some set of data $D$ that can be
-transmitted to another module by \textit{invoking} the latter's
-operations.\footnote{For convenience, we use the dot (.) notation to refer
-  a tuple element by name; for example, $m.exports$ refers to $exports$
-  element of module $m$.}.
+at its interface, and \textit{stores} some set of data $D$\fix{ that
+  can be transmitted}{. Data can flow from one} to another module
+\fix{by \textit{invoking} the latter's operations}{only by means of
+  operation \textit{invocations}; this enables our system to
+  accurately track data flows and automatically check standard
+  information flow properties such as \textit{integrity} and
+  \textit{confidentiality}}.\am{This data flow business is certainly
+  important, but I'm not sure it belongs here.  Maybe move it a few
+  paragraphs below, where it talks about passing arguments.}
 
 \begin{figure}[!t]
 \fbox{
 \begin{minipage}[t]{0.45\linewidth}
-\textbf{Sorts}
-
-$M, O, D, V$ 
-
-$N, F$ \hfill{\color{comment} // Name, Formula}\\
-
-\textbf{Module} ($M$)
-
-$exports : \mathcal P (O)$ \hfill{\color{comment} // exported ops}
-
-$invokes : \mathcal P (O)$ \hfill{\color{comment} // invoked ops}
-
-$stores : N \pfun D$ \hfill{\color{comment} // stored data}
-
-$cons : O \pfun \mathcal P (F)$ \hfill{\color{comment} // constraints}
+\begin{tabular}{@{\quad}l@{\quad}l}
+\multicolumn{2}{l}{\textbf{Sorts}} \\
+$M, O, D, V$                    & \\
+$N, F$                          & \color{comment} // Name, Formula\\
+\\
+\multicolumn{2}{l}{\textbf{Module} ($M$)} \\
+$exports : \mathcal P (O)$      & \color{comment} // exported ops \\
+$invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
+$stores : N \pfun D$            & \color{comment} // stored data \\
+$cons : O \pfun \mathcal P (F)$ & \color{comment} // constraints \ 
+\end{tabular}
 \end{minipage}
 \quad
 \begin{minipage}[t]{0.45\linewidth}
-\textbf{Operation} ($O$)
-
-$args : N \pfun D$ \hfill{\color{comment} // arguments} \\
-
-\textbf{Data} ($D$)
-
-$fields : N \pfun D$ \hfill{\color{comment} // data fields} \\
-
-\textbf{View} ($V$)
-
-$mods : \mathcal P (M)$ \hfill{\color{comment} // modules}
-
-$data : \mathcal P (D)$ \hfill{\color{comment} // data types}
+\begin{tabular}{@{\quad}l@{\quad}l}
+\multicolumn{2}{l}{\textbf{Operation} ($O$)} \\
+$args : N \pfun D$       & \color{comment} // arguments \\
+\\
+\multicolumn{2}{l}{\textbf{Data} ($D$)} \\
+$fields : N \pfun D$     & \color{comment} // data fields \\
+\\
+\multicolumn{2}{l}{\textbf{View} ($V$)} \\
+$mods : \mathcal P (M)$  & \color{comment} // modules \\
+$data : \mathcal P (D)$  & \color{comment} // data types \\
+\end{tabular}
 \end{minipage}
- }
+}
 \caption{Basic components of our modeling formalism.}
 \label{fig-formalism}
 \end{figure}
 
 For example, consider the \textsf{NYTimes} server from
 Figure~\ref{fig-nytimes}(a). One way to specify this module in our
-approach is as follows:
+approach is as follows\footnote{For convenience, we use the dot
+  (.) notation to refer a tuple element by name; for example,
+  $m.exports$ refers to $exports$ element of module $m$.}:
 \begin{align*}
 &\textsf{NYTimes}.exports = \textsf{GetPage}\\
 &\textsf{NYTimes}.invokes = \textsf{SendPage}\\
 &\textsf{NYTimes}.stores(\textsf{articles}) \in
-\textsf{Map[Link,Page]}
+\textsf{Map[Link,Page]} \am{\mbox{why $\in$ and not $=$? \textsf{Map} is also undefined, as well as the \textsf{Map[K,V]} syntax}}
 \end{align*}
 where $\textsf{GetPage} \subseteq O$ is the type of operation that
 corresponds to a request for an article page, and $\textsf{SendPage}
 \subseteq O$ is the type of operation for transferring a page to
 $\textsf{Client}$. $\textsf{Map[Link,Page]} \subseteq D$ represents a
-type of data structure that maps a link to a page.
+type of data structure that maps a link to a page. \am{No
+  need to explain these operations/datatypes again}
 
-Each operation $o \in O$ is associated with zero or more named
-\textit{arguments}, which the invoker uses to transmit data to its
-exporter. For example, every operation $o$ of type
+Each operation $o \in O$ \fix{is associated with}{has} zero or more
+named \textit{arguments}\fix{, which the invoker uses to transmit data
+  to its exporter}{; a module invoking an operation transmits data to
+  the module exporting that operation by setting the operation's
+  arguments}. For example, every operation $o$ of type
 $\textsf{GetPage}$ carries two arguments: a link to an article
 ($\textsf{link}$), and a counter ($\textsf{currCounter}$) that
 represents the number of articles accessed; i.e.,
@@ -140,3 +143,5 @@ the set of operations that $m$ exports or invokes (i.e., $m.exports
 constraint for an operation that it exports or invokes,
 then it is assigned truth value $\top$ (i.e., the operation is always
 allowed).
+
+\input{paywall-formal.tex}
