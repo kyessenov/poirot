@@ -1,0 +1,142 @@
+
+\section{Formalism}
+\label{sec-formalism}
+
+% Before describing how we reconcile the types of mismatch that we
+% discussed in Section~\ref{sec-mismatch}, we first introduce the
+% underlying formalism that is used for specifying systems, attacks, and
+% security properties.
+In this section, we first introduce the underlying formalism that our
+framework uses to specify a system and its behavior. Our modeling
+approach is based on standard event-based architectural formalisms
+such as Darwin~\cite{darwin}.
+
+\paragraph{\textbf{Structure}} In our approach, a system consists of a set of
+modules $M$ that asynchronously communicate with each other through
+operations $O$.  Each module \textit{exports} zero or more operations
+at its interface, and \textit{stores} some set of data $D$ that can be
+transmitted to another module by \textit{invoking} the latter's
+operations.\footnote{For convenience, we use the dot (.) notation to refer
+  a tuple element by name; for example, $m.exports$ refers to $exports$
+  element of module $m$.}.
+
+\begin{figure}[!t]
+\fbox{
+\begin{minipage}[t]{0.45\linewidth}
+\textbf{Sorts}
+
+$M, O, D, V$ 
+
+$N, F$ \hfill{\color{comment} // Name, Formula}\\
+
+\textbf{Module} ($M$)
+
+$exports : \mathcal P (O)$ \hfill{\color{comment} // exported ops}
+
+$invokes : \mathcal P (O)$ \hfill{\color{comment} // invoked ops}
+
+$stores : N \pfun D$ \hfill{\color{comment} // stored data}
+
+$cons : O \pfun \mathcal P (F)$ \hfill{\color{comment} // constraints}
+\end{minipage}
+\quad
+\begin{minipage}[t]{0.45\linewidth}
+\textbf{Operation} ($O$)
+
+$args : N \pfun D$ \hfill{\color{comment} // arguments} \\
+
+\textbf{Data} ($D$)
+
+$fields : N \pfun D$ \hfill{\color{comment} // data fields} \\
+
+\textbf{View} ($V$)
+
+$mods : \mathcal P (M)$ \hfill{\color{comment} // modules}
+
+$data : \mathcal P (D)$ \hfill{\color{comment} // data types}
+\end{minipage}
+ }
+\caption{Basic components of our modeling formalism.}
+\label{fig-formalism}
+\end{figure}
+
+For example, consider the \textsf{NYTimes} server from
+Figure~\ref{fig-nytimes}(a). One way to specify this module in our
+approach is as follows:
+\begin{align*}
+&\textsf{NYTimes}.exports = \textsf{GetPage}\\
+&\textsf{NYTimes}.invokes = \textsf{SendPage}\\
+&\textsf{NYTimes}.stores(\textsf{articles}) \in
+\textsf{Map[Link,Page]}
+\end{align*}
+where $\textsf{GetPage} \subseteq O$ is the type of operation that
+corresponds to a request for an article page, and $\textsf{SendPage}
+\subseteq O$ is the type of operation for transferring a page to
+$\textsf{Client}$. $\textsf{Map[Link,Page]} \subseteq D$ represents a
+type of data structure that maps a link to a page.
+
+Each operation $o \in O$ is associated with zero or more named
+\textit{arguments}, which the invoker uses to transmit data to its
+exporter. For example, every operation $o$ of type
+$\textsf{GetPage}$ carries two arguments: a link to an article
+($\textsf{link}$), and a counter ($\textsf{currCounter}$) that
+represents the number of articles accessed; i.e.,
+\begin{align*}
+  &dom(o.args) = \{ \textsf{link}, \textsf{currCounter} \} \\
+  &o.args(\textsf{link}) \in \textsf{Link} \land
+  o.args(\textsf{currCounter}) \in \textsf{Int}
+\end{align*}
+Additionally, each data element may be assigned a named set of
+\textit{fields}, allowing construction of complex data types from
+simple ones.
+
+Finally, a system view $v \in V$ is simply defined as a set of modules
+($v.mods$) and data types ($v.data$). 
+
+\paragraph{\textbf{Behavior}} A module may not allow every incoming
+operation, and may not send out arbitrary messages to other
+modules. For every type of operation that it exports, the module can
+impose a constraint on the set of the operations that it is willing to
+accept; the function $cons$ is used to specify such a constraint. For
+example, \textsf{NYTimes} may only accept an incoming request for an
+article only if \textsf{currCounter} provided with the request does
+not exceed the limit. Formally, for each operation $o$ of type
+\textsf{GetPage}, $\textsf{NYTimes}.cons(o)$ returns a formula $f$
+such that
+\begin{align*}
+f \equiv o.args(\textsf{currCounter}) \leq \textsf{LIMIT}
+\end{align*}
+where $\textsf{LIMIT}$ is a constant that represents the number of
+allowed articles.
+
+Similarly, a module may impose a constraint on the set of operations
+that it can send out. For example, the authorization server may invoke
+\textsf{SendPage} on the client only if it has already received and
+accepted a valid \textsf{GetPage} message. In addition,
+\textsf{SendPage} must include, as arguments, an article that
+corresponds to the requested link, and an increment of the current
+counter. Formally, for every $o \in m.invokes \cap \textsf{SendPage}$,
+$\textsf{NYTimes}.cons(o)$ returns formula $f$ such that:
+\begin{align*}
+f \equiv \exists o' \in \textsf{GetPage} \cdot & o.args(\textsf{page}) =
+(\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
+\land \\
+& o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1
+\end{align*}
+
+In effect, constraints in $cons$ are being used to
+declaratively specify the behavior of a module in terms of input and
+output operations that it is allowed to perform. The overall behavior
+of module $m$ is characterized by sets $m.in$ and $m.out$:
+\begin{align*}
+m.in = \{ o \in m.exports \;|\; \bigwedge m.cons(o) \} \\
+m.out = \{ o \in m.invokes \;|\; \bigwedge m.cons(o) \}
+\end{align*}
+Intuitively, $m.in$ represents the set of incoming operations that $m$
+accepts, and $m.out$ represents the set of invocations that $m$ is
+allowed to make. Note that the domain of $m.cons$ is restricted to
+the set of operations that $m$ exports or invokes (i.e., $m.exports
+\cup m.invokes$). We assume that if the analyst does not specify a
+constraint for an operation that it exports or invokes,
+then it is assigned truth value $\top$ (i.e., the operation is always
+allowed).

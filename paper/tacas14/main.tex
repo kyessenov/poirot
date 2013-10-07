@@ -1,0 +1,119 @@
+% This is LLNCS.DEM the demonstration file of
+% the LaTeX macro package from Springer-Verlag
+% for Lecture Notes in Computer Science,
+% version 2.4 for LaTeX2e as of 16. April 2010
+%
+\documentclass{llncs}
+%
+%\usepackage{makeidx}  % allows for indexgeneration
+\usepackage{graphicx}
+%\usepackage[caption=false,font=scriptsize]{subfig}
+\usepackage[font=scriptsize]{subfig}
+\usepackage{caption}
+\captionsetup{font=scriptsize,labelfont=scriptsize}
+\renewcommand{\labelitemi}{$\bullet$}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{framed}
+\usepackage{centernot}
+\usepackage{boxedminipage}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{float}
+\newfloat{algorithm}{t}{lop}
+\newcommand*\Let[2]{\State #1 $\gets$ #2}
+\usepackage{xcolor}
+\definecolor{comment}{rgb}{0,0.5,0.0}
+\newcommand\todo[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand\pfun{\mathrel{\ooalign{\hfil$\mapstochar\mkern5mu$\hfil\cr$\to$\cr}}}
+\newtheorem{defn}{Definition}
+\newtheorem{thm}{Theorem}
+\setlength{\belowcaptionskip}{-10pt}
+
+%\newcommand\sf[1]{\textsf{#1}}
+
+%
+\begin{document}
+%
+
+%\title{Explaining Security Failures with Domain-Specific Models}
+\title{SLANG: SECURITY SOLVED}
+%
+%
+\author{Eunsuk Kang, Aleksandar Milicevic, and Daniel Jackson}
+%
+%%%% list of authors for the TOC (use if author list has to be modified)
+\institute{Computer Science and Artificial Intelligence Laboratory\\
+Massachusetts Institute of Technology\\
+\email{\{eskang,dnj\}@mit.edu}}
+
+\maketitle              % typeset the title of the contribution
+
+\begin{abstract}
+  When a formal analysis procedure suceeds, one may be tempted to jump to
+  the conclusion that the system satisfies the desired property. In
+  practice, the system may suffer from a violation of the property,
+  despite the successful analysis, because the model used in the
+  analysis omits details about the system that could lead to the
+  violation. Constructing a model that adequately captures all
+  relevant aspects of a system, however, is a challeging task that is
+  often carried out in an ad-hoc fashion.
+
+  In this paper, we propose a framework to aid a
+  system analyst in incremental construction and analysis of a system
+  model. The key component of our framework is a model-merging
+  technique that incrementally elaborates an initial, partial system
+  model by composing it against a repository of domain-specific
+  models. We apply our framework to an analysis of two well-known web
+  security protocols--OAuth and OpenID.
+\end{abstract}
+
+\input{intro}
+\input{overview}
+\input{formalism}
+\input{merging}
+\input{implementation}
+\input{evaluation}
+\input{related_work}
+\input{discussion}
+
+%
+% ---- Bibliography ----
+%
+%\begin{thebibliography}{0}
+%
+% \bibitem {clar:eke}
+% Clarke, F., Ekeland, I.:
+% Nonlinear oscillations and
+% boundary-value problems for Hamiltonian systems.
+% Arch. Rat. Mech. Anal. 78, 315--333 (1982)
+
+% \bibitem {clar:eke:2}
+% Clarke, F., Ekeland, I.:
+% Solutions p\'{e}riodiques, du
+% p\'{e}riode donn\'{e}e, des \'{e}quations hamiltoniennes.
+% Note CRAS Paris 287, 1013--1015 (1978)
+
+% \bibitem {mich:tar}
+% Michalek, R., Tarantello, G.:
+% Subharmonic solutions with prescribed minimal
+% period for nonautonomous Hamiltonian systems.
+% J. Diff. Eq. 72, 28--55 (1988)
+
+% \bibitem {tar}
+% Tarantello, G.:
+% Subharmonic solutions for Hamiltonian
+% systems via a $\bbbz_{p}$ pseudoindex theory.
+% Annali di Matematica Pura (to appear)
+
+% \bibitem {rab}
+% Rabinowitz, P.:
+% On subharmonic solutions of a Hamiltonian system.
+% Comm. Pure Appl. Math. 33, 609--633 (1980)
+%\end{thebibliography}
+
+\bibliographystyle{splncs}
+\bibliography{main}
+
+\end{document}
+
