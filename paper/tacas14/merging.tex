@@ -1,73 +1,71 @@
 
-\section{Merging Views}
+\section{Technique for Merging Models}
 \label{sec-merging}
 
 In this section, we describe a technique for merging two potentially
-mistmached models---one representing the analyst's view of the system,
-and the other representing the attacker's view. The composition
-process is two-fold. First, the analyst specifies the relationship
-between two views as a mapping between different elements of the
-views. Then, given this mapping, we apply a merging algorithm to
-produce a new view that retains the characteristics of the two,
-with potentially new behaviors that arise from the interaction of
-the modules from the previously separate views.
+mistmached models that describe different aspects of a system. The
+merging process is two-fold. First, the analyst specifies the
+relationship between two views as a mapping between different elements
+of the views. Then, given this mapping, we apply a merging algorithm
+to produce a new view that retains the characteristics of the two,
+with potentially new behaviors that arise from the interaction of the
+modules from the previously separate views.
 
 \subsection{Specifying Relationships}
 \label{sec-relationship}
 
-To resolve the types of mismatch that we discussed in
-Section~\ref{sec-mismatch}, the analyst may specify a relationship
-between a pair of modules, operations, or data elements. 
-Our notion of a relationship between two elements is that of
-\textit{is-a} relationship. Informally, two elements are related if
-they both describe the characteristics of the same entity, but one is
-a more generic representation of the other. For example,
-\textsf{AuthorizationServer} can be regarded as a specialized kind of
-\textsf{TrustedServer} with the role of controlling access to access
-tokens that it stores.  A similar kind of relationship can be
-introduced between operations or data elements. Operation
-\textsf{reqAccessToken}, implemented using a generic HTTP request, can
-be regarded as a type of operation \textsf{httpReq}. Similarly,
-since an access token is simply encoded as a string in the body of an
-HTTP message, \textsf{Token} may be regarded as instances of
-\textsf{String}.
+To resolve potential mismatch between two models, the analyst may
+specify a relationship between a pair of modules, operations, or data
+elements. Our notion of a relationship between two entities is that of
+a \textit{subset} relation. Informally, two entities are related if
+they both describe the same concept in the real world, but one is a
+generic representation of the other. For example,
+\textsf{NYTimes} can be regarded as a specialized type of
+\textsf{HTTPServer} with the role of controlling access to articles
+that it stores.  A similar kind of relationship can be introduced
+between operations or data elements. Operation \textsf{GetPage},
+implemented using a generic HTTP request, can be regarded as a type of
+\textsf{GET} operation. Similarly, since a counter is stored as a
+cookie, \textsf{Counter} can be treated as a type of \textsf{Cookie}.
 
-Formally, relationship $r \in R$ between two views is a tuple 
-\begin{equation*}
-<r_{M}, r_{O}, r_{D}>
-\end{equation*}
-where $r_{M} \subseteq M \times M$, $r_{O} \subseteq \mathcal P (O)
-\times \mathcal P (O)$, and $r_{D} \subseteq \mathcal P (D) \times
-\mathcal P (D)$ represent relationships between a pair of modules,
-operation sets, and data sets, respectively. As a requirement on these
-relations, an element cannot be related to another element from the
-same view.
-
-For example, to merge the OAuth and CSRF models from
-Figure~\ref{fig-oauth}, the analyst may specify the following
+\begin{defn} A relationship $r \in R$ between two views is a tuple
+  $(r_{M}, r_{O}, r_{D})$ where $r_{M} \subseteq M \times M$, $r_{O}
+  \subseteq \mathcal P (O) \times \mathcal P (O)$, and $r_{D}
+  \subseteq \mathcal P (D) \times \mathcal P (D)$ represent
+  declarations of subset relations between a pair of modules,
+  operation sets, and data types, respectively.
+\end{defn}
+For example, to merge the paywall and cookie replay models from
+Figure~\ref{fig-nytimes}, Alice may specify the following
 relationships between the two views:
 \begin{align*}
-   r_{M} = \{&(\textsf{Client$,$ Browser}),(\textsf{ResourceOwner$,$
-    EndUser}), \\&(\textsf{AuthorizationServer$,$
-    TrustedServer}),\\&(\textsf{ResourceServer$,$
-    TrustedServer})\} \\
-  r_{O} = \{&(\textsf{reqAccessToken$,$httpReq}),(\textsf{sendResp$,$httpResp}),  ...\}\\
-  r_{D} =
-  \{&\textsf{(Token$,$String)},\textsf{(Credential$,$Cookie)}, ...\} 
+  r_{M} = \{&(\textsf{Client$,$ Browser}),(\textsf{NYTimes$,$
+    HTTPServer}), (\textsf{Reader$,$
+    ReplayAttacker})\} \\
+  r_{O} = \{&(\textsf{GetPage$,$ GET}), (\textsf{GET$,$ GetPage}),
+  (\textsf{SendPage$,$
+    Resp})\}\\
+  r_{D} = \{&(\textsf{Article$,$ HTML}),(\textsf{Link$,$ URL}),
+  (\textsf{Counter$,$ Cookie})\}
 \end{align*}
+A subset relationship is asymmetrical, and so two entities can be
+specified as equivalent by including a tuple and its inverse in the
+same relation; for this example, Alice here indicates that the
+set of operations of type \textsf{GetPage} is exactly those
+operations of type \textsf{GET}.
 
-Intuitively, these relationships correspond to the system designer's
-decisions about how modules, operations, and data are to be realized
-and implemented. By varying these relationships, the designer can
-explore the security implications of different design decisions. For
-example, in another variation of OAuth, the designer may decide to
-deploy \textsf{Client} as a server-side application instead of a
-client-side application running on the top of a browser; in this
-case,\textsf{Client} and \textsf{TrustedServer} would be specified as
-an entry in $r_{M}$. As a consequence of this relationship,
-\textsf{Client} would inherit the characteristics of
-\textsf{TrustedServer}, and now be susceptible to server-side attacks
-instead of browser-based ones.
+% Intuitively, these relationships correspond to the system designer's
+% decisions about how modules, operations, and data are to be realized
+% and implemented. By varying these relationships, the designer can
+% explore the security implications of different design decisions. For
+% example, in another variation of OAuth, the designer may decide to
+% deploy \textsf{Client} as a server-side application instead of a
+% client-side application running on the top of a browser; in this
+% case,\textsf{Client} and \textsf{TrustedServer} would be specified as
+% an entry in $r_{M}$. As a consequence of this relationship,
+% \textsf{Client} would inherit the characteristics of
+% \textsf{TrustedServer}, and now be susceptible to server-side attacks
+% instead of browser-based ones.
 
 \begin{algorithm}[!t]
 \begin{algorithmic}[1]
@@ -166,11 +164,11 @@ instead of browser-based ones.
 The algorithm for merging, shown in Algorithm~\ref{alg-merge-views},
 accepts two views, $v1, v2 \in V$, and a relationship $r \in R$
 between them, and produces a new view, $v' \in V$. The algorithm is
-divided into two steps. First, for every pair of elements specified in
-$r$, it merges the two elements into a single element that retains the
-characteristics of the two original elements (Line 2). Then, the
-algorithm builds a new view by replacing the original elements in
-$r$ with the new elements (Line 3).
+divided into two steps. First, for every pair of entities specified in
+$r$, it merges the two entities into a single entity that retains the
+characteristics of the two original entities (Line 2). Then, the
+algorithm builds a new view by replacing the original entities in
+$r$ with the new entities (Line 3).
 
 % \begin{figure*}[!t]
 % \centering
@@ -179,9 +177,9 @@ $r$ with the new elements (Line 3).
 % \label{fig-merged-oauth-csrf}
 % \end{figure*}
 
-\subsubsection{Merging Related Elements}
+\subsubsection{Merging Related Entities}
 
-For every pair of elements $e1, e2$ specified in $r$, our goal is to
+For every pair of entities $e1, e2$ specified in $r$, our goal is to
 produce a new element $e'$ that can substitute for both $e1$ and
 $e2$. The procedure \textsf{BuildMapping} performs this task in
 two-fold, first merging each pair of related data sets (Line 7), and
@@ -208,7 +206,7 @@ $D2$.
 The embedding establishes a subset relation between $D1$ and $D2$ by
 ensuring that every element $d$ of $D1$ has a unique counterpart
 $f(d)$ that is a member of $D2$. In Line 27, all of the data fields
-that are associated with elements of $D1$ are added to their
+that are associated with entities of $D1$ are added to their
 counterparts in $D'$, in addition to the fields that are assigned to
 elements of $D2$. Then, in the merged view $v'$, $D1$ can be replaced
 with $D'$ without invalidating references to $D1$ in the original view

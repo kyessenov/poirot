@@ -18,7 +18,20 @@ at its interface, and \textit{stores} some set of data $D$ that can be
 transmitted to another module by \textit{invoking} the latter's
 operations.\footnote{For convenience, we use the dot (.) notation to refer
   a tuple element by name; for example, $m.exports$ refers to $exports$
-  element of module $m$.}.
+  element of module $m$.}. For example, consider the \textsf{NYTimes} server from
+Figure~\ref{fig-nytimes}(a). One way to specify this module in our
+approach is as follows:
+\begin{align*}
+&\textsf{NYTimes}.exports = \textsf{GetPage}\\
+&\textsf{NYTimes}.invokes = \textsf{SendPage}\\
+&\textsf{NYTimes}.stores(\textsf{articles}) \in
+\textsf{Map[Link,Page]}
+\end{align*}
+where $\textsf{GetPage} \subseteq O$ is the type of operation that
+corresponds to a request for an article page, and $\textsf{SendPage}
+\subseteq O$ is the type of operation for transferring a page to
+$\textsf{Client}$. $\textsf{Map[Link,Page]} \subseteq D$ represents a
+type of data structure that maps a link to a page.
 
 \begin{figure}[!t]
 \fbox{
@@ -59,21 +72,6 @@ $data : \mathcal P (D)$ \hfill{\color{comment} // data types}
 \caption{Basic components of our modeling formalism.}
 \label{fig-formalism}
 \end{figure}
-
-For example, consider the \textsf{NYTimes} server from
-Figure~\ref{fig-nytimes}(a). One way to specify this module in our
-approach is as follows:
-\begin{align*}
-&\textsf{NYTimes}.exports = \textsf{GetPage}\\
-&\textsf{NYTimes}.invokes = \textsf{SendPage}\\
-&\textsf{NYTimes}.stores(\textsf{articles}) \in
-\textsf{Map[Link,Page]}
-\end{align*}
-where $\textsf{GetPage} \subseteq O$ is the type of operation that
-corresponds to a request for an article page, and $\textsf{SendPage}
-\subseteq O$ is the type of operation for transferring a page to
-$\textsf{Client}$. $\textsf{Map[Link,Page]} \subseteq D$ represents a
-type of data structure that maps a link to a page.
 
 Each operation $o \in O$ is associated with zero or more named
 \textit{arguments}, which the invoker uses to transmit data to its
