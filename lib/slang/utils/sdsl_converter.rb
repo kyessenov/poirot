@@ -8,7 +8,7 @@ require 'sdsl/myutils'
 
 require 'slang/model/operation'
 
-module Seculloy
+module Slang
   module Utils
 
     class SdslConverter
@@ -18,7 +18,7 @@ module Seculloy
         @must_find_in_cache = nil
       end
 
-      # @param view [Module(? < Seculloy::Model::View)]
+      # @param view [Module(? < Slang::Model::View)]
       # @return [View]
       def convert_view(view)
         @assignlhs = false
@@ -53,7 +53,7 @@ module Seculloy
         @must_find_in_cache = nil
       end
 
-      # @param data [Class(? < Seculloy::Model::Data)]
+      # @param data [Class(? < Slang::Model::Data)]
       # @return [Datatype]
       def convert_data(data)
         cache_or("data", data) do
@@ -73,7 +73,7 @@ module Seculloy
         end
       end
 
-      # @param mod [Class(? < Seculloy::Model::Module)]
+      # @param mod [Class(? < Slang::Model::Module)]
       # @return [Mod]
       def convert_module(mod)
         cache_or("module", mod) do
@@ -130,7 +130,7 @@ module Seculloy
         }
       end
 
-      # @param op [Class(? < Seculloy::Model::Operation)]
+      # @param op [Class(? < Slang::Model::Operation)]
       # @return [Op]
       def convert_op_to_exports(op)
         Op.new "#{_op_name op}",
@@ -139,7 +139,7 @@ module Seculloy
                     op.meta.effects.map(&method(:convert_effect)))
       end
 
-      # @param op [Class(? < Seculloy::Model::Operation)]
+      # @param op [Class(? < Slang::Model::Operation)]
       # @return [Array(Op)]
       def convert_op_to_invokes(op)
         op.meta.triggers.map { |fun|
@@ -178,12 +178,12 @@ module Seculloy
       end
 
       # @param trigger_fun [Alloy::Ast::Fun]
-      # @param op [Class(? < Seculloy::Model::Operation)]
+      # @param op [Class(? < Slang::Model::Operation)]
       # @return [Array(Op)]
       def convert_trigger(trigger_fun, op=nil)
         body = trigger_fun.sym_exe_invoke
         case
-        when ::Class === body && body < Seculloy::Model::Operation
+        when ::Class === body && body < Slang::Model::Operation
           convert_trigger_expr(body.some(), op)
         when ::Array === body
           body.map{|e| convert_trigger_expr(e, op)}.flatten
@@ -193,11 +193,11 @@ module Seculloy
       end
 
       # @param trig_constr [Alloy::Ast::MExpr]
-      # @param op [Class(? < Seculloy::Model::Operation)]
+      # @param op [Class(? < Slang::Model::Operation)]
       # @return [Op]
       def convert_trigger_expr(trig_expr, op=nil)
         case
-        when Seculloy::Model::OpConstr === trig_expr
+        when Slang::Model::OpConstr === trig_expr
           when_constr = []
           when_constr << triggeredBy(_op_name(op).to_sym) if op
           when_constr += trig_expr.constr.map(&method(:convert_expr))
@@ -293,12 +293,12 @@ module Seculloy
         end
       end
 
-      # @param be [Seculloy::Model::ParentModExpr]
+      # @param be [Slang::Model::ParentModExpr]
       def convert_parentmodexpr(pme)
         fail "didn't expect to see a ParentModExpr on its own"
       end
 
-      # @param be [Seculloy::Model::ParentModJoinExpr]
+      # @param be [Slang::Model::ParentModJoinExpr]
       def convert_parentmodjoinexpr(pmje)
         convert_expr(pmje.join_expr.rhs)
       end
@@ -371,10 +371,10 @@ module Seculloy
 
       def _sig_name(sig_cls)
         case
-        when sig_cls == Seculloy::Model::Operation; "Op"
-        when sig_cls < Seculloy::Model::Operation; _op_name(sig_cls)
-        when sig_cls < Seculloy::Model::Module;    _mod_name(sig_cls)
-        when sig_cls < Seculloy::Model::Data;      _data_name(sig_cls)
+        when sig_cls == Slang::Model::Operation; "Op"
+        when sig_cls < Slang::Model::Operation; _op_name(sig_cls)
+        when sig_cls < Slang::Model::Module;    _mod_name(sig_cls)
+        when sig_cls < Slang::Model::Data;      _data_name(sig_cls)
         else
           fail "Unknown sig cls: #{sig_cls}"
         end

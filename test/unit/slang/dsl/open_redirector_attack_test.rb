@@ -28,10 +28,10 @@ class ReplayAttackTest < Test::Unit::TestCase
   def test_user
     assert_equal 1, User.meta.guards.size
     assert guard_expr=User.meta.guards.first.sym_exe    
-    assert Seculloy::Utils::SdslConverter.new.convert_expr(guard_expr)
+    assert Slang::Utils::SdslConverter.new.convert_expr(guard_expr)
 
     assert_equal 1, User.meta.triggers.size
-    assert Seculloy::Utils::SdslConverter.new.convert_trigger(User.meta.triggers.first)
+    assert Slang::Utils::SdslConverter.new.convert_trigger(User.meta.triggers.first)
   end
 
   def test_to_sdsl

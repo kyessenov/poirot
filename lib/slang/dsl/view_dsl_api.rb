@@ -5,24 +5,24 @@ require 'slang/model/module'
 require 'slang/model/view'
 require 'sdg_utils/dsl/syntax_error'
 
-module Seculloy
+module Slang
   module Dsl
 
     module ViewDslApi
       include Alloy::Dsl::ModelDslApi
-      include Seculloy::Dsl::TypeModHelper
+      include Slang::Dsl::TypeModHelper
       extend self
 
       def data(*args)
         Alloy::Dsl::SigBuilder.new(
-          :superclass => Seculloy::Model::Data,
+          :superclass => Slang::Model::Data,
           :return     => :builder
         ).sig(*args)
       end
 
       def mod(*args, &block)
         Alloy::Dsl::SigBuilder.new(
-          :superclass => Seculloy::Model::Module,
+          :superclass => Slang::Model::Module,
           :return     => :builder
         ).sig(*args, &block)
       end
@@ -33,11 +33,11 @@ module Seculloy
                     else
                       [mod(*args, &block), nil]
                     end
-        blder.apply_modifier("trusted", Seculloy::Model::Module, &blk)
+        blder.apply_modifier("trusted", Slang::Model::Module, &blk)
       end
 
       def many(blder, &block)
-        blder.apply_modifier("many", Seculloy::Model::Module, &block)
+        blder.apply_modifier("many", Slang::Model::Module, &block)
       end
 
       def critical(*data_classes)
@@ -50,7 +50,7 @@ module Seculloy
       end
 
       def __create_model(scope_module)
-        Seculloy::Model::View.new(scope_module, self)
+        Slang::Model::View.new(scope_module, self)
       end
 
     end

@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :EavesdropperAttack do
+Slang::Dsl.view :EavesdropperAttack do
   data Packet
 
   trusted EndpointA do

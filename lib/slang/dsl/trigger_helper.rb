@@ -1,7 +1,7 @@
 require 'alloy/dsl/fun_helper'
 require 'sdg_utils/random'
 
-module Seculloy
+module Slang
   module Dsl
 
     # REQUIREMENT: `meta.add_trigger(t)' method chain must be
@@ -13,9 +13,9 @@ module Seculloy
       def triggers(&block)
         name = "triggers_#{SDGUtils::Random.salted_timestamp}"
         t = fun(name, {}, nil, &block)
-        expr_kind = if t.owner < Seculloy::Model::Operation
+        expr_kind = if t.owner < Slang::Model::Operation
                       "trig"
-                    elsif t.owner < Seculloy::Model::Module
+                    elsif t.owner < Slang::Model::Module
                       "parent_mod"
                     else
                       fail "Didn't expect trigger to be included in #{t.owner}"

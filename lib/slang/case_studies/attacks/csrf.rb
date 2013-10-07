@@ -1,10 +1,10 @@
 require 'slang/slang_dsl'
 require 'slang/model/operation'
 
-include Seculloy::Dsl
-include Seculloy::Model
+include Slang::Dsl
+include Slang::Model
 
-Seculloy::Dsl.view :CSRF do
+Slang::Dsl.view :CSRF do
 
   abstract data Payload
   data Cookie       < Payload

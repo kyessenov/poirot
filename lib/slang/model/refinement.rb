@@ -4,7 +4,7 @@ require 'slang/model/view'
 require 'slang/model/operation'
 require 'sdg_utils/lambda/sourcerer'
 
-module Seculloy
+module Slang
   module Model
 
     module Helpers
@@ -14,20 +14,20 @@ module Seculloy
         views.each do |view|
           Alloy::Ast::TypeChecker.check_alloy_module(view, "Not a View module!")
           msg = "`#{view}' is not a view module"
-          raise Alloy::Ast::TypeError, msg unless Seculloy::Model::View === view.meta
+          raise Alloy::Ast::TypeError, msg unless Slang::Model::View === view.meta
         end
       end      
 
       def check_subcls(parent_cls, *klasses)
         klasses.each do |klass|
-          msg = "`#{klass}' is not a Seculloy #{parent_cls.relative_name} class"
+          msg = "`#{klass}' is not a Slang #{parent_cls.relative_name} class"
           raise Alloy::Ast::TypeError, msg unless klass < parent_cls
         end
       end
 
-      def check_module(*mods) check_subcls(Seculloy::Model::Module, *mods) end
-      def check_data(*data)   check_subcls(Seculloy::Model::Data, *data) end
-      def check_op(*ops)      check_subcls(Seculloy::Model::Operation, *ops) end
+      def check_module(*mods) check_subcls(Slang::Model::Module, *mods) end
+      def check_data(*data)   check_subcls(Slang::Model::Data, *data) end
+      def check_op(*ops)      check_subcls(Slang::Model::Operation, *ops) end
 
       def proc_src(proc)
         SDGUtils::Lambda::Sourcerer.proc_to_src_and_loc(proc)
@@ -46,7 +46,7 @@ module Seculloy
       include Helpers
       extend Helpers
 
-      # @param views [Array(Seculloy::Model::View)]
+      # @param views [Array(Slang::Model::View)]
       def self.define(*views, &block)
         ans = self.new(*views)
         inst_eval_block(ans, block) if block

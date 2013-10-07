@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :NYT do
+Slang::Dsl.view :NYT do
   data ArticleID, Article
   abstract data Number
   data BelowLimit extends Number
@@ -25,7 +25,7 @@ Seculloy::Dsl.view :NYT do
   end
 end
 
-Seculloy::Dsl.view :WP do
+Slang::Dsl.view :WP do
   data News
 
   trusted WPost [

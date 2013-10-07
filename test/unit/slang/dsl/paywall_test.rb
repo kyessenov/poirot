@@ -13,7 +13,7 @@ class PaywallTest < Test::Unit::TestCase
   include SDGUtils::Testing::SmartSetup
   include SDGUtils::Testing::Assertions
 
-  include Seculloy::Model
+  include Slang::Model
 
   include Paywall
   include HTTP

@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :OpenIdAttack do
+Slang::Dsl.view :OpenIdAttack do
   abstract data Payload
 
   data Credential   < Payload

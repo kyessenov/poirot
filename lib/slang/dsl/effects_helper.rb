@@ -1,7 +1,7 @@
 require 'alloy/dsl/fun_helper'
 require 'sdg_utils/random'
 
-module Seculloy
+module Slang
   module Dsl
 
     # REQUIREMENT: `meta.add_effect(t)' method chain must be
@@ -13,9 +13,9 @@ module Seculloy
       def effects(&block)
         name = "effect_#{SDGUtils::Random.salted_timestamp}"
         p = pred(name, {}, nil, &block)
-        expr_kind = if p.owner < Seculloy::Model::Operation
+        expr_kind = if p.owner < Slang::Model::Operation
                       "arg"
-                    elsif p.owner < Seculloy::Model::Module
+                    elsif p.owner < Slang::Model::Module
                       "parent_mod"
                     else
                       fail "Didn't expect `effects' clause to be included in #{p.owner}"

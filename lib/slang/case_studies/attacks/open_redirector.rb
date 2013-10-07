@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :OpenRedirector do
+Slang::Dsl.view :OpenRedirector do
   data URI
 
   trusted User, {

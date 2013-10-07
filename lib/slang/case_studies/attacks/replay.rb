@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :ReplayAttack do
+Slang::Dsl.view :ReplayAttack do
   data Packet
 
   many trusted EndPoint do

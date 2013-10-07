@@ -1,4 +1,4 @@
-module Seculloy
+module Slang
   module Model
 
     class Invocation

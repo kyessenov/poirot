@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :HTTP do
+Slang::Dsl.view :HTTP do
 
   data Str
   data URL[addr: Str, query: Str]

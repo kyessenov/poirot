@@ -1,11 +1,11 @@
 require 'alloy/ast/sig'
 require 'slang/dsl/module_dsl_api'
 
-module Seculloy
+module Slang
   module Model
 
     class Module < Alloy::Ast::Sig
-      extend Seculloy::Dsl::ModuleDslApi
+      extend Slang::Dsl::ModuleDslApi
 
       _define_meta
 

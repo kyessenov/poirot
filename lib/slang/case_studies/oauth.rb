@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :OAuth do
+Slang::Dsl.view :OAuth do
 
   abstract data Payload
   data AuthCode < Payload

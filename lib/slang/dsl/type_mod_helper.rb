@@ -1,6 +1,6 @@
 require 'alloy/ast/types'
 
-module Seculloy
+module Slang
   module Dsl
 
     # ================================================================

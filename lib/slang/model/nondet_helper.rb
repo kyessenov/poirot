@@ -1,7 +1,7 @@
 require 'alloy/ast/expr'
 require 'alloy/ast/fun'
 
-module Seculloy
+module Slang
   module Model
 
     module NondetHelper

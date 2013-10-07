@@ -1,7 +1,7 @@
 require 'alloy/dsl/fun_helper'
 require 'sdg_utils/random'
 
-module Seculloy
+module Slang
   module Dsl
 
     # REQUIREMENT: `meta.add_guard(g)' method chain must be
@@ -16,9 +16,9 @@ module Seculloy
         name += "_#{SDGUtils::StringUtils.to_iden hash.values.first}" unless hash.empty?
         name += "_#{SDGUtils::Random.salted_timestamp}"
         g = pred(name, hash, nil, &block)
-        expr_kind = if g.owner < Seculloy::Model::Operation
+        expr_kind = if g.owner < Slang::Model::Operation
                       "arg"
-                    elsif g.owner < Seculloy::Model::Module
+                    elsif g.owner < Slang::Model::Module
                       "parent_mod"
                     else
                       fail "Didn't expect trigger to be included in #{g.owner}"

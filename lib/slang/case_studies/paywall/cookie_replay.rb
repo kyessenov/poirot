@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :CookieReplay do
+Slang::Dsl.view :CookieReplay do
 
   abstract data Str
   data Addr < Str

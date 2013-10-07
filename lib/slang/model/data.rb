@@ -1,7 +1,7 @@
 require 'alloy/ast/sig'
 require 'slang/model/nondet_helper'
 
-module Seculloy
+module Slang
   module Model
 
     module DataStatic

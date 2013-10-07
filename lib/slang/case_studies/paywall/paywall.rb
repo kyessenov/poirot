@@ -1,8 +1,8 @@
 require 'slang/slang_dsl'
 
-include Seculloy::Dsl
+include Slang::Dsl
 
-Seculloy::Dsl.view :Paywall do
+Slang::Dsl.view :Paywall do
 
   data Article
   data ArticleID

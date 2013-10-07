@@ -3,7 +3,7 @@ require 'alloy/ast/sig'
 require 'slang/dsl/operation_dsl_api'
 require 'slang/model/nondet_helper'
 
-module Seculloy
+module Slang
   module Model
 
     module OperationStatic
@@ -11,7 +11,7 @@ module Seculloy
     end
 
     class Operation < Alloy::Ast::Sig
-      extend Seculloy::Dsl::OperationDslApi
+      extend Slang::Dsl::OperationDslApi
       extend OperationStatic
 
       _define_meta
@@ -20,7 +20,7 @@ module Seculloy
 
       def make_me_sym_expr(name="self")
         # p = __parent()
-        # if Seculloy::Model::Module === p
+        # if Slang::Model::Module === p
         #   p.make_me_parent_mod_expr
         # else
         #   fail "Didn't expect operation to have a parent that is not Module " +
@@ -33,7 +33,7 @@ module Seculloy
 
       def make_me_op_expr
         p = __parent()
-        if Seculloy::Model::Module === p
+        if Slang::Model::Module === p
           p.make_me_parent_mod_expr
         else
           fail "Didn't expect operation to have a parent that is not Module " +

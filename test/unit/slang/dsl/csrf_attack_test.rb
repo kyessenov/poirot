@@ -28,9 +28,9 @@ class CSRFAttackTest < Test::Unit::TestCase
 
   def test_trusted_server
     assert_set_equal %w(cookies addr protectedOps), TrustedServer.meta.fields.map(&:name)
-    assert_seq_equal [Seculloy::Model::Operation, Cookie],
+    assert_seq_equal [Slang::Model::Operation, Cookie],
                      TrustedServer.meta.field(:cookies).type.to_ruby_type
-    assert_seq_equal [Seculloy::Model::Operation],
+    assert_seq_equal [Slang::Model::Operation],
                      TrustedServer.meta.field(:protectedOps).type.to_ruby_type
   end
 

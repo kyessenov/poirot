@@ -15,9 +15,9 @@ class ViewTest < Test::Unit::TestCase
   end
 
   def test_data
-    assert_set_equal [Credential, AuthCode, ClientID, Scope,
+    assert_set_equal [Credential, AuthCode, ClientID, Scope, Payload, Addr,
                       URI, AuthGrant, AccessToken, Resource], oauth.data
-    assert_set_equal [], oauth.data.select(&:abstract?)
+    assert_set_equal [Payload], oauth.data.select(&:abstract?)
   end
 
   def test_mod

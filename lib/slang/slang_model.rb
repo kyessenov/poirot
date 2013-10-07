@@ -1,7 +1,7 @@
 require 'slang/model/data'
 require 'slang/model/module'
 
-module Seculloy
+module Slang
   module Model
   end
 end
