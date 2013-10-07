@@ -1,0 +1,344 @@
+
+\section{Merging Views}
+\label{sec-merging}
+
+In this section, we describe a technique for merging two potentially
+mistmached models---one representing the analyst's view of the system,
+and the other representing the attacker's view. The composition
+process is two-fold. First, the analyst specifies the relationship
+between two views as a mapping between different elements of the
+views. Then, given this mapping, we apply a merging algorithm to
+produce a new view that retains the characteristics of the two,
+with potentially new behaviors that arise from the interaction of
+the modules from the previously separate views.
+
+\subsection{Specifying Relationships}
+\label{sec-relationship}
+
+To resolve the types of mismatch that we discussed in
+Section~\ref{sec-mismatch}, the analyst may specify a relationship
+between a pair of modules, operations, or data elements. 
+Our notion of a relationship between two elements is that of
+\textit{is-a} relationship. Informally, two elements are related if
+they both describe the characteristics of the same entity, but one is
+a more generic representation of the other. For example,
+\textsf{AuthorizationServer} can be regarded as a specialized kind of
+\textsf{TrustedServer} with the role of controlling access to access
+tokens that it stores.  A similar kind of relationship can be
+introduced between operations or data elements. Operation
+\textsf{reqAccessToken}, implemented using a generic HTTP request, can
+be regarded as a type of operation \textsf{httpReq}. Similarly,
+since an access token is simply encoded as a string in the body of an
+HTTP message, \textsf{Token} may be regarded as instances of
+\textsf{String}.
+
+Formally, relationship $r \in R$ between two views is a tuple 
+\begin{equation*}
+<r_{M}, r_{O}, r_{D}>
+\end{equation*}
+where $r_{M} \subseteq M \times M$, $r_{O} \subseteq \mathcal P (O)
+\times \mathcal P (O)$, and $r_{D} \subseteq \mathcal P (D) \times
+\mathcal P (D)$ represent relationships between a pair of modules,
+operation sets, and data sets, respectively. As a requirement on these
+relations, an element cannot be related to another element from the
+same view.
+
+For example, to merge the OAuth and CSRF models from
+Figure~\ref{fig-oauth}, the analyst may specify the following
+relationships between the two views:
+\begin{align*}
+   r_{M} = \{&(\textsf{Client$,$ Browser}),(\textsf{ResourceOwner$,$
+    EndUser}), \\&(\textsf{AuthorizationServer$,$
+    TrustedServer}),\\&(\textsf{ResourceServer$,$
+    TrustedServer})\} \\
+  r_{O} = \{&(\textsf{reqAccessToken$,$httpReq}),(\textsf{sendResp$,$httpResp}),  ...\}\\
+  r_{D} =
+  \{&\textsf{(Token$,$String)},\textsf{(Credential$,$Cookie)}, ...\} 
+\end{align*}
+
+Intuitively, these relationships correspond to the system designer's
+decisions about how modules, operations, and data are to be realized
+and implemented. By varying these relationships, the designer can
+explore the security implications of different design decisions. For
+example, in another variation of OAuth, the designer may decide to
+deploy \textsf{Client} as a server-side application instead of a
+client-side application running on the top of a browser; in this
+case,\textsf{Client} and \textsf{TrustedServer} would be specified as
+an entry in $r_{M}$. As a consequence of this relationship,
+\textsf{Client} would inherit the characteristics of
+\textsf{TrustedServer}, and now be susceptible to server-side attacks
+instead of browser-based ones.
+
+\begin{algorithm}[!t]
+\begin{algorithmic}[1]
+\Function{MergeViews}{$v1, v2, r$}
+\Let{$h$}{\textsf{BuildMapping}($v1$, $v2$, $r$)}
+\Let{$v'$}{\textsf{BuildView}($v1$, $v2$, $h$)}
+%\Let{$v'$}{\textsf{Substitute}}($v'$, $h$)
+\State \Return{$v'$}
+\EndFunction
+
+\item[]
+\Function{BuildMapping}{$v1, v2, (r_{M}, r_{O}, r_{D})$}
+\ForAll{$(D1, D2) \in r_{D}$}
+\Let{$h_{D}(D1)$}{\textsf{MergeData}($D1$, $D2$)}
+\EndFor
+\ForAll{$(m1, m2) \in r_{M}$}
+\Let{$h_{M}(m1), h_{M}(m2)$}{\textsf{MergeModules}($m1$, $m2$, $r_{O}$)}
+\EndFor
+\State \Return{$(h_{M}, h_{D})$}
+\EndFunction
+
+\item[]
+\Function{BuildView}{$v1, v2, (h_{M}, h_{D})$}
+\Let{$M', D'$}{$\varnothing$}
+\ForAll{$m \in v1.modules \cup v2.modules$}
+\If{$m \in dom(h_{M})$}
+\Let{$M'$}{$M' \cup \{h_{M}(m)\}$}
+\Else
+\Let{$M'$}{$M' \cup \{m\}$}
+\EndIf
+\EndFor
+\ForAll{$ds \subseteq v1.data \cup v2.data$}
+\If{$ds \in dom(h_{D})$}
+\Let{$D'$}{$D' \cup h_{D}(ds)$}
+\Else
+\Let{$D'$}{$D' \cup ds$}
+\EndIf
+\EndFor
+\State \Return{$(M',D')$}
+\EndFunction
+
+\item[]
+\Function{MergeData}{$D1, D2$}
+\Let{$D'$}{$\{d2 \in D2\; |\; \exists d1 \in D1 \cdot d2 =
+  f_{D1,D2}(d1)\}$}
+\ForAll{$d \in D1$}
+\Let{$f_{D1,D2}(d).fields$}{$f_{D1,D2}(d).fields \cup d.fields$}
+\EndFor
+\State \Return{$D'$}
+\EndFunction
+
+\item[]
+\Function{MergeModules}{$m1, m2, r_{O}$}
+\Let{$e, i$}{$m2.exports, m2.invokes$}
+\Let{$s, c$}{$m1.stores \cup m2.stores, m1.cons \cup m2.cons$}
+\ForAll{$(O1, O2) \subseteq m1.exports \times m2.exports$}
+\If{$(O1, O2) \in r_{O}$}
+\Let{$e$}{$e \cup \textsf{MergeOp}(O1, O2)$}
+\Else
+\Let{$e$}{$e \cup O1$}
+\EndIf
+\EndFor
+\ForAll{$(O1, O2) \subseteq m1.invokes \times m2.invokes$}
+\If{$(O1, O2) \in r_{O}$}
+\Let{$i$}{$i \cup \textsf{MergeOp}(O1, O2)$}
+\Else
+\Let{$i$}{$i \cup O1$}
+\EndIf
+\EndFor
+\Let{$m'$}{$(e,i,s,c)$}
+\State \Return{$m'$}
+\EndFunction
+
+\item[]
+\Function{MergeOp}{$O1, O2$}
+\Let{$O'$}{$\{o2 \in O2\; |\; \exists o1 \in O1 \cdot o2 =
+  f_{O1,O2}(o1)\}$}
+\ForAll{$o \in O1$}
+\Let{$f_{O1,O2}(o).args$}{$f_{O1,O2}(o).args \cup o.args$}
+\EndFor
+\State \Return{$O'$}
+\EndFunction
+
+% \item[]
+% \Function{Substitute}{$v, (h_{m}, h_{D})$}
+% \State ... // Omitted
+% \State \Return{$v$}
+% \EndFunction
+\end{algorithmic}
+\caption{Merging Views}
+\label{alg-merge-views}
+\end{algorithm}
+
+\subsection{Merging Algorithm}
+
+The algorithm for merging, shown in Algorithm~\ref{alg-merge-views},
+accepts two views, $v1, v2 \in V$, and a relationship $r \in R$
+between them, and produces a new view, $v' \in V$. The algorithm is
+divided into two steps. First, for every pair of elements specified in
+$r$, it merges the two elements into a single element that retains the
+characteristics of the two original elements (Line 2). Then, the
+algorithm builds a new view by replacing the original elements in
+$r$ with the new elements (Line 3).
+
+% \begin{figure*}[!t]
+% \centering
+% \includegraphics[width=0.95\textwidth]{diagrams/oauth-csrf-merged}
+% \caption{Result of Merging the OAuth and CSRF models from Figure~\ref{fig-oauth}.}
+% \label{fig-merged-oauth-csrf}
+% \end{figure*}
+
+\subsubsection{Merging Related Elements}
+
+For every pair of elements $e1, e2$ specified in $r$, our goal is to
+produce a new element $e'$ that can substitute for both $e1$ and
+$e2$. The procedure \textsf{BuildMapping} performs this task in
+two-fold, first merging each pair of related data sets (Line 7), and
+then merging the related modules (Line 9). As it performs the merging tasks,
+\textsf{BuildMapping} incrementally builds a pair of functions ($h_{D}$ and
+$h_{M}$) that map the original modules and data sets from $r$ to their
+merged counterparts.
+
+% \begin{figure}[!t]
+% \centering
+% \includegraphics[width=0.40\textwidth]{diagrams/embedding}
+% \caption{Embedding of \textsf{Token} into \textsf{String}}
+% \label{fig-embedding}
+% \end{figure}
+
+\textbf{Merging Data} For each pair of data sets $(D1, D2)$ in
+$r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
+that represents the result of \textit{embedding} $D1$ into
+$D2$. 
+\begin{defn} \emph{(Embedding)}
+  An embedding from set $A$ to $B$ is an injective homomorphism $f : A
+  \rightarrow B$.
+\end{defn}
+The embedding establishes a subset relation between $D1$ and $D2$ by
+ensuring that every element $d$ of $D1$ has a unique counterpart
+$f(d)$ that is a member of $D2$. In Line 27, all of the data fields
+that are associated with elements of $D1$ are added to their
+counterparts in $D'$, in addition to the fields that are assigned to
+elements of $D2$. Then, in the merged view $v'$, $D1$ can be replaced
+with $D'$ without invalidating references to $D1$ in the original view
+$v1$.
+
+For example, assume that the analyst designates access tokens to be
+instances of strings (i.e., $(\textsf{Token},\textsf{String}) \in
+r_{D}$). Intuitively, the embedding from the former data set to the
+latter, denoted as $f_{\textsf{Tokens},\textsf{String}}$, is a
+function that converts an access token into its concrete
+representation as a string (Figure~\ref{fig-embedding}). Let
+$\textsf{Token}_\textsf{String}$ denote the result of embedding
+\textsf{Token} into \textsf{String}. Then, every instance of
+$\textsf{Token}_\textsf{String}$ can substitute for its counterpart in
+\textsf{Token}, and is also treated as a string, since
+$\textsf{Token}_\textsf{String} \subseteq \textsf{String}$.
+
+\textbf{Merging Modules} Given a pair of modules $(m1, m2) \in r_{M}$,
+along with pairs of related operations $r_{O}$, \textsf{MergeModule}
+produces a new module $m'$ behaves like $m1$ while also retaining all
+of the characteristics of $m2$. 
+
+The behaviors of the two modules may be related through one or more
+pairs of operations specified in $r_{O}$. If $m1$ exports or invokes
+a set of operations $O1$ that are related to another set of operations
+$O2$ in $m2$, \textsf{MergeModule} merges the two sets by using the
+procedure \textsf{MergeOp} (lines 34 and 39). Operations are
+merged in the similar fashion as the data elements; an embedding is
+used to establish a subset relation between $O1$ and $O2$, resulting
+in a new set of operations $O' \subseteq O2$, which also inheirts all
+of the arguments from $O1$ and $O2$ (Line 47).
+
+The constrain function of the merged module $m'$ is constructed
+as the union of $m1.cons$ and $m2.cons$ (Line 31). This ensures that $m'$
+maintains the behaviors of both $m1$ and $m2$ with respect to the
+operations that they export and invoke, including the merged
+operations. In particular, the set of constraints applicable to $o' \in O' =
+MergeOp(O1, O2)$ can be characterized as follows:
+\begin{align*}
+m'.cons(o') = \{& l \in F \;|\; l \in m2.cons(o') \; \lor \\
+&\exists o1 \in O1 
+\cdot o' = f_{O1, O2}(o1) \land l \in m1.cons(o1) \} 
+\end{align*}
+In other words, since $o'$ can be considered a member of both $O1$ and
+$O2$, $o'$ retains all of the constraints that $m1$ and $m2$ impose
+on $O1$ and $O2$, respectively. Similarly, the set of data that $m'$
+stores is constructed as the union of $m1.stores$ and $m2.stores$ (Line 31).
+
+For example, let $\textsf{AuthorizationServer}_\textsf{TS}$ be the
+result of merging $\textsf{AuthorizationServer}$ and
+$\textsf{TrustedServer}$, and let
+\\$\textsf{reqAccessToken}_\textsf{hreq}$ be the result of merging two
+operation sets, $\textsf{reqAccessToken}$ and
+$\textsf{httpReq}$. $\textsf{AuthorizationServer}_\textsf{TS}$ retains
+the behavior of the original authorization server, so it ensure that
+every incoming request of kind $\textsf{reqAccessToken}_\textsf{hreq}$
+contains a valid credential. At the same time, it also behaves like
+\textsf{TrustedServer}, so it imposes an additional constraint that
+the request's headers contain a valid cookie.
+
+To be more precise about what it means for a module to behave like
+another, we use the notion of observational refinement that we
+introduced earlier:
+\begin{thm}
+\label{thm-refinement}
+Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeModule(m1,
+m2, r_{O})$. Then, $m'$
+is an observation refinement of both $m1$ and $m2$.
+\end{thm}
+\begin{proof}
+  By construction, for every operation $o \in O$ in $m'$ that
+  originated from $m1$, $m'$ retains all of the constraints on $o$
+  from $m1$ (i.e., $m1.cons(o) \subseteq m'.cons(o)$). Thus, $m'.in$
+  and $m'.out$ are subsets of $m1.in$, and $m1.out$, respectively,
+  satisfying the conditions for an observational refinement of $m1$ by
+  $m'$.  Similarly, since $m'$ retains all of the constraints on every
+  operation that it inherits from $m2$, $m'$ is an observational
+  refinement of $m2$.
+\end{proof}
+The key intuition behind the proof is that the merging operation only
+restricts the behaviors of the modules on merged operations, and
+retains the same behaviors for all other operations. For example, from
+\textsf{Client}'s perspective, the merged module
+$\textsf{AuthorizationServer}_\textsf{TS}$ still behaves like
+\textsf{AuthorizationServer}, receiving
+requests and sending back an access token only if a valid credential
+is provided.
+
+\subsubsection{Building a New View}
+
+Once the different parts of the views have been merged according to
+the given relationships, constructing the merged view is a
+straightforward process. Using the function $h_{M}$ that maps a module
+from an existing module to its merged counterpart, \textsf{BuildView}
+simply replaces each of the modules that appear in $r_{M}$ with the
+new merged one (Line 15), while leaving those that do not appear in
+$r_{M}$ intact (Line 17). Similarly, \textsf{BuildView} uses $h_{D}$
+to replace each of the data sets from $v1$ that appears in $r_{D}$
+with its embedded counterpart (Line 20).  
+% One
+% consequence of the merging is that there are new interactions among
+% modules that did not exist before. For example, the malicious server
+% now interacts with the client application by receiving and sending
+% HTTP messages.
+
+Figure~\ref{fig-merged-oauth-csrf} shows the result of merging the
+OAuth and CSRF models from Figure~\ref{fig-oauth} according to the
+relationships that we specified in Section~\ref{sec-relationship}.
+One example of a CSRF attack against OAuth, made possible due to new
+interactions in the merged model, is as follows. The goal of the
+attacker is to trick the resource owner into granting more resources
+to the client than would be normally desirable by him or her (for
+example, granting write access to the entire Facebook profile, instead
+of just read access). The attack begins when
+$\textsf{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
+by \textsf{MaliciousServer}, which, then crafts a DOM that is designed
+to force $\textsf{Client}_\textsf{B}$ into sending
+$\textsf{reqAccessToken}_\textsf{hreq}$ to
+$\textsf{AuthorizationServer}_\textsf{TS}$. In particular, this
+request is constructed so that it includes, for argument
+$\textsf{resID}$, some $\textsf{badResID}$ $\in$ $\textsf{ResourceID}$
+that identifies the resource that the attacker wishes to access.
+
+$\textsf{Client}_\textsf{B}$, having inherited the behavior of
+\textsf{Browser}, includes any associated cookies as part of the
+request headers. Since a cookie can be used as a credential,
+$\textsf{AuthorizationServer}_\textsf{TS}$ accepts this request to be
+valid, and sends back the access token that corresponds to
+$\textsf{badResID}$, giving $\textsf{Client}_\textsf{B}$ full access
+to the resource. Note that the attacker was able to bypass the usual
+interactions between $\textsf{Client}_\textsf{B}$ and
+$\textsf{ResourceOwner}_\textsf{ES}$ and obtain an access token
+without first gaining permission from the resource owner.
