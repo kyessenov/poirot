@@ -2,19 +2,6 @@
 \section {Overview}
 \label{sec-overview}
 
-\begin{figure*}[!t]
-  \centering \subfloat[NYTimes
-  Paywall]{\includegraphics[width=0.48\textwidth]{diagrams/nytimes}}
-  \hfil \subfloat[Cookie
-  Replay]{\includegraphics[width=0.51\textwidth]{diagrams/replay}}
-\caption{Models of (a) the New York Times paywall system and (b)
-  a cookie replay attack. A box represents a module, and a
-  directed edge from one module \textsf{A} to another module
-  \textsf{B} with label \textsf{O} represents \textsf{A}'s invocation
-  of operation \textsf{O} that is exported by \textsf{B}.}
-\label{fig-nytimes}
-\end{figure*}
-
 In this section, we give an informal overview of how an analyst would
 use the framework to incrementally construct and analyze a model of a
 system. We use an example from the web application domain to
@@ -46,6 +33,19 @@ request, \textsf{NYTimes} then sends back a page that contains the
 requested article, along with an increment of the original counter
 (\textsf{newCounter}).
 
+\begin{figure*}[!t]
+  \centering \subfloat[NYTimes
+  Paywall]{\includegraphics[width=0.48\textwidth]{diagrams/nytimes}}
+  \hfil \subfloat[Cookie
+  Replay]{\includegraphics[width=0.51\textwidth]{diagrams/replay}}
+\caption{Models of (a) the New York Times paywall system and (b)
+  a cookie replay attack. A box represents a module, and a
+  directed edge from one module \textsf{A} to another module
+  \textsf{B} with label \textsf{O} represents \textsf{A}'s invocation
+  of operation \textsf{O} that is exported by \textsf{B}.}
+\label{fig-nytimes}
+\end{figure*}
+
 Note that the model in Figure~\ref{fig-nytimes}(a) describes the system
 interactions in terms of web API operations. This level of abstraction
 is suitable for the designer to capture the essential functionality of
@@ -60,56 +60,88 @@ exhaustively explores the behavior of the model. As expected, the
 engine concludes that the system satisfies the property by preventing
 the reader from accessing an article beyond the limit.
 
-\paragraph{\textbf{Elaborating the Model}} Being satisfied with the
+\paragraph{\textbf{Elaborating the System Model}} Being satisfied with the
 initial design, Alice moves onto exploring lower-level design
 choices for the system. She decides that \textsf{NYTimes} will run on
 top of an HTTP server, with \textsf{GetPage} implemeneted as a
 standard HTTP GET operation. Similarly, she
 designates \textsf{Client} to run on top of a standard web browser,
-and the article counter to be stored as a cookie inside the browser.
+and the access counter to be stored as a cookie inside the browser.
 
 Alice decides to explore the potential implications of these design
 decisions on the security of the system using our framework. Let us
 assume that the repository is already populated with models that
 describe different types of attacks that are applicable to web-based
-systems. For example, basd on Alice's decisions, one type of attack
-that the paywall system might be vulnerable to is a \textit{cookie
-  replay attack}, which involves a malicious user obtaining a cookie
-and repeating its transmission to a server. In this model, shown in
-Figure~\ref{fig-nytimes}(b), \textsf{Browser} communicates to
-\textsf{HTTPServer} by sending \textsf{GET} requests and receiving
-responses (\textsf{Resp}) in return. In addition, a malicious user
-(named \textsf{ReplayAttacker}) interacts with \textsf{Browser} by
-extracting a cookie from it (\textsf{ExtractCookie}), or overwriting
-an existing cookie at a particualr address (\textsf{SetCookie}); this
-allows \textsf{ReplayAttacker} to manipulate \textsf{Browser} into
-sending a request with a fixed cookie value.
+systems. For example, one type of attack that the paywall system might
+be vulnerable to is a \textit{cookie replay attack}, which involves a
+malicious user obtaining a cookie and repeating its transmission to a
+server. In this model, shown in Figure~\ref{fig-nytimes}(b),
+\textsf{Browser} communicates to \textsf{HTTPServer} by sending
+\textsf{GET} requests and receiving responses (\textsf{Resp}) in
+return. In addition, a malicious user (named \textsf{ReplayAttacker})
+interacts with \textsf{Browser} by extracting a cookie from it
+(\textsf{ExtractCookie}), or overwriting an existing cookie at a
+particualr address (\textsf{SetCookie}); this allows
+\textsf{ReplayAttacker} to manipulate \textsf{Browser} into sending a
+request with a fixed cookie value.
 
-Note the \textit{abstraction mismatch} between the two model in
-Figure~\ref{fig-nytimes}. They describe the system at different layers
-of abstraction, using two distinct sets of vocabulary terms to
-describe modules, operations, and data elements. These are
-\textit{partial} descriptions of a system, including only the details
-of the system that are necessary to illustrate a typical workflow (as
-in the paywall model) or the characteristics of a particular attack
-(in the replay model). Thus, in their current form, they are not
-readily amenable to composition, and additional guidance is needed to
-identify the relationships between the two models.
+A next step for Alice would be to extend the original paywall model
+with new details from the cookie replay model, and re-run the analysis
+to see whether the elaborated model still satisfies the desired
+property. However, the two models, as in their current form, are not
+readily amenable to composition due to an \textit{abstraction
+  mismatch}. These models describe the system at different layers of
+abstraction, using two distinct sets of vocabulary terms to describe
+modules, operations, and data elements. They serve as \textit{partial}
+descriptions of a system, including only the details of the system
+that are necessary to illustrate a typical workflow (as in the paywall
+model) or the characteristics of a particular attack (in the replay
+model). Thus, additional guidance is needed to identify relationships
+between parts of the two models before they can be merged.
 
-Intuitively, relationships between two models correspond to the
-designer's decisions about how different parts of the system are to be
-realized in a more concrete representation. For example, based on Alice's
-decisions about the implementation of the paywall system, 
+Our observation is that relationships between a pair of models
+correspond to the designer's decisions about how different parts of
+the system are to be realized. For example, based on Alice's decisions
+about the implementation of the paywall system, we may infer that
+\textsf{NYTimes} and \textsf{HTTPServer} can be treated as the same
+component; in particular, \textsf{NYTimes} can be considered a type of
+\textsf{HTTPServer} that performs a specialized function of serving
+articles to its client. A similar kind of relationship can be
+specified between a pair of operations (e.g., \textsf{GetPage} and
+\textsf{GET}) or data types (e.g, \textsf{Link} and \textsf{URL}). Given
+the relationships specified by Alice, our framework merges the two
+models and produces a new model that combines both aspects of the
+system, as shown in Figure~\ref{fig-merged}.
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=0.9\textwidth]{diagrams/merged}
-\caption{Result of merging the two models from Figure~\ref{fig-nytimes}.}
+\caption{Result of merging the two models from
+  Figure~\ref{fig-nytimes}. A subscript $Y$ in $X_{Y}$ implies that
+  $X$ is a type of $Y$.}
 \label{fig-merged}
 \end{figure}
 
-\paragraph{\textbf{Re-anayzing the Model}}
+\paragraph{\textbf{Re-Analyzing the Model}}
 
-(describe step by step iterative process)
+Alice re-runs the analysis engine on the new, merged model to check
+whethe the elaborated system still satisfies the desired
+property. This time, the analysis engine discovers a counterexample
+that demonstrates how the system might allow the reader to access an
+article beyond the limit. In this scenario, \textsf{Reader}, now
+acting like \textsf{ReplayAttacker}, extracts a cookie that represents
+the access counter prior to reaching the limit. Then, \textsf{Reader}
+simply overwrites the existing cookie with the extracted once the
+limit is exceeded, and \textsf{NYTimes} continues to serve
+\textsf{GetPage} requests from \textsf{Client}~\footnote{The actual
+  paywall system for the New York Times suffered this type of attack
+  when it was first introduced in 2008~\cite{nytimes-attack}.}. To
+prevent this type of attack, Alice modifies the system such that when
+\textsf{NYTimes} sends back a cookie, it generates and includes a
+unique token that cannot be guessed by \textsf{Reader}, thereby
+rendering old cookies invalid.
 
-TBD
+Alice may repeat the whole process again, elaborating the system model
+with further details from other types of attack models in the
+repository, and re-running the analysis engine to discover more
+potential design flaws.

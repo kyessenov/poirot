@@ -53,7 +53,7 @@ Figure~\ref{fig-overview}: (1) a repository of models that encode
 partial knowledge about the problem domain, (2) an algorithm that
 merges two independent models of a system, and (3) an analysis engine
 that checks whether a system model satisfies a given property, and if
-not, produces a violation scenario. In a typical workflow, the analyst
+not, produces a counterexample. In a typical workflow, the analyst
 begins by constructing a partial model of the system, and runs an
 initial analysis to check the system against a desired property. The
 analyst then incrementally elaborates the initial model into a more
@@ -107,23 +107,20 @@ follows:
   specifying system models and an automated analysis engine built on
   top of a model finder, and
 \item Application of the framework to the analysis of two well-known
-  web protocols, OAuth 2.0~\cite{oauth} and OpenID~\cite{openid}.
+  web protocols, OAuth~\cite{oauth} and OpenID~\cite{openid}.
 \end{itemize}
 
 \textbf{Outline} This paper is structured as
-follows. Section~\ref{sec-motivation} motivates the problem of
-building a model for security analysis with an example from the OAuth
-protocol, and categorizes different types of abstraction mismatch that
-may prevent a system model from being composed with an attack
-model. Section~\ref{sec-formalism} introduces the underlying formalism
-for modeling systems, attacks, and security
-properties. Section~\ref{sec-merging} describes the types of
-relationships that the analyst can specify between two mismatched
-models, and the merging algorithm that composes the two based on the
-given relationships. Section~\ref{sec-implementation} discusses the
-implementation of the modeling formalism as a domain-specific language
-as well as an automated analysis of merged
-models. Section~\ref{sec-case-studies} describes the case studies on
+follows. Section~\ref{sec-overview} provides an overview of our
+framework with an example from an online news paywall system.
+Section~\ref{sec-formalism} introduces the underlying formalism for
+modeling systems. Section~\ref{sec-merging} describes the types of
+relationships that the analyst can specify between two potentially
+mismatched models, and the merging algorithm that composes the two
+based on the given relationships. Section~\ref{sec-implementation}
+discusses the implementation of the modeling formalism as a
+domain-specific language as well as an automated analysis of merged
+models. Section~\ref{sec-case-study} describes the case studies on
 applying our approach to the OAuth and OpenID protocols. The paper
 concludes by discussing the related work
 (Section~\ref{sec-related-work}), and the potential benefits and
