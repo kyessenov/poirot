@@ -1,0 +1,128 @@
+%% For code that appears on its own line
+\newenvironment{CodeOut}{\begin{scriptsize}}{\end{scriptsize}}
+%% For code that appears within text. Example: \CodeIn{my_code}
+\newcommand{\CodeIn}[1]{\begin{small}\texttt{#1}\end{small}}
+\newcommand{\Code}[1]{\CodeIn{#1}}
+\newcommand{\CITE}{$^{[\textcolor{red}{{\bf CITE}}]}$}
+\newcommand{\CCITE}[1]{$^{[\textcolor{red}{{\bf CITE(\text{#1})}}]}$}
+
+\def\SEarrow{\ensuremath{\rotatebox[origin=c]{-45}{$\leftrightarrow$}}\xspace}
+\def\NEarrow{\ensuremath{\rotatebox[origin=c]{45}{$\leftrightarrow$}}\xspace}
+
+\newcommand{\true}{\CodeIn{true}\xspace}
+\newcommand{\false}{\CodeIn{false}\xspace}
+\newcommand{\suppress}[1]{}
+\newcommand{\suppresss}[2]{}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ---------- Different font in captions -----------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% \newcommand{\captionfonts}{\normalsize}
+
+%% \makeatletter  % Allow the use of @ in command names
+%% \long\def\@makecaption#1#2{%
+%%   \vskip\abovecaptionskip
+%%   \sbox\@tempboxa{{\captionfonts #1: #2}}%
+%%   \ifdim \wd\@tempboxa >\hsize
+%%     {\captionfonts #1: #2\par}
+%%   \else
+%%     \hbox to\hsize{\hfil\box\@tempboxa\hfil}%
+%%   \fi
+%%   \vskip\belowcaptionskip}
+%% \makeatother   % Cancel the effect of \makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ------------- conditional switches --------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\MREV{reviewing}
+\def\MFIN{final}
+\def\moderev{\MREV}
+\def\modefin{\MFIN}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ------------- reviewing tools -------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\Comment#1{%
+\ifx \mode \moderev
+  \textcolor{red}{\scriptsize [#1]}%
+\else
+\fi
+}
+
+\def\comment#1#2{%
+\ifx \mode \moderev
+  \textcolor{red}{\scriptsize [(#1): #2]}%
+\else
+\fi
+}
+
+\def\note#1#2{%
+\ifx \mode \moderev
+  \textcolor{blue}{\scriptsize [\textbf{#1}: #2]}%
+\else
+\fi
+}
+
+\def\todo#1{\note{TODO}{#1}}
+\def\check#1{\note{CHECK}{#1}}
+
+
+\newcommand{\del}[1]{%
+\ifx \mode \moderev
+  \textcolor{red}{\sout{#1}}%
+\else
+\fi
+}
+
+\newcommand{\fix}[2]{%
+\ifx \mode \moderev
+  \del{#1}\textcolor{blue}{#2}%
+\else
+#2
+\fi
+}
+\newcommand{\fixed}[2]{%
+\ifx \mode \moderev
+  \textcolor{red}{PROBLEM: #1}; \textcolor{blue}{FIX: #2}
+\else
+\fi
+}
+
+\def\aleks#1{\fix{}{#1}}
+
+
+%\newcommand{\comment}[2]{\begin{scriptsize}{\textcolor{red}{[COMMENT (#1): #2]}}\end{scriptsize}}           
+% \newcommand{\todo}[1]{\textcolor{blue}{[\textbf{TODO}: #1]}}   
+% \newcommand{\del}[1]{\textcolor{red}{\sout{#1}}}
+%% \newcommand{\del}[1]{}
+%% \newcommand{\fix}[2]{\del{#1}\textcolor{blue}{#2}}
+%% \newcommand{\sst}[1]{\scriptsize{#1}}
+
+\def\Tiny{\fontsize{4pt}{4pt}\selectfont}
+
+%% ------------------------------------------------
+%% when all fixes have been approved, and comments 
+%% taken care of, change the previous macros to
+%% ------------------------------------------------
+
+% \newcommand{\comment}[2]{}
+% \newcommand{\todo}[1]{} 
+% \newcommand{\del}[1]{}
+% \newcommand{\fix}[2]{#2}
+
+% Lyle Ramshaw's unbreakable hyphen
+\newcommand{\unbreakableHyphen}{\setbox0=\hbox{-}\setbox1=\hbox{-\/}%
+        \kern\wd0\kern-\wd1\hbox{-}}
+
+\newcommand{\secref}[1]{Section~\ref{#1}}  % for use in text
+\newcommand{\Secref}[1]{Section~\ref{#1}}  % for start of sentence
+\newcommand{\secrefs}[2]{Section~\ref{#1} and~\ref{#2}}  % for use in text
+\newcommand{\figref}[1]{Figure~\ref{#1}}     % for use in text
+\newcommand{\Figref}[1]{Figure~\ref{#1}}   % for start of sentence
+\newcommand{\Figrefs}[2]{Figures~\ref{#1} and~\ref{#2}}
+\newcommand{\figrefs}[2]{Figures~\ref{#1} and~\ref{#2}}
+

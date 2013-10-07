@@ -32,9 +32,12 @@
 
 %\newcommand\sf[1]{\textsf{#1}}
 
-%
+\usepackage{ulem}
+\input{macros.tex}
+\def\mode{\MREV} % revision mode; set to \MFIN (or delete) for final version
+
 \begin{document}
-%
+
 
 %\title{Explaining Security Failures with Domain-Specific Models}
 \title{SLANG: SECURITY SOLVED}
@@ -59,13 +62,14 @@ Massachusetts Institute of Technology\\
   relevant aspects of a system, however, is a challeging task that is
   often carried out in an ad-hoc fashion.
 
-  In this paper, we propose a framework to aid a
-  system analyst in incremental construction and analysis of a system
-  model. The key component of our framework is a model-merging
-  technique that incrementally elaborates an initial, partial system
-  model by composing it against a repository of domain-specific
-  models. We apply our framework to an analysis of two well-known web
-  security protocols--OAuth and OpenID.
+  In this paper, we propose a framework to aid a system analyst in
+  incremental construction and analysis of a system model. The key
+  component of our framework is a model-merging technique that
+  incrementally elaborates an initial, partial system model by
+  composing it against a repository of domain-specific models. We
+  apply our framework to an analysis of two well-known web security
+  protocols--\comment{aleks}{should this be an mdash instead of
+    ndash?}OAuth and OpenID.
 \end{abstract}
 
 \input{intro}

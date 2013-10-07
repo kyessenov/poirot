@@ -57,15 +57,26 @@ not, produces a counterexample. In a typical workflow, the analyst
 begins by constructing a partial model of the system, and runs an
 initial analysis to check the system against a desired property. The
 analyst then incrementally elaborates the initial model into a more
-detailed one by merging it with the existing models in the repository,
-one-by-one. After every merge step, the analyst re-runs the
+detailed one by \fix{merging it with the existing models in the
+  repository, one-by-one}{selecting a set of existing models from the
+  repository, relevant for the particular category of the system under
+  design, and merging them into the initial one.  Each such model from
+  the repository is written by a domain expert and serves as a formal
+  specification of a known feature (e.g., aspect, consideration,
+  security threat, vulnerability, etc.) of an entire category of
+  systems (e.g., the HTTP protocol, web servers, web applications,
+  etc.).}\comment{aleks}{it's probably not very important to say here
+  that this is done one at a time; your tool could in principal merge
+  many of them}. After every merge step, the analyst re-runs the
 analysis on the elaborated model to detect any potential violations
 that were absent from prior analyses.
 
 A technical challenge in composing two independent models is that they
 may not be amenable to composition due to \textit{abstraction
-  mistmach}. The two models may describe some aspect of the system at
-different layers of abstraction, using different sets of vocabulary
+  mistmach}.\comment{aleks}{would it be worth noting here that the
+  models are also declarative, written in logic, which also makes it
+  difficult?} The two models may describe some aspect of the system
+at different layers of abstraction, using different sets of vocabulary
 terms, so standard composition techniques that connect components at
 their interfaces may fail. To resolve this mismatch, we allow the
 analyst to specify relationships between various parts of the two
@@ -98,7 +109,7 @@ following ways:
 \end{itemize}
 
 \textbf{Contributions} The contributions of this paper are as
-follows:
+follows:\comment{aleks}{small first letters in the following list?}
 \begin{itemize}
 \item A framework for incremental construction and analysis of a
   system model that leverages a domain-specific model repository,
