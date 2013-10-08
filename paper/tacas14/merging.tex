@@ -33,7 +33,7 @@ cookie, \textsf{Counter} can be treated as a type of \textsf{Cookie}.
   \subseteq \mathcal P (O) \times \mathcal P (O)$, and $r_{D}
   \subseteq \mathcal P (D) \times \mathcal P (D)$ represent
   declarations of subset relations between a pair of modules,
-  operation sets, and data types, respectively.
+  operation types, and data types, respectively.
 \end{defn}
 For example, to merge the paywall and cookie replay models from
 Figure~\ref{fig-nytimes}, Alice may specify the following
@@ -50,9 +50,9 @@ relationships between the two views:
 \end{align*}
 A subset relationship is asymmetrical, and so two entities can be
 specified as equivalent by including a tuple and its inverse in the
-same relation; for this example, Alice here indicates that the
-set of operations of type \textsf{GetPage} is exactly those
-operations of type \textsf{GET}.
+same relation; for this example, Alice here indicates that the set of
+operations of type \textsf{GetPage} is exactly the operations of type
+\textsf{GET}.
 
 % Intuitively, these relationships correspond to the system designer's
 % decisions about how modules, operations, and data are to be realized
@@ -177,16 +177,17 @@ $r$ with the new entities (Line 3).
 % \label{fig-merged-oauth-csrf}
 % \end{figure*}
 
-\subsubsection{Merging Related Entities}
+\subsubsection{Step 1: Merging Related Entities}
 
 For every pair of entities $e1, e2$ specified in $r$, our goal is to
-produce a new element $e'$ that can substitute for both $e1$ and
-$e2$. The procedure \textsf{BuildMapping} performs this task in
-two-fold, first merging each pair of related data sets (Line 7), and
-then merging the related modules (Line 9). As it performs the merging tasks,
-\textsf{BuildMapping} incrementally builds a pair of functions ($h_{D}$ and
-$h_{M}$) that map the original modules and data sets from $r$ to their
-merged counterparts.
+produce a new entity $e'$ that (1) replaces $e1$ in the merged view
+$v'$, and (2) obtains the characteristics of $e2$. The procedure
+\textsf{BuildMapping} performs this task in two-fold, first merging
+each pair of related data sets (Line 7), and then merging the related
+modules (Line 9). As it performs the merging tasks,
+\textsf{BuildMapping} incrementally builds a pair of functions
+($h_{D}$ and $h_{M}$) that map the original modules and data sets from
+$r$ to their merged counterparts.
 
 % \begin{figure}[!t]
 % \centering
@@ -195,49 +196,73 @@ merged counterparts.
 % \label{fig-embedding}
 % \end{figure}
 
-\textbf{Merging Data} For each pair of data sets $(D1, D2)$ in
-$r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
-that represents the result of \textit{embedding} $D1$ into
-$D2$. 
-\begin{defn} \emph{(Embedding)}
-  An embedding from set $A$ to $B$ is an injective homomorphism $f : A
-  \rightarrow B$.
+\paragraph{\textbf{Merging Data}} For each pair of data sets $(D1,
+D2)$ in $r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
+that replaces $D1$ in the merged view $v'$, and can still be treated
+like instances of $D2$. 
+
+For example, given $(\textsf{Article}, \textsf{HTML}) \in r_{D}$,
+\textsf{MergedData} produces a new data set
+$\textsf{Article}_{\textsf{HTML}}$, which conceptually represents the
+encodings of the New York Times articles in HTML
+format. $\textsf{Article}$ and $\textsf{Article}_{\textsf{HTML}}$ are
+isomorphic; for every $a \in \textsf{Article}$, $v'$ contains a unique
+$a' \in \textsf{Article}_{\textsf{HTML}}$ such that $a'$ represents an
+HTML encoding of $a$. Note that $v'$ may contain some HTML documents
+that do not correspond to any article (i.e.,
+$\textsf{Article}_{\textsf{HTML}}$ may be a strict subset of $\textsf{HTML}$).
+
+Formally, $D'$ represents the result of \textit{embedding} $D1$ into
+$D2$.
+\begin{defn} An embedding from set $A$ to $B$ is an injective function
+  $f : A \rightarrow B$.
 \end{defn}
 The embedding establishes a subset relation between $D1$ and $D2$ by
 ensuring that every element $d$ of $D1$ has a unique counterpart
-$f(d)$ that is a member of $D2$. In Line 27, all of the data fields
-that are associated with entities of $D1$ are added to their
-counterparts in $D'$, in addition to the fields that are assigned to
-elements of $D2$. Then, in the merged view $v'$, $D1$ can be replaced
-with $D'$ without invalidating references to $D1$ in the original view
-$v1$.
+$f(d)$ that is a member of $D2$. For example, the embedding from
+\textsf{Article} to \textsf{HTML} is a function $f$ that maps each
+article to its HTML counterpart. Then, in the merged view $v'$, every
+$a \in \textsf{Article}$ can be replaced by $f(a)$ without
+invalidating existing references to $\textsf{Article}$ in $v1$.
 
-For example, assume that the analyst designates access tokens to be
-instances of strings (i.e., $(\textsf{Token},\textsf{String}) \in
-r_{D}$). Intuitively, the embedding from the former data set to the
-latter, denoted as $f_{\textsf{Tokens},\textsf{String}}$, is a
-function that converts an access token into its concrete
-representation as a string (Figure~\ref{fig-embedding}). Let
-$\textsf{Token}_\textsf{String}$ denote the result of embedding
-\textsf{Token} into \textsf{String}. Then, every instance of
-$\textsf{Token}_\textsf{String}$ can substitute for its counterpart in
-\textsf{Token}, and is also treated as a string, since
-$\textsf{Token}_\textsf{String} \subseteq \textsf{String}$.
+\begin{thm} For every $D1, D2 \subseteq D$, there always exists a
+  function $f : D1 \rightarrow D2$ such that f is an embedding from
+  $D1$ to $D2$.
+\end{thm}
+\todo{need proof here}
+% \begin{proof} Omitted.
+% \end{proof}
 
-\textbf{Merging Modules} Given a pair of modules $(m1, m2) \in r_{M}$,
-along with pairs of related operations $r_{O}$, \textsf{MergeModule}
-produces a new module $m'$ behaves like $m1$ while also retaining all
-of the characteristics of $m2$. 
+Finally, the set of fields associated with $D'$ is constructed as the
+union of fields in $D1$ and $D2$. 
+
+\paragraph{\textbf{Merging Modules}} Given a pair of modules $(m1, m2)
+\in r_{M}$, along with pairs of related operations $r_{O}$,
+\textsf{MergeModule} produces a new module $m'$ behaves like $m1$
+while also obtaining the characteristics of $m2$.
 
 The behaviors of the two modules may be related through one or more
 pairs of operations specified in $r_{O}$. If $m1$ exports or invokes
 a set of operations $O1$ that are related to another set of operations
 $O2$ in $m2$, \textsf{MergeModule} merges the two sets by using the
-procedure \textsf{MergeOp} (lines 34 and 39). Operations are
-merged in the similar fashion as the data elements; an embedding is
-used to establish a subset relation between $O1$ and $O2$, resulting
-in a new set of operations $O' \subseteq O2$, which also inheirts all
-of the arguments from $O1$ and $O2$ (Line 47).
+procedure \textsf{MergeOp} (lines 34 and 39). 
+
+\paragraph{\textbf{Merging Operations}} Operations are merged in the
+similar fashion as the data elements; an embedding is used to
+establish a subset relation between $O1$ and $O2$, resulting in a new
+set of operations $O' \subseteq O2$, which also inheirts all of the
+arguments from $O1$ and $O2$ (Line 47).
+
+For example, given $(\textsf{SendPage}, \textsf{Resp}) \in r_{O}$,
+$MergeOp$ produces a set $\textsf{SendPage}_{\textsf{Resp}}$, which
+represents the implementation of \textsf{SendPage} as an HTTP
+response.  $\textsf{SendPage}_{\textsf{Resp}}$ can be used by
+\textsf{NYTimes} to send an article back to
+$\textsf{Client}_\textsf{Browser}$, but is also treated like any
+standard HTTP response. Note that $\textsf{Client}_\textsf{Browser}$
+may receive other kinds of HTTP responses besides the ones that carry
+an article from \textsf{NYTimes}; i.e., there may exist $r \in
+\textsf{Resp}$ that is not a member of $\textsf{SendPage}_{\textsf{Resp}}$.
 
 The constrain function of the merged module $m'$ is constructed
 as the union of $m1.cons$ and $m2.cons$ (Line 31). This ensures that $m'$
@@ -255,47 +280,44 @@ $O2$, $o'$ retains all of the constraints that $m1$ and $m2$ impose
 on $O1$ and $O2$, respectively. Similarly, the set of data that $m'$
 stores is constructed as the union of $m1.stores$ and $m2.stores$ (Line 31).
 
-For example, let $\textsf{AuthorizationServer}_\textsf{TS}$ be the
-result of merging $\textsf{AuthorizationServer}$ and
-$\textsf{TrustedServer}$, and let
-\\$\textsf{reqAccessToken}_\textsf{hreq}$ be the result of merging two
-operation sets, $\textsf{reqAccessToken}$ and
-$\textsf{httpReq}$. $\textsf{AuthorizationServer}_\textsf{TS}$ retains
-the behavior of the original authorization server, so it ensure that
-every incoming request of kind $\textsf{reqAccessToken}_\textsf{hreq}$
-contains a valid credential. At the same time, it also behaves like
-\textsf{TrustedServer}, so it imposes an additional constraint that
-the request's headers contain a valid cookie.
+\todo{example with invokes constraints on SendResp}
 
-To be more precise about what it means for a module to behave like
-another, we use the notion of observational refinement that we
-introduced earlier:
-\begin{thm}
-\label{thm-refinement}
-Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeModule(m1,
-m2, r_{O})$. Then, $m'$
-is an observation refinement of both $m1$ and $m2$.
-\end{thm}
-\begin{proof}
-  By construction, for every operation $o \in O$ in $m'$ that
-  originated from $m1$, $m'$ retains all of the constraints on $o$
-  from $m1$ (i.e., $m1.cons(o) \subseteq m'.cons(o)$). Thus, $m'.in$
-  and $m'.out$ are subsets of $m1.in$, and $m1.out$, respectively,
-  satisfying the conditions for an observational refinement of $m1$ by
-  $m'$.  Similarly, since $m'$ retains all of the constraints on every
-  operation that it inherits from $m2$, $m'$ is an observational
-  refinement of $m2$.
-\end{proof}
-The key intuition behind the proof is that the merging operation only
-restricts the behaviors of the modules on merged operations, and
-retains the same behaviors for all other operations. For example, from
-\textsf{Client}'s perspective, the merged module
-$\textsf{AuthorizationServer}_\textsf{TS}$ still behaves like
-\textsf{AuthorizationServer}, receiving
-requests and sending back an access token only if a valid credential
-is provided.
+\todo{Explain why Alice specified GET and GetPage to be equivalent}
 
-\subsubsection{Building a New View}
+\paragraph{\textbf{Remarks}} Note that the merging algorithm
+does not enforce any constraint between the arguments of two
+operations being merged, or the fields of two data sets. \todo{Say
+this was intentionally done to make the mapping lightweight}
+
+% To be more precise about what it means for a module to behave like
+% another, we use the notion of observational refinement that we
+% introduced earlier:
+% \begin{thm}
+% \label{thm-refinement}
+% Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeModule(m1,
+% m2, r_{O})$. Then, $m'$
+% is an observation refinement of both $m1$ and $m2$.
+% \end{thm}
+% \begin{proof}
+%   By construction, for every operation $o \in O$ in $m'$ that
+%   originated from $m1$, $m'$ retains all of the constraints on $o$
+%   from $m1$ (i.e., $m1.cons(o) \subseteq m'.cons(o)$). Thus, $m'.in$
+%   and $m'.out$ are subsets of $m1.in$, and $m1.out$, respectively,
+%   satisfying the conditions for an observational refinement of $m1$ by
+%   $m'$.  Similarly, since $m'$ retains all of the constraints on every
+%   operation that it inherits from $m2$, $m'$ is an observational
+%   refinement of $m2$.
+% \end{proof}
+% The key intuition behind the proof is that the merging operation only
+% restricts the behaviors of the modules on merged operations, and
+% retains the same behaviors for all other operations. For example, from
+% \textsf{Client}'s perspective, the merged module
+% $\textsf{AuthorizationServer}_\textsf{TS}$ still behaves like
+% \textsf{AuthorizationServer}, receiving
+% requests and sending back an access token only if a valid credential
+% is provided.
+
+\subsubsection{Step 2: Building a New View}
 
 Once the different parts of the views have been merged according to
 the given relationships, constructing the merged view is a
@@ -306,37 +328,45 @@ new merged one (Line 15), while leaving those that do not appear in
 $r_{M}$ intact (Line 17). Similarly, \textsf{BuildView} uses $h_{D}$
 to replace each of the data sets from $v1$ that appears in $r_{D}$
 with its embedded counterpart (Line 20).  
+
+\subsection{Implications of Merging}
+
+\todo{new interactions when a module invokes a new operation}
+
+\todo{new interactions when two data sets are related, maybe included
+  as arguments}
+
 % One
 % consequence of the merging is that there are new interactions among
 % modules that did not exist before. For example, the malicious server
 % now interacts with the client application by receiving and sending
 % HTTP messages.
 
-Figure~\ref{fig-merged-oauth-csrf} shows the result of merging the
-OAuth and CSRF models from Figure~\ref{fig-oauth} according to the
-relationships that we specified in Section~\ref{sec-relationship}.
-One example of a CSRF attack against OAuth, made possible due to new
-interactions in the merged model, is as follows. The goal of the
-attacker is to trick the resource owner into granting more resources
-to the client than would be normally desirable by him or her (for
-example, granting write access to the entire Facebook profile, instead
-of just read access). The attack begins when
-$\textsf{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
-by \textsf{MaliciousServer}, which, then crafts a DOM that is designed
-to force $\textsf{Client}_\textsf{B}$ into sending
-$\textsf{reqAccessToken}_\textsf{hreq}$ to
-$\textsf{AuthorizationServer}_\textsf{TS}$. In particular, this
-request is constructed so that it includes, for argument
-$\textsf{resID}$, some $\textsf{badResID}$ $\in$ $\textsf{ResourceID}$
-that identifies the resource that the attacker wishes to access.
+% Figure~\ref{fig-merged-oauth-csrf} shows the result of merging the
+% OAuth and CSRF models from Figure~\ref{fig-oauth} according to the
+% relationships that we specified in Section~\ref{sec-relationship}.
+% One example of a CSRF attack against OAuth, made possible due to new
+% interactions in the merged model, is as follows. The goal of the
+% attacker is to trick the resource owner into granting more resources
+% to the client than would be normally desirable by him or her (for
+% example, granting write access to the entire Facebook profile, instead
+% of just read access). The attack begins when
+% $\textsf{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
+% by \textsf{MaliciousServer}, which, then crafts a DOM that is designed
+% to force $\textsf{Client}_\textsf{B}$ into sending
+% $\textsf{reqAccessToken}_\textsf{hreq}$ to
+% $\textsf{AuthorizationServer}_\textsf{TS}$. In particular, this
+% request is constructed so that it includes, for argument
+% $\textsf{resID}$, some $\textsf{badResID}$ $\in$ $\textsf{ResourceID}$
+% that identifies the resource that the attacker wishes to access.
 
-$\textsf{Client}_\textsf{B}$, having inherited the behavior of
-\textsf{Browser}, includes any associated cookies as part of the
-request headers. Since a cookie can be used as a credential,
-$\textsf{AuthorizationServer}_\textsf{TS}$ accepts this request to be
-valid, and sends back the access token that corresponds to
-$\textsf{badResID}$, giving $\textsf{Client}_\textsf{B}$ full access
-to the resource. Note that the attacker was able to bypass the usual
-interactions between $\textsf{Client}_\textsf{B}$ and
-$\textsf{ResourceOwner}_\textsf{ES}$ and obtain an access token
-without first gaining permission from the resource owner.
+% $\textsf{Client}_\textsf{B}$, having inherited the behavior of
+% \textsf{Browser}, includes any associated cookies as part of the
+% request headers. Since a cookie can be used as a credential,
+% $\textsf{AuthorizationServer}_\textsf{TS}$ accepts this request to be
+% valid, and sends back the access token that corresponds to
+% $\textsf{badResID}$, giving $\textsf{Client}_\textsf{B}$ full access
+% to the resource. Note that the attacker was able to bypass the usual
+% interactions between $\textsf{Client}_\textsf{B}$ and
+% $\textsf{ResourceOwner}_\textsf{ES}$ and obtain an access token
+% without first gaining permission from the resource owner.
