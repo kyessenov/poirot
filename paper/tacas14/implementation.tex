@@ -2,6 +2,29 @@
 \section{Implementation}
 \label{sec-implementation}
 
-TBD
+To implement our approach, we (1) designed a domain-specific surface
+language (called \sLangLong), and (2) wrote a compiler that translates
+models written in \sLang to first-order relational logic (namely the
+Alloy language~\cite{alloy}), which is amenable to fully automated
+(but bounded) analysis.
+
+The main design goal of \sLang is to provide a high-level paradigm for
+writing formal system designs (architectures) which is intuitive and
+readily accessible to analysts not already experienced in formal
+methods.  \sLang, therefore, intentionally hides most of the internal
+complexities of our declarative formalism; instead, \sLang provides a
+mostly imperative service-oriented paradigm, which allows the analyst
+to express valid system behaviors simply by specifying service
+invocations that different components may perform.  Furthermore,
+\sLang is fully embedded in Ruby (all \sLang programs are
+syntactically correct Ruby programs), making the extensive set of
+existing development tools for Ruby readily available, as well as
+making the learning curve less steep.
+
+In this paper, we do not attempt to evaluate the assertions about the
+language simplicity and accessibility to non-experts in formal
+methods; instead, we invite the community to contribute our existing
+knowledge database by downloading \sLang~\cite{slang-web} and
+submitting attack models in their domain of expertise.\check{!}
 
 \input{paywall-slang.tex}

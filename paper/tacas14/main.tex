@@ -34,6 +34,8 @@
 
 %% \usepackage[T1]{fontenc}
 %% \usepackage[scaled=0.81]{luximono}
+\usepackage{courier}
+\usepackage{url}
 \usepackage{listings}
 \usepackage{minted}
 \usepackage{slangmath}
@@ -43,6 +45,8 @@
 \usepackage{multicol}
 \input{macros.tex}
 
+\def\sLang{{\sc sLang}\xspace}
+\def\sLangLong{\sLang}
 
 % NOTE: set this to either \MREV or \MFIN. 
 %
@@ -51,7 +55,7 @@
 %       
 %       \MFIN assumes final version, so comments, todos etc. will
 %       all be omitted from the final pdf output.
-\def\mode{\MFIN}
+\def\mode{\MREV}
 
 % NOTE: set this to either \CMINTED or \CLISTING
 %
@@ -64,7 +68,7 @@
 %       \CLISTING means use the ``listing'' pacakge for code
 %       formatting, which doesn't require any external tools, but
 %       doesn't produce as nice output for Ruby code.
-\def\codeformatting{\CLISTING} 
+\def\codeformatting{\CMINTED} 
 \input{__conditional}
 
 \begin{document}
@@ -147,7 +151,8 @@ Massachusetts Institute of Technology\\
 % Comm. Pure Appl. Math. 33, 609--633 (1980)
 %\end{thebibliography}
 
-\bibliographystyle{splncs}
+%\bibliographystyle{splncs}
+\bibliographystyle{abbrv}
 \bibliography{main}
 
 \end{document}

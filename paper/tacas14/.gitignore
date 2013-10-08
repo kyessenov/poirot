@@ -1,9 +1,10 @@
 *~
-*bbl
-*blg
-*log
-*aux
-*tmp
-*aex
-*pyg
+*.bbl
+*.blg
+*.log
+*.aux
+*.tmp
+*.aex
+*.pyg
+*.out
 main.pdf
