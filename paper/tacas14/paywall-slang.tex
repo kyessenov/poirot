@@ -1,0 +1,34 @@
+\begin{figure}[ht]
+\centering
+  \begin{slang}
+view :Paywall do
+  critical data Page
+  data Link
+  
+  trusted component NYTimes [articles: Int ** Page, limit: Int] do
+    creates Article
+    operation GetPage [link: Link, currCounter: Int] do
+      guard { currCounter < limit) }
+      sends { Client::SendPage[articles[link]] }
+    end
+  end
+
+  trusted component Client [counter: Int] do
+    operation SendPage[article: Article] do 
+      sends { Reader::Display[article] }
+    end
+    operation SelectLink[link: Link] do
+      sends { NYTimes::GetPage[link, counter] }
+    end
+  end
+
+  component Reader do
+    operation Display[page: Page]
+    sends { Client::SelectLink }
+  end
+end
+  \end{slang}
+
+\caption{Paywall example in \sc{Slang}}
+\label{fig-paywall-slang}
+\end{figure}

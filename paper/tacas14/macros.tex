@@ -41,66 +41,14 @@
 \def\moderev{\MREV}
 \def\modefin{\MFIN}
 
+\def\CMINTED{minted}
+\def\CLISTING{listing}
+\def\codeminted{\CMINTED}
+\def\codelisting{\CLISTING}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% ------------- reviewing tools -------------------
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\def\Comment#1{%
-\ifx \mode \moderev
-  \textcolor{red}{\scriptsize [#1]}%
-\else
-\fi
-}
-
-\def\comment#1#2{%
-\ifx \mode \moderev
-  \textcolor{red}{\scriptsize [(#1): #2]}%
-\else
-\fi
-}
-
-\def\note#1#2{%
-\ifx \mode \moderev
-  \textcolor{blue}{\scriptsize [\textbf{#1}: #2]}%
-\else
-\fi
-}
-
-\def\todo#1{\note{TODO}{#1}}
-\def\check#1{\note{CHECK}{#1}}
-
-
-\newcommand{\del}[1]{%
-\ifx \mode \moderev
-  \textcolor{red}{\sout{#1}}%
-\else
-\fi
-}
-
-\newcommand{\fix}[2]{%
-\ifx \mode \moderev
-  \del{#1}\textcolor{blue}{#2}%
-\else
-#2
-\fi
-}
-\newcommand{\fixed}[2]{%
-\ifx \mode \moderev
-  \textcolor{red}{PROBLEM: #1}; \textcolor{blue}{FIX: #2}
-\else
-\fi
-}
 
 \def\aleks#1{\fix{}{#1}}
 \def\am#1{\comment{AM}{#1}}
-
-%\newcommand{\comment}[2]{\begin{scriptsize}{\textcolor{red}{[COMMENT (#1): #2]}}\end{scriptsize}}           
-% \newcommand{\todo}[1]{\textcolor{blue}{[\textbf{TODO}: #1]}}   
-% \newcommand{\del}[1]{\textcolor{red}{\sout{#1}}}
-%% \newcommand{\del}[1]{}
-%% \newcommand{\fix}[2]{\del{#1}\textcolor{blue}{#2}}
-%% \newcommand{\sst}[1]{\scriptsize{#1}}
 
 \def\Tiny{\fontsize{4pt}{4pt}\selectfont}
 

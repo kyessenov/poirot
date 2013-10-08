@@ -35,12 +35,37 @@
 %% \usepackage[T1]{fontenc}
 %% \usepackage[scaled=0.81]{luximono}
 \usepackage{listings}
+\usepackage{minted}
 \usepackage{slangmath}
+\usepackage{slang}
 \usepackage[normalem]{ulem}
 \usepackage{xspace}
 \usepackage{multicol}
 \input{macros.tex}
-\def\mode{\MREV} % revision mode; set to \MFIN (or delete) for final version
+
+
+% NOTE: set this to either \MREV or \MFIN. 
+%
+%       \MREV assumes preprint version, so comments, todos etc. will
+%       be higlighted and left in the final pdf output. 
+%       
+%       \MFIN assumes final version, so comments, todos etc. will
+%       all be omitted from the final pdf output.
+\def\mode{\MFIN}
+
+% NOTE: set this to either \CMINTED or \CLISTING
+%
+%       \CMINTED means use the ``minted'' package for code formatting.
+%       Minted requires python's ``pygments'' to be externally
+%       installed and configured on the system.  Since minted executes
+%       an external shell command, the ``-shell-escape'' option must
+%       be passed to pdflatex.
+%       
+%       \CLISTING means use the ``listing'' pacakge for code
+%       formatting, which doesn't require any external tools, but
+%       doesn't produce as nice output for Ruby code.
+\def\codeformatting{\CLISTING} 
+\input{__conditional}
 
 \begin{document}
 
