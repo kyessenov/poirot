@@ -14,23 +14,20 @@ such as Darwin~\cite{darwin}.
 \paragraph{\textbf{Structure}} In our approach, a system consists of a
 set of modules $M$ that asynchronously communicate with each other
 through operations $O$.  Each module \textit{exports} zero or more
-operations at its interface, and \textit{stores} some set
-of data $D$\fix{ that can be transmitted}{. Data can flow from one} to
-another module \fix{by \textit{invoking} the latter's operations}{only
-  by means of operation \textit{invocations}; this enables our system
-  to accurately track data flows and automatically check standard
+operations at its interface, and \textit{stores} some set of data
+$D$\fix{ that can be transmitted}{. Data can flow from one} to another
+module \fix{by \textit{invoking} the latter's operations}{only by
+  means of operation \textit{invocations}; this enables our system to
+  accurately track data flows and automatically check standard
   information flow properties such as \textit{integrity} and
   \textit{confidentiality}}.\am{This data flow business is certainly
   important, but I'm not sure it belongs here.  Maybe move it a few
-  paragraphs below, where it talks about passing
-  arguments.}\footnote{For convenience, we use the dot (.) notation to
-  refer a tuple element by name; for example, $m.exports$ refers to
-  $exports$ element of module $m$.}. 
-For example, consider the \textsf{NYTimes} server from
+  paragraphs below, where it talks about passing arguments.}.  For
+example, consider the \textsf{NYTimes} server from
 Figure~\ref{fig-nytimes}(a). One way to specify this module in our
-approach is as follows\footnote{For convenience, we use the dot
-  (.) notation to refer a tuple element by name; for example,
-  $m.exports$ refers to $exports$ element of module $m$.}:
+approach is as follows\footnote{For convenience, we use the dot (.)
+  notation to refer a tuple element by name; for example, $m.exports$
+  refers to $exports$ element of module $m$.}:
 \begin{align*}
 &\textsf{NYTimes}.exports = \textsf{GetPage}\\
 &\textsf{NYTimes}.invokes = \textsf{SendPage}\\
@@ -90,6 +87,10 @@ represents the number of articles accessed; i.e.,
   &dom(o.args) = \{ \textsf{link}, \textsf{currCounter} \} \\
   &o.args(\textsf{link}) \in \textsf{Link} \land
   o.args(\textsf{currCounter}) \in \textsf{Int}
+\end{align*}
+\am{replace with? (it doesn't require additional syntax, like \textit{dom} and it's more succinct)}
+\begin{align*}
+  \textsf{GetPage}.args = \{ ``link" \pfun \textsf{Link}, ``currCounter" \pfun \textsf{Int} \}
 \end{align*}
 Additionally, each data element may be assigned a named set of
 \textit{fields}, allowing construction of complex data types from

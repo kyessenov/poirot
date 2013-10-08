@@ -5,10 +5,10 @@
 
 \begin{figure}[ht]
 \centering
-  \begin{slangmath}
+  \begin{slangmath}[frame=single]
     view Paywall
 
-    Paywall.data = {Page, Link, Counter}
+    Paywall.data = {Page, Link}
     Paywall.mods = {NYTimes, Client, Reader}
 
     NYTimes.exports = {GetPage}
@@ -18,8 +18,9 @@
 
     // similar for Client and Reader
 
-    GetPage.args = {"link" -|-> Link, "currCounter" -|-> Counter}
+    GetPage.args = {"link" -|-> Link, "currCounter" -|-> Int}
   \end{slangmath}
 
-\caption{Formal specification of the Paywall example.\label{fig-paywall-formal}}
+\caption{Formal specification of the Paywall example.}
+\label{fig-paywall-formal}
 \end{figure}
