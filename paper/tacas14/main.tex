@@ -5,6 +5,9 @@
 %
 \documentclass{llncs}
 
+%\def\mytitle{Explaining Security Failures with Domain-Specific Models}
+\def\mytitle{A Framework for Incremental Model Construction and Analysis}
+
 %\usepackage{makeidx}  % allows for indexgeneration
 \usepackage{graphicx}
 %\usepackage[caption=false,font=scriptsize]{subfig}
@@ -44,6 +47,13 @@
 \usepackage{xspace}
 \usepackage{multicol}
 \input{macros.tex}
+\usepackage[pdfauthor={Eunsuk Kang, Aleksandar Milicevic, Daniel Jackson},
+            pdftitle={\mytitle},%
+            colorlinks=true,%
+            linkcolor=black,%
+            urlcolor=black,%
+            citecolor=black,%
+            pdftex]{hyperref}
 
 \def\sLang{{\sc sLang}\xspace}
 \def\sLangLong{\sLang}
@@ -68,14 +78,12 @@
 %       \CLISTING means use the ``listing'' pacakge for code
 %       formatting, which doesn't require any external tools, but
 %       doesn't produce as nice output for Ruby code.
-\def\codeformatting{dfs} 
+\def\codeformatting{\CMINTED} 
 \input{__conditional}
 
 \begin{document}
 
-
-%\title{Explaining Security Failures with Domain-Specific Models}
-\title{A Framework for Incremental Model Construction and Analysis}
+\title{\mytitle}
 %
 %
 \author{Eunsuk Kang, Aleksandar Milicevic, and Daniel Jackson}

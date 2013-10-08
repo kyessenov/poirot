@@ -28,5 +28,32 @@ knowledge database by downloading \sLang~\cite{slang-web} and
 submitting attack models in their domain of expertise.\check{!}
 
 \subsection{The \sLang Language}
-
 \input{paywall-slang.tex}
+
+\Figref{fig-paywall-slang} shows the implementation of the running
+``New York Times Paywall'' example in \sLang.  The main concepts from
+our formalism (views, data, components, and operations) are specified
+in \sLang by using a pseudo-keyword the same name\footnote{All
+  pseudo-keywords in \sLang are implemented as plain Ruby methods}
+(e.g., lines 1, 2, 3, 5, 7, etc.).  The containment relation between
+them is implicitly defined by the nesting level, much like in Ruby and
+the traditional object oriented programs in general.  For instance,
+the call to the \bcode{view} function (line 1) defines the
+\code{Paywall} view containing all the definitions inside the
+\bcode{do ... end} block.  Component definitions can be prepended with
+the \bcode{trusted} pseudo-keyword (lines 5, 13) to distinguish
+trusted from potentially malicious components (if not explicitly
+marked as trusted, the component is considered malicious, e.g., line
+22).  Similarly, data definitions can be prepended with
+\bcode{critical} (line 2); one of the predefined properties in our
+framework checks that no critical data ever flows to a non-trusted
+component.  The same syntax (a comma-separated list of
+name$\rightarrow$type pairs between square brackets, i.e., a hash in a
+singleton array in Ruby terms) is used to specify the data stored in
+components (lines 5, 13) and operation arguments (lines 7, 14, 23).
+Operations can have guards and responses: the former specifies a
+precondition which must hold in order for the operation to be allowed
+(e.g., line 8, only when the given argument (\code{currCounter}) is
+less than the stored limit (\code{limit})), and the latter specifies
+which operations and under what conditions the component invokes
+whenever this operation is triggered.

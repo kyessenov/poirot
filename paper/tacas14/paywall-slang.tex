@@ -8,23 +8,23 @@ view :Paywall do
   trusted component NYTimes [articles: Int ** Page, limit: Int] do
     creates Article
     operation GetPage [link: Link, currCounter: Int] do
-      guard { currCounter < limit) }
-      sends { Client::SendPage[articles[link]] }
+      guard    { currCounter < limit) }
+      response { Client::SendPage[articles[link]] }
     end
   end
 
   trusted component Client [counter: Int] do
     operation SendPage[article: Article] do 
-      sends { Reader::Display[article] }
+      response { Reader::Display[article] }
     end
     operation SelectLink[link: Link] do
-      sends { NYTimes::GetPage[link, counter] }
+      response { NYTimes::GetPage[link, counter] }
     end
   end
 
   component Reader do
     operation Display[page: Page]
-    sends { Client::SelectLink }
+    response { Client::SelectLink }
   end
 end
   \end{slang}

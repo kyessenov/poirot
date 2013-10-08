@@ -31,18 +31,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \ifx \codeformatting \codeminted
-  \usemintedstyle{githubcustom}
+
+  \usemintedstyle{github}
+
   %% \definecolor{mintedbg}{rgb}{1,1,1}
   %% \definecolor{mintedbg}{rgb}{.15,.15,.13} % monokai
   %% \definecolor{mintedbg}{rgb}{.94,.95,.95} % manni
-  %% \definecolor{mintedbg}{rgb}{.93,.93,.87} % perldoc
+   \definecolor{mintedbg}{rgb}{.93,.93,.87} % perldoc
   %% \definecolor{mintedbg}{rgb}{.97,.97,.97} % tango
   %% \definecolor{mintedbg}{rgb}{.97,.97,.97} % emacs
   %% \definecolor{mintedbg}{rgb}{.94,.94,.94} % friendly
   %% \definecolor{mintedbg}{rgb}{.125, .125, .125} % native
 
-  \definecolor{mintedslangbg}{rgb}{1,1,1}
-  \newminted[slang]{slang}{fontsize=\scriptsize,bgcolor=mintedslangbg,frame=single}
+  \newminted[slang]{slang}{fontsize=\scriptsize,bgcolor=mintedbg,frame=single,linenos=true}
   
   \newmintinline[slanginline]{slang}{fontsize=\small}
 

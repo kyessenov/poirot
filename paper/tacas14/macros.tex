@@ -2,7 +2,8 @@
 \newenvironment{CodeOut}{\begin{scriptsize}}{\end{scriptsize}}
 %% For code that appears within text. Example: \CodeIn{my_code}
 \newcommand{\CodeIn}[1]{\begin{small}\texttt{#1}\end{small}}
-\newcommand{\Code}[1]{\CodeIn{#1}}
+\newcommand{\code}[1]{\CodeIn{#1}}
+\newcommand{\bcode}[1]{\textbf{\code{#1}}}
 \newcommand{\CITE}{$^{[\textcolor{red}{{\bf CITE}}]}$}
 \newcommand{\CCITE}[1]{$^{[\textcolor{red}{{\bf CITE(\text{#1})}}]}$}
 
