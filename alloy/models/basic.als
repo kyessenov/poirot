@@ -1,4 +1,4 @@
-module baisc
+module basic
 
 open util/ordering[Step] as SO
 

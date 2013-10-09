@@ -1,4 +1,3 @@
-
 \section{Implementation}
 \label{sec-implementation}
 
@@ -28,6 +27,7 @@ knowledge database by downloading \sLang~\cite{slang-web} and
 submitting attack models in their domain of expertise.\check{!}
 
 \subsection{The \sLang Language}
+\label{sec-impl-slang}
 \input{paywall-slang.tex}
 
 \Figref{fig-paywall-slang} shows the implementation of the running
@@ -70,5 +70,48 @@ points (line 24).  Passing exact arguments to operations is also
 unnecessary; arguments can be omitted, or a declarative constraint can
 be given to arbitrarily constrain argument values.  A detailed
 description of these more advanced features, as well as any discussion
-of how the embedding of \sLang in Ruby is actually implemented, are,
-however, outside the scope of this paper.
+of how the embedding of \sLang in Ruby is actually implemented, are
+outside the scope of this paper.
+
+\subsection{Translation to Alloy}
+\label{sec-impl-alloy}
+
+Formal analysis of merged models is done entirely at the Alloy level,
+by means of running the Alloy Analyzer to automatically check a given
+logical property against the system model, within a given finite
+scope.  Two standard information flow properties, confidentiality and
+integrity, are two built-in checks that our framework automatically
+provides for all views; the analyst can separately specify additional,
+view-specific, properties to be included in the analysis.
+
+A system trace is represented as a sequence of valid operation
+invocations, meaning that at every step of the sequence all
+constraints associated with the currently selected operation are
+satisfied.  All guards and responses from \sLang models are translated
+into declarative constraints on operations, restricting the scope of
+valid system traces as little as necessary.  Every subsequent analysis
+is then formulated as a problem of finding a trace where a certain
+(typically safety or security) property is violated.
+
+%% Before we can express any information flow properties, we first need
+%% to define what it means for a component to access data. 
+A component is said to \textit{access} certain data at a given step if
+(1) it accessed the same data at the previous step, or (2) it is
+explicitly designated in the model that the component creates that
+kind of data (e.g., \code{NYTimes} creates \code{Article}), or (3) the
+operation invoked at the current step is exported by that component
+and the data in question is passed as one of the operation's
+arguments.
+
+The confidentiality check is formulated as a problem finding a valid
+system trace such that at some step \suppress{(in that chain of
+  invoked operations) }a malicious component \textit{accesses} a
+critical piece of data of a trusted component.  If the Alloy Analyzer
+finds a solution to this problem, the confidentiality property is
+violated; the returned solution encodes an exact scenario (initial
+states of all components and a sequence of operation invocations with
+concrete argument values) leading to a violation.  Similarly, the
+integrity check is reduced to finding a valid system trace such that
+at some step a trusted component accesses some data created by a
+malicious component.
+
