@@ -116,7 +116,7 @@ $\cname{SendPage}.args$ & $= \{(\strlit{page}, \cname{Article}),(\strlit{newCoun
 \begin{tabular}{ll}
 $\cname{NYTimes}.guard(\cname{GetPage}) $  & $= f_1(o) \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$\\
 $\cname{NYTimes}.guard(\cname{SendPage}) $ & $= f_2(o) \equiv \exists t \in \cname{GetPage} \;\;\bullet $\\
- & \bigsep $ t.args(\strlit{page}) = \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})] \;\land $ \\
+ & \bigsep $ o.args(\strlit{page}) = \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})] \;\land $ \\
  & \bigsep $ o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
 \end{tabular}
 \end{minipage}
@@ -151,7 +151,7 @@ where $f_1 \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$
 $\forall o \in \cname{SendPage} \bullet \cname{NYTimes}.guard(o) = f_2
 $ where
 
-$\quad f_2 \equiv \exists t \in \cname{GetPage} \bullet t.args(\strlit{page}) =
+$\quad f_2 \equiv \exists t \in \cname{GetPage} \bullet o.args(\strlit{page}) =
 \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})]
 \land$ 
 
