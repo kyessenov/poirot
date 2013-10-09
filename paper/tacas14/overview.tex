@@ -8,15 +8,15 @@ system. We use an example from the web application domain to
 illustrate our appraoch.
 
 \paragraph{\textbf{Building an Initial Model}} Let us assume that the
-\textit{New York Times}, a well-known news organization, wishes to
-design a \textit{paywall} system for its online web site. A paywall
-system is used to limit readers to a set number of free articles over
-a time period, requiring them to signup for a paid subscription once
-they reach the limit.  \aleks{At the same time, for optimal user
-  experience, new users should not be required to create an account to
-  start reading the news articles.} One desirable property of this
-paywall system is that \textit{readers who have already exceeded the
-  limit should not be able to access an article}.
+director of the \textit{New York Times}, a well-known news organization,
+wishes to design a \textit{paywall} system for its online web site. A
+paywall system is used to limit readers to a set number of free
+articles over a time period, requiring them to signup for a paid
+subscription once they reach the limit.  \aleks{At the same time, for
+  optimal user experience, new users should not be required to create
+  an account to start reading the news articles.} One desirable
+property of this paywall system is that \textit{readers who have
+  already exceeded the limit should not be able to access an article}.
 
 Alice, the chief web designer of the New York Times, devises a simple
 design of the paywall system, as shown in
@@ -40,10 +40,11 @@ requested article, along with an increment of the original counter
 \includegraphics[width=1.0\textwidth]{diagrams/nytimes}
 \caption{Models of (a) the New York Times paywall system and (b) a
   cookie replay attack, and (d) the result of merging the two models
-  according to the mapping in (c). A box represents a component, and a
-  directed edge from one component \textsf{A} to a port of another component
-  \textsf{B} with label \textsf{O} represents \textsf{A}'s invocation
-  of operation \textsf{O} that is exported by \textsf{B}.}
+  according to the mapping in (c). In each diagram, a box represents a
+  component, and a directed edge from one component \textsf{A} to a
+  port of another component \textsf{B} with label \textsf{O}
+  represents \textsf{A}'s invocation of operation \textsf{O} that is
+  exported by \textsf{B}.}
 \label{fig-nytimes}
 \end{figure}
 

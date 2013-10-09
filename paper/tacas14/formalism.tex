@@ -45,27 +45,24 @@ type of data structure that maps a link to a page. \am{No
 \begin{minipage}[t]{0.455\textwidth}
 \begin{tabular}{@{\quad}l@{\quad}l}
 \multicolumn{2}{l}{\textbf{Sorts}} \\
-$C, O, D, V$                    & \\
+$C, O, D, M$                    & \\
 $N, F$                          & \color{comment} // Name, Formula\\
 \\
-\multicolumn{2}{l}{\textbf{Component} ($C$)} \\
-$exports : \mathcal P (O)$      & \color{comment} // exported ops \\
-$invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
-$stores : N \pfun \mathcal P (D)$            & \color{comment} // stored data \\
-$cons : O \pfun F$ & \color{comment} // constraints \ 
+\multicolumn{2}{l}{\textbf{Model} ($M$)} \\
+$comps : \mathcal P (C)$  & \color{comment} // components \\
+$data : \mathcal P (D)$  & \color{comment} // data sets \\
 \end{tabular}
 \end{minipage}
 \quad
 \begin{minipage}[t]{0.455\textwidth}
 \begin{tabular}{@{\quad}l@{\quad}l}
+\multicolumn{2}{l}{\textbf{Component} ($C$)} \\
+$exports : \mathcal P (O)$      & \color{comment} // exported ops \\
+$invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
+$stores : N \pfun \mathcal P (D)$            & \color{comment} // stored data \\
+$cons : O \pfun F$ & \color{comment} // constraints  \\
 \multicolumn{2}{l}{\textbf{Operation} ($O$)} \\
 $args : N \pfun \mathcal P (D)$       & \color{comment} // arguments \\
-\\
-\multicolumn{2}{l}{\textbf{Data} ($D$)} \\
-\\
-\multicolumn{2}{l}{\textbf{Model} ($V$)} \\
-$comps : \mathcal P (C)$  & \color{comment} // components \\
-$data : \mathcal P (D)$  & \color{comment} // data types \\
 \end{tabular}
 \end{minipage}
 }
@@ -82,69 +79,40 @@ $\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
 $\textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
 \textsf{Counter}$ 
 
-$\textsf{NYTimes}.exports \subseteq \textsf{GetPage} \land \textsf{NYTimes}.invokes \subseteq \textsf{SendPage}$
+$\textsf{NYTimes}.exports = \textsf{GetPage} \land \textsf{NYTimes}.invokes = \textsf{SendPage}$
 
-$\textsf{GetPage}.args(\textsf{``link''}) \in \textsf{Link} \land \textsf{GetPage}.args(\textsf{``currCounter''}) \in \textsf{Counter}$
+$\textsf{GetPage}.args =
+\{(\textsf{``link''}, \textsf{Link}),(\textsf{``currCounter''}, \textsf{Counter})\}$
 
-$\textsf{NYTimes}.stores(\textsf{``articles''}) \in \textsf{Map[Link,Article]}$ 
+$\textsf{SendPage}.args =
+\{(\textsf{``page'}, \textsf{Article}),(\textsf{``newCounter''}, \textsf{Counter})\}$
 
-$\textsf{NYTimes}.cons = \{(\textsf{GetPage},f_1),
-(\textsf{SendPage}, f_2)\}$ where
+$\textsf{NYTimes}.stores =
+\{\textsf{(\textsf{``articles''}, \textsf{Map[Link,Article]})}\}$ 
 
-$f_1 \equiv \forall o \in \textsf{GetPage} \cdot o.args(\textsf{currCounter}) \leq \textsf{LIMIT}$
+$\forall o \in \textsf{GetPage} \cdot \textsf{NYTimes}.cons(o) = f_1 $
+where $f_1 \equiv o.args(\textsf{``currCounter''}) \leq \textsf{LIMIT}$
 
-$f_2 \equiv \exists o' \in \textsf{GetPage} \cdot o.args(\textsf{page}) =
-(\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
+$\forall o \in \textsf{SendPage} \cdot \textsf{NYTimes}.cons(o) = f_2
+$ where
+
+$\quad f_2 \equiv \exists t \in \textsf{GetPage} \cdot t.args(\textsf{``page''}) =
+\textsf{NYTimes}.stores(\textsf{``articles''})[t.args(\textsf{``link''})]
 \land$ 
 
-$\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1$
-
+$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{``newCounter''}) = t.args(\textsf{``currCounter''}) + 1$
 \end{minipage}
 }
 \end{figure}
 
-% \begin{figure}[!t]
-% \fbox{
-% \begin{minipage}[t]{0.95\textwidth}
-% $\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
-% \textsf{Reader}\}$ 
-
-% $\textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
-% \textsf{Counter}$ 
-
-% $\textsf{NYTimes}.exports \subseteq \textsf{GetPage}$ 
-
-% $\textsf{GetPage}.args =
-% \{(\textsf{``link''}, \textsf{Link}),(\textsf{``currCounter''}, \textsf{Counter})\}$
-
-% $\textsf{NYTimes}.invokes \subseteq \textsf{SendPage}$
-
-% $\textsf{NYTimes}.stores =
-% \{\textsf{(\textsf{``articles''}, \textsf{Map[Link,Article]})}\}$ 
-
-% $\textsf{NYTimes}.cons = \{(\textsf{GetPage},f_1),
-% (\textsf{SendPage}, f_2)\}$ where
-
-% $f_1 \equiv \forall o \in \textsf{GetPage} \cdot o.args(\textsf{currCounter}) \leq \textsf{LIMIT}$
-
-% $f_2 \equiv \exists o' \in \textsf{GetPage} \cdot o.args(\textsf{page}) =
-% (\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
-% \land$ 
-
-% $\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1$
-
-% \end{minipage}
-% }
-% \end{figure}
-
 Each operation $o \in O$ \fix{is associated with}{has} zero or more
 named \textit{arguments}\fix{, which the invoker uses to transmit data
-  to its exporter}{; a component invoking an operation transmits data to
-  the component exporting that operation by setting the operation's
-  arguments}. For example, every operation $o$ of type
-$\textsf{GetPage}$ carries two arguments: a link to an article
-($\textsf{link}$), and a counter ($\textsf{currCounter}$) that
-represents the number of articles accessed; i.e.,
+  to its exporter}{; a component invoking an operation transmits data
+  to the component exporting that operation by setting the operation's
+  arguments}. For example, every operation $o \in \textsf{GetPage}$
+carries two arguments: a link to an article ($\textsf{link}$), and a
+counter ($\textsf{currCounter}$) that represents the number of
+articles accessed; i.e.,
 \begin{align*}
   &dom(o.args) = \{ \textsf{link}, \textsf{currCounter} \} \\
   &o.args(\textsf{link}) \in \textsf{Link} \land
@@ -156,17 +124,17 @@ represents the number of articles accessed; i.e.,
 \end{align*}
 
 Finally, a system model $m \in M$ is simply defined as a set of components
-($m.comps$) and data types ($m.data$). 
+($m.comps$) and data sets ($m.data$). 
 
 \paragraph{\textbf{Behavior}} A component may not allow every incoming
 operation, and may not send out arbitrary messages to other
-components. For every type of operation that it exports, the component can
-impose a constraint on the set of the operations that it is willing to
-accept; the function $cons$ is used to specify such a constraint. For
-example, \textsf{NYTimes} may only accept an incoming request for an
-article only if \textsf{currCounter} provided with the request does
-not exceed the limit. Formally, for each operation $o$ of type
-\textsf{GetPage}, $\textsf{NYTimes}.cons(o)$ returns a formula $f$
+components. For every instance of operation that it exports, the
+component can impose a constraint on the set of the operations that it
+is willing to accept; the function $cons$ is used to specify such a
+constraint. For example, \textsf{NYTimes} may only accept an incoming
+request for an article only if \textsf{currCounter} provided with the
+request does not exceed the limit. Formally, for each operation $o \in
+\textsf{GetPage}$, $\textsf{NYTimes}.cons(o)$ returns a formula $f$
 such that
 \begin{align*}
 f \equiv o.args(\textsf{currCounter}) \leq \textsf{LIMIT}
