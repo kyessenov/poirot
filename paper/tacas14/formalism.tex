@@ -1,3 +1,6 @@
+\def\strlit#1{\textsf{\scriptsize ``#1''}}
+\def\cname#1{\textsf{#1}}
+\def\mcom#1{{\color{comment} // #1}}
 
 \section{Modeling Formalism}
 \label{sec-formalism}
@@ -23,53 +26,55 @@ For example, consider a snippet of the New York Times paywall
 model\footnote{For convenience, we use the dot (.)  notation to refer
   a field element by name; for example, $c.exports$ refers to the
   $exports$ field of component $c$.} in
-Figure~\ref{fig-nytimes-spec}. Component \textsf{NYTimes} accepts
-incoming requests for an article through \textsf{GetPage}, which
-carries two named arguments: a link to an article (\textsf{``link''})
+Figure~\ref{fig-nytimes-spec}. Component \cname{NYTimes} accepts
+incoming requests for an article through \cname{GetPage}, which
+carries two named arguments: a link to an article (\strlit{link})
 and a counter that represents the number of articles accessed so far
-(\textsf{``currCounter''}). \textsf{NYTimes} responds to to
-\textsf{Client} by invoking the latter's \textsf{SendPage} operation,
+(\strlit{currCounter}). \cname{NYTimes} responds to to
+\cname{Client} by invoking the latter's \cname{SendPage} operation,
 which carries the requested article and a new counter to be stored
 inside the browser. \ek{was:this enables our system to accurately
   track data flows and automatically check standard information flow
   properties such as \textit{integrity} and \textit{confidentiality}}.
 
+\def\fsep{\;}
+\def\bigsep{\quad\quad\quad\quad\;\;\:}
 \begin{figure}[!t]
+\scriptsize
 \fbox{
 \begin{minipage}[t]{0.97\textwidth}
 \begin{minipage}[t]{0.455\textwidth}
-\begin{tabular}{@{\quad}l@{\quad}l}
-\multicolumn{2}{l}{\textbf{Sorts}} \\
-$C, O, D, M$                    & \\
-$N, F$                          & \color{comment} // Name, Formula\\
+\begin{tabular}{@{\quad}ll@{\;\;}l}
+\multicolumn{3}{l}{\textbf{Sorts}} \\
+$C, O, D, M$  &                  & \\
+$N, F$        &                  & \mcom{Name, Formula}\\
 \\
 \multicolumn{2}{l}{\textbf{Model} ($M$)} \\
-$comps : \mathcal P (C)$  & \color{comment} // components \\
-$data : \mathcal P (D)$  & \color{comment} // data sets \\
+$comps$ & $:\fsep \mathcal P (C)$  & \mcom{components} \\
+$data$  & $:\fsep \mathcal P (D)$  & \mcom{data sets}\\
 \end{tabular}
 \end{minipage}
 \quad
 \begin{minipage}[t]{0.455\textwidth}
-\begin{tabular}{@{\quad}l@{\quad}l}
-\multicolumn{2}{l}{\textbf{Component} ($C$)} \\
-$exports : \mathcal P (O)$      & \color{comment} // exported ops \\
-$invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
-$stores : N \pfun \mathcal P (D)$            & \color{comment} // stored data \\
-$guard : O \pfun F$ & \color{comment} // guards on ops \\
-\multicolumn{2}{l}{\textbf{Operation} ($O$)} \\
-$args : N \pfun \mathcal P (D)$       & \color{comment} // arguments \\
+\begin{tabular}{@{\quad}ll@{\;\;}l}
+\multicolumn{3}{l}{\textbf{Component} ($C$)} \\
+$exports$ & $:\fsep \mathcal P (O)$         & \mcom{exported ops}\\
+$invokes$ & $:\fsep \mathcal P (O)$         & \mcom{invoked ops}\\
+$stores$  & $:\fsep N \pfun \mathcal P (D)$ & \mcom{stored data}\\
+$guard$   & $:\fsep O \pfun F$              & \mcom{guards on ops}\\
+\multicolumn{3}{l}{\textbf{Operation} ($O$)} \\
+$args$    & $:\fsep N \pfun \mathcal P (D)$ & \mcom{arguments}\\
 \end{tabular}
 \end{minipage}
 \end{minipage}
 }
 \fbox{
 \begin{minipage}[t]{0.97\textwidth}
-\begin{tabular}{@{\quad}l@{\quad}l}
+\begin{tabular}{@{\quad}r@{\;}l}
   \multicolumn{2}{l}{\textbf{Auxiliary Functions}} \\
-  $incoming(c) = {\{ o \in c.exports \;|\; c.guard(o) \}}$ \\
-  $canAccess(c) = \{ d \in D \;|\; d \in ran(c.stores) \;\lor \exists o \in incoming(c) \cdot d \in
-  ran(o.args)\} $ \\
-  $outgoing(c) = {\{ o \in c.invokes \;|\; c.guard(o) \land ran(o.args) \subseteq
+  $incoming(c)$ & $= {\{ o \in c.exports \;|\; c.guard(o) \}}$ \\
+  $canAccess(c)$ & $= \{ d \in D \;|\; d \in ran(c.stores) \;\lor \exists o \in incoming(c) \bullet d \in ran(o.args)\} $ \\
+  $outgoing(c)$ & $= {\{ o \in c.invokes \;|\; c.guard(o) \land ran(o.args) \subseteq
     canAccess(c)\}}$ \\
 \end{tabular}
 \end{minipage}
@@ -80,46 +85,79 @@ $args : N \pfun \mathcal P (D)$       & \color{comment} // arguments \\
 \end{figure}
 
 \begin{figure}[!t]
+  \scriptsize
+\fbox{
+\begin{minipage}[t]{.97\textwidth}
+\begin{minipage}[t]{.3\textwidth}
+  \mcom{\cname{Paywall} model} \\
+  \begin{tabular}{ll}
+    $\cname{Paywall}.comps$ &$= \{\cname{NYTimes}, \cname{Client}, \cname{Reader}\}$\\
+    $\cname{Paywall}.data$  &$= \cname{Article} \cup \cname{Link} \cup \cname{Counter}$ 
+  \end{tabular}
+\end{minipage}%
+\hfill%
+\begin{minipage}[t]{.51\textwidth}
+  \mcom{\textsf{NYTimes} component}\\
+  \begin{tabular}{ll}
+    $\cname{NYTimes}.exports$ & $= \cname{GetPage}$ \\
+    $\cname{NYTimes}.invokes$ & $= \cname{SendPage}$ \\
+    $\cname{NYTimes}.stores$  & $= \{\cname{(\strlit{articles}, \cname{Map[Link,Article]})}\}$
+  \end{tabular}
+\end{minipage}
+\begin{tabular}{ll}
+\multicolumn{2}{l}{\mcom{operations and behavior}}\\
+$\cname{GetPage}.args$  & $= \{(\strlit{link}, \cname{Link}),(\strlit{currCounter}, \cname{Counter})\}$ \\
+$\cname{SendPage}.args$ & $= \{(\strlit{page}, \cname{Article}),(\strlit{newCounter}, \cname{Counter})\}$\\
+\end{tabular}
+\\
+\begin{tabular}{ll}
+$\cname{NYTimes}.guard(\cname{GetPage}) $  & $= f_1(o) \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$\\
+$\cname{NYTimes}.guard(\cname{SendPage}) $ & $= f_2(o) \equiv \exists t \in \cname{GetPage} \;\;\bullet $\\
+ & \bigsep $ t.args(\strlit{page}) = \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})] \;\land $ \\
+ & \bigsep $ o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
+\end{tabular}
+\end{minipage}
+}
+%% keep above or below
 \fbox{
 \begin{minipage}[t]{0.97\textwidth}
-\textcolor{comment}{// definition of the \textsf{Paywall} model}
+\mcom{definition of the \cname{Paywall} model}
 
-$\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
-\textsf{Reader}\}, \textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
-\textsf{Counter}$ 
+$\cname{Paywall}.comps = \{\cname{NYTimes}, \cname{Client},
+\cname{Reader}\}, \cname{Paywall}.data = \cname{Article} \cup \cname{Link} \cup
+\cname{Counter}$ 
 
-\textcolor{comment}{// operations for \textsf{NYTimes}}
+\mcom{operations for \textsf{NYTimes}}
 
-$\textsf{NYTimes}.exports = \textsf{GetPage}, \textsf{NYTimes}.invokes = \textsf{SendPage}$
+$\cname{NYTimes}.exports = \cname{GetPage}, \cname{NYTimes}.invokes = \cname{SendPage}$
 
-$\textsf{GetPage}.args =
-\{(\textsf{``link''}, \textsf{Link}),(\textsf{``currCounter''}, \textsf{Counter})\}$
+$\cname{GetPage}.args =
+\{(\strlit{link}, \cname{Link}),(\strlit{currCounter}, \cname{Counter})\}$
 
-$\textsf{SendPage}.args =
-\{(\textsf{``page''}, \textsf{Article}),(\textsf{``newCounter''}, \textsf{Counter})\}$
+$\cname{SendPage}.args =
+\{(\strlit{page}, \cname{Article}),(\strlit{newCounter}, \cname{Counter})\}$
 
-$\textsf{NYTimes}.stores =
-\{\textsf{(\textsf{``articles''}, \textsf{Map[Link,Article]})}\}$ 
+$\cname{NYTimes}.stores =
+\{\cname{(\strlit{articles}, \cname{Map[Link,Article]})}\}$ 
 
-\textcolor{comment}{// behavior of \textsf{NYTimes} with respect to
-  its operations}
+\mcom{behavior of \cname{NYTimes} with respect to its operations}
 
-$\forall o \in \textsf{GetPage} \cdot \textsf{NYTimes}.guard(o) = f_1 $
-where $f_1 \equiv o.args(\textsf{``currCounter''}) \leq \textsf{LIMIT}$
+$\forall o \in \cname{GetPage} \bullet \cname{NYTimes}.guard(o) = f_1 $
+where $f_1 \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$
 
-$\forall o \in \textsf{SendPage} \cdot \textsf{NYTimes}.guard(o) = f_2
+$\forall o \in \cname{SendPage} \bullet \cname{NYTimes}.guard(o) = f_2
 $ where
 
-$\quad f_2 \equiv \exists t \in \textsf{GetPage} \cdot t.args(\textsf{``page''}) =
-\textsf{NYTimes}.stores(\textsf{``articles''})[t.args(\textsf{``link''})]
+$\quad f_2 \equiv \exists t \in \cname{GetPage} \bullet t.args(\strlit{page}) =
+\cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})]
 \land$ 
 
-$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{``newCounter''}) = t.args(\textsf{``currCounter''}) + 1$
+$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
 \end{minipage}
 }
 \caption{A snippet of the New York Times paywall model. Assume that
-  \textsf{Map[K, V]} is a predefined data type that represents a map
-  from \textsf{K} to \textsf{V}; $m[k]$ returns the value stored in
+  \cname{Map[K, V]} is a predefined data type that represents a map
+  from \cname{K} to \cname{V}; $m[k]$ returns the value stored in
   map $m$ at key $k$.}
 \label{fig-nytimes-spec}
 \end{figure}
@@ -133,16 +171,16 @@ operation, and may not send out arbitrary messages to other
 components. For every instance of operation that it exports, the
 component can impose a \textit{guard} constraint on the set of the
 operations that it is willing to accept. For example, as defined in
-Figure~\ref{fig-nytimes-spec}, \textsf{NYTimes} only accepts a request
-for an article only if \textsf{currCounter} provided with the request
+Figure~\ref{fig-nytimes-spec}, \cname{NYTimes} only accepts a request
+for an article only if \cname{currCounter} provided with the request
 does not exceed the limit.
 
 Similarly, a component may define a guard to restrict operations that
 it can invoke, or impose a constraint on arguments that are carried
-along with the invoked operations. For example, \textsf{NYTimes} may
-invoke \textsf{SendPage} on the client only if it has already received
-and accepted a valid \textsf{GetPage} message. In addition,
-\textsf{SendPage} must include, as arguments, an article that
+along with the invoked operations. For example, \cname{NYTimes} may
+invoke \cname{SendPage} on the client only if it has already received
+and accepted a valid \cname{GetPage} message. In addition,
+\cname{SendPage} must include, as arguments, an article that
 corresponds to the requested link, and an increment of the current
 counter.  In effect, guard constraints are used to
 declaratively specify the behavior of a component in terms of input
@@ -164,7 +202,7 @@ can be expressed in terms of $incoming$, $outgoing$, and
 $canAccess$. For example, the property for the paywall example can be
 written as
 \begin{align*}
-\# canAccess(\textsf{Reader}) \leq \textsf{LIMIT}
+\# canAccess(\cname{Reader}) \leq \cname{LIMIT}
 \end{align*}
 where $\# S$ returns the cardinality of set S. An ensuing analysis
 would then attempt to check whether the guards specified in the
