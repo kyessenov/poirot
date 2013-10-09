@@ -1,47 +1,42 @@
 
-\section{Formalism}
+\section{Modeling Formalism}
 \label{sec-formalism}
 
 % Before describing how we reconcile the types of mismatch that we
 % discussed in Section~\ref{sec-mismatch}, we first introduce the
 % underlying formalism that is used for specifying systems, attacks, and
 % security properties.
-This section introduces the underlying formalism that our framework
-uses to specify a system and its behavior. We use a standard
-first-order logic to describe the formalism.
+In this section, we describe, using a standard first-order logic, the
+underlying formalism that our framework uses to specify a system and
+its behavior. 
 
-\paragraph{\textbf{Structure}} In our approach, a system consists of a
-set of components $C$ that asynchronously communicate with each other
-through operations $O$.  Each component \textit{exports} zero or more
-operations at its interface, and \textit{stores} some set of data
-$D$\fix{ that can be transmitted}{. Data can flow from one} to another
-component \fix{by \textit{invoking} the latter's operations}{only by
-  means of operation \textit{invocations}; this enables our system to
-  accurately track data flows and automatically check standard
-  information flow properties such as \textit{integrity} and
-  \textit{confidentiality}}.\am{This data flow business is certainly
-  important, but I'm not sure it belongs here.  Maybe move it a few
-  paragraphs below, where it talks about passing arguments.}.  For
-example, consider the \textsf{NYTimes} server from
-Figure~\ref{fig-nytimes}(a). One way to specify this component in our
-approach is as follows\footnote{For convenience, we use the dot (.)
-  notation to refer a tuple element by name; for example, $c.exports$
-  refers to $exports$ element of component $c$.}:
-\begin{align*}
-&\textsf{NYTimes}.exports = \textsf{GetPage}\\
-&\textsf{NYTimes}.invokes = \textsf{SendPage}\\
-&\textsf{NYTimes}.stores(\textsf{articles}) \in
-\textsf{Map[Link,Page]} \am{\mbox{why $\in$ and not $=$? \textsf{Map} is also undefined, as well as the \textsf{Map[K,V]} syntax}}
-\end{align*}
-where $\textsf{GetPage} \subseteq O$ is the type of operation that
-corresponds to a request for an article page, and $\textsf{SendPage}
-\subseteq O$ is the type of operation for transferring a page to
-$\textsf{Client}$. $\textsf{Map[Link,Page]} \subseteq D$ represents a
-type of data structure that maps a link to a page. \am{No
-  need to explain these operations/datatypes again}
+\paragraph{\textbf{Structure}} Figure~\ref{fig-formalism} summarizes
+the basic constructs of our formalism. A system consists of a set of
+\textit{components} $C$ that asynchronously communicate with each
+other through \textit{operations} $O$. Each component \textit{exports} zero or
+more operations at its interface, and \textit{stores} a set of
+\textit{data} $D$. A piece of data $d \in D$ flows from component $c1$
+to another component $c2$ when $c1$ \textit{invokes} $c2$'s operation
+$o$ that includes $d$ as one of its \textit{arguments}. 
+
+For example, consider a snippet of the New York Times paywall
+model\footnote{For convenience, we use the dot (.)  notation to refer
+  a field element by name; for example, $c.exports$ refers to the
+  $exports$ field of component $c$.} in
+Figure~\ref{fig-nytimes-spec}. Component \textsf{NYTimes} accepts
+incoming requests for an article through \textsf{GetPage}, which
+carries two named arguments: a link to an article (\textsf{``link''})
+and a counter that represents the number of articles accessed so far
+(\textsf{``currCounter''}). \textsf{NYTimes} responds to to
+\textsf{Client} by invoking the latter's \textsf{SendPage} operation,
+which carries the requested article and a new counter to be stored
+inside the browser. \ek{was:this enables our system to accurately
+  track data flows and automatically check standard information flow
+  properties such as \textit{integrity} and \textit{confidentiality}}.
 
 \begin{figure}[!t]
 \fbox{
+\begin{minipage}[t]{0.97\textwidth}
 \begin{minipage}[t]{0.455\textwidth}
 \begin{tabular}{@{\quad}l@{\quad}l}
 \multicolumn{2}{l}{\textbf{Sorts}} \\
@@ -60,40 +55,59 @@ $data : \mathcal P (D)$  & \color{comment} // data sets \\
 $exports : \mathcal P (O)$      & \color{comment} // exported ops \\
 $invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
 $stores : N \pfun \mathcal P (D)$            & \color{comment} // stored data \\
-$cons : O \pfun F$ & \color{comment} // constraints  \\
+$guard : O \pfun F$ & \color{comment} // guards on ops \\
 \multicolumn{2}{l}{\textbf{Operation} ($O$)} \\
 $args : N \pfun \mathcal P (D)$       & \color{comment} // arguments \\
 \end{tabular}
 \end{minipage}
+\end{minipage}
 }
-\caption{Basic components of our modeling formalism.}
+\fbox{
+\begin{minipage}[t]{0.97\textwidth}
+\begin{tabular}{@{\quad}l@{\quad}l}
+  \multicolumn{2}{l}{\textbf{Auxiliary Functions}} \\
+  $incoming(c) = {\{ o \in c.exports \;|\; c.guard(o) \}}$ \\
+  $canAccess(c) = \{ d \in D \;|\; d \in ran(c.stores) \;\lor \exists o \in incoming(c) \cdot d \in
+  ran(o.args)\} $ \\
+  $outgoing(c) = {\{ o \in c.invokes \;|\; c.guard(o) \land ran(o.args) \subseteq
+    canAccess(c)\}}$ \\
+\end{tabular}
+\end{minipage}
+}
+\caption{Basic constructs of our modeling formalism. $ran$ returns the
+  range of a function.}
 \label{fig-formalism}
 \end{figure}
 
 \begin{figure}[!t]
 \fbox{
-\begin{minipage}[t]{0.95\textwidth}
-$\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
-\textsf{Reader}\}$ 
+\begin{minipage}[t]{0.97\textwidth}
+\textcolor{comment}{// definition of the \textsf{Paywall} model}
 
-$\textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
+$\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
+\textsf{Reader}\}, \textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
 \textsf{Counter}$ 
 
-$\textsf{NYTimes}.exports = \textsf{GetPage} \land \textsf{NYTimes}.invokes = \textsf{SendPage}$
+\textcolor{comment}{// operations for \textsf{NYTimes}}
+
+$\textsf{NYTimes}.exports = \textsf{GetPage}, \textsf{NYTimes}.invokes = \textsf{SendPage}$
 
 $\textsf{GetPage}.args =
 \{(\textsf{``link''}, \textsf{Link}),(\textsf{``currCounter''}, \textsf{Counter})\}$
 
 $\textsf{SendPage}.args =
-\{(\textsf{``page'}, \textsf{Article}),(\textsf{``newCounter''}, \textsf{Counter})\}$
+\{(\textsf{``page''}, \textsf{Article}),(\textsf{``newCounter''}, \textsf{Counter})\}$
 
 $\textsf{NYTimes}.stores =
 \{\textsf{(\textsf{``articles''}, \textsf{Map[Link,Article]})}\}$ 
 
-$\forall o \in \textsf{GetPage} \cdot \textsf{NYTimes}.cons(o) = f_1 $
+\textcolor{comment}{// behavior of \textsf{NYTimes} with respect to
+  its operations}
+
+$\forall o \in \textsf{GetPage} \cdot \textsf{NYTimes}.guard(o) = f_1 $
 where $f_1 \equiv o.args(\textsf{``currCounter''}) \leq \textsf{LIMIT}$
 
-$\forall o \in \textsf{SendPage} \cdot \textsf{NYTimes}.cons(o) = f_2
+$\forall o \in \textsf{SendPage} \cdot \textsf{NYTimes}.guard(o) = f_2
 $ where
 
 $\quad f_2 \equiv \exists t \in \textsf{GetPage} \cdot t.args(\textsf{``page''}) =
@@ -103,75 +117,59 @@ $\quad f_2 \equiv \exists t \in \textsf{GetPage} \cdot t.args(\textsf{``page''})
 $\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{``newCounter''}) = t.args(\textsf{``currCounter''}) + 1$
 \end{minipage}
 }
+\caption{A snippet of the New York Times paywall model. Assume that
+  \textsf{Map[K, V]} is a predefined data type that represents a map
+  from \textsf{K} to \textsf{V}; $m[k]$ returns the value stored in
+  map $m$ at key $k$.}
+\label{fig-nytimes-spec}
 \end{figure}
 
-Each operation $o \in O$ \fix{is associated with}{has} zero or more
-named \textit{arguments}\fix{, which the invoker uses to transmit data
-  to its exporter}{; a component invoking an operation transmits data
-  to the component exporting that operation by setting the operation's
-  arguments}. For example, every operation $o \in \textsf{GetPage}$
-carries two arguments: a link to an article ($\textsf{link}$), and a
-counter ($\textsf{currCounter}$) that represents the number of
-articles accessed; i.e.,
-\begin{align*}
-  &dom(o.args) = \{ \textsf{link}, \textsf{currCounter} \} \\
-  &o.args(\textsf{link}) \in \textsf{Link} \land
-  o.args(\textsf{currCounter}) \in \textsf{Int}
-\end{align*}
-\am{replace with? (it doesn't require additional syntax, like \textit{dom} and it's more succinct)}
-\begin{align*}
-  \textsf{GetPage}.args = \{ ``link" \pfun \textsf{Link}, ``currCounter" \pfun \textsf{Int} \}
-\end{align*}
-
-Finally, a system model $m \in M$ is simply defined as a set of components
-($m.comps$) and data sets ($m.data$). 
+Finally, a system model $m \in M$ is
+simply defined as a set of components ($comps$) and data sets
+($data$). 
 
 \paragraph{\textbf{Behavior}} A component may not allow every incoming
 operation, and may not send out arbitrary messages to other
 components. For every instance of operation that it exports, the
-component can impose a constraint on the set of the operations that it
-is willing to accept; the function $cons$ is used to specify such a
-constraint. For example, \textsf{NYTimes} may only accept an incoming
-request for an article only if \textsf{currCounter} provided with the
-request does not exceed the limit. Formally, for each operation $o \in
-\textsf{GetPage}$, $\textsf{NYTimes}.cons(o)$ returns a formula $f$
-such that
-\begin{align*}
-f \equiv o.args(\textsf{currCounter}) \leq \textsf{LIMIT}
-\end{align*}
-where $\textsf{LIMIT}$ is a constant that represents the number of
-allowed articles.
+component can impose a \textit{guard} constraint on the set of the
+operations that it is willing to accept. For example, as defined in
+Figure~\ref{fig-nytimes-spec}, \textsf{NYTimes} only accepts a request
+for an article only if \textsf{currCounter} provided with the request
+does not exceed the limit.
 
-Similarly, a component may impose a constraint on the set of operations
-that it can send out. For example, the authorization server may invoke
-\textsf{SendPage} on the client only if it has already received and
-accepted a valid \textsf{GetPage} message. In addition,
+Similarly, a component may define a guard to restrict operations that
+it can invoke, or impose a constraint on arguments that are carried
+along with the invoked operations. For example, \textsf{NYTimes} may
+invoke \textsf{SendPage} on the client only if it has already received
+and accepted a valid \textsf{GetPage} message. In addition,
 \textsf{SendPage} must include, as arguments, an article that
 corresponds to the requested link, and an increment of the current
-counter. Formally, for every $o \in c.invokes \cap \textsf{SendPage}$,
-$\textsf{NYTimes}.cons(o)$ returns formula $f$ such that:
-\begin{align*}
-f \equiv \exists o' \in \textsf{GetPage} \cdot & o.args(\textsf{page}) =
-(\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
-\land \\
-& o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1
-\end{align*}
+counter.  In effect, guard constraints are used to
+declaratively specify the behavior of a component in terms of input
+and output operations that it is allowed to perform.
 
-In effect, constraints in $cons$ are being used to
-declaratively specify the behavior of a component in terms of input and
-output operations that it is allowed to perform. The overall behavior
-of component $m$ is characterized by sets $c.in$ and $c.out$:
+The overall behavior of component $c$ is characterized by
+$incoming(c)$ and $outgoing(c)$. Intuitively, $incoming(c)$ represents
+the subset of incoming operations that are deemed valid and accepted
+by $c$. Members of $incoming(c)$, in turn, determine the set of data
+that $c$ can access; namely, $c$ can access a piece of data $d$ if and
+only if $c$ already stores $d$, or $d$ flows into $c$ as part of a
+valid incoming operation. Finally, $outgoing(c)$ represents the set of
+invocations that $c$ is allowed to make; note that the arguments of $o
+\in outgoing(c)$ are restricted to only those data elements that $c$
+can access.
+
+\paragraph{\textbf{Properties}} A desirable property about the system
+can be expressed in terms of $incoming$, $outgoing$, and
+$canAccess$. For example, the property for the paywall example can be
+written as
 \begin{align*}
-c.in = \{ o \in c.exports \;|\; \bigwedge c.cons(o) \} \\
-c.out = \{ o \in c.invokes \;|\; \bigwedge c.cons(o) \}
+\# canAccess(\textsf{Reader}) \leq \textsf{LIMIT}
 \end{align*}
-Intuitively, $c.in$ represents the set of incoming operations that $m$
-accepts, and $c.out$ represents the set of invocations that $m$ is
-allowed to make. Note that the domain of $c.cons$ is restricted to
-the set of operations that $m$ exports or invokes (i.e., $c.exports
-\cup c.invokes$). We assume that if the analyst does not specify a
-constraint for an operation that it exports or invokes,
-then it is assigned truth value $\top$ (i.e., the operation is always
-allowed).
+where $\# S$ returns the cardinality of set S. An ensuing analysis
+would then attempt to check whether the guards specified in the
+components are strong enough to establish the property, and if not,
+produce an instance of $canAccess$ that contradicts the above
+constraint. 
 
 %\input{paywall-formal.tex}

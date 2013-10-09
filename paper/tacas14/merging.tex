@@ -6,34 +6,34 @@ In this section, we describe a technique for merging two potentially
 mistmached models that describe different aspects of a system. The
 merging process is two-fold. First, the analyst specifies the
 relationship between two models as a mapping between different
-entities in them. Then, given this mapping, we apply a merging algorithm
-to produce a new model that retains the characteristics of the two,
-with potentially new behaviors that arise from the interaction of the
-modules from the previously separate models.
+entities in them. Then, given this mapping, we apply an algorithm to
+produce a merged model with potentially new behaviors that arise
+from the interaction of the components from the previously separate
+models.
 
-\subsection{Specifying Relationships}
+\subsection{Specifying Relationships between Models}
 \label{sec-relationship}
 
 To resolve potential mismatch between two models, the analyst may
-specify a relationship between a pair of modules, operations, or data
+specify a relationship between a pair of components, operations, or data
 elements. Our notion of a relationship between two entities is that of
 a \textit{subset} relation. Informally, two entities are related if
 they both describe the same concept in the real world, but one is a
-generic representation of the other. For example,
-\textsf{NYTimes} can be regarded as a specialized type of
+generic representation of the other. \ek{For example,
+\textsf{NYTimes} can be regarded as a specialized kind of
 \textsf{HTTPServer} with the role of controlling access to articles
 that it stores.  A similar kind of relationship can be introduced
 between operations or data elements. Operation \textsf{GetPage},
-implemented using a generic HTTP request, can be regarded as a type of
+implemented using a generic HTTP request, can be regarded as a kind of
 \textsf{GET} operation. Similarly, since a counter is stored as a
-cookie, \textsf{Counter} can be treated as a type of \textsf{Cookie}.
+cookie, \textsf{Counter} can be treated as a kind of \textsf{Cookie}.}
 
 \begin{defn} A relationship $r \in R$ between two models is a tuple
   $(r_{C}, r_{O}, r_{D})$ where $r_{C} \subseteq C \times C$, $r_{O}
   \subseteq \mathcal P (O) \times \mathcal P (O)$, and $r_{D}
-  \subseteq \mathcal P (D) \times \mathcal P (D)$ represent
-  declarations of subset relations between a pair of modules,
-  operation types, and data types, respectively.
+  \subseteq \mathcal P (D) \times \mathcal P (D)$ represent subset
+  relations between a pair of components, operation sets, and data
+  sets, respectively.
 \end{defn}
 For example, to merge the paywall and cookie replay models from
 Figure~\ref{fig-nytimes}, Alice may specify the following
@@ -41,21 +41,22 @@ relationships between the two models:
 \begin{align*}
   r_{C} = \{&(\textsf{Client$,$ Browser}),(\textsf{NYTimes$,$
     HTTPServer}), (\textsf{Reader$,$
-    ReplayAttacker})\} \\
+    WebUser})\} \\
   r_{O} = \{&(\textsf{GetPage$,$ GET}), (\textsf{GET$,$ GetPage}),
   (\textsf{SendPage$,$
     Resp})\}\\
   r_{D} = \{&(\textsf{Article$,$ HTML}),(\textsf{Link$,$ URL}),
   (\textsf{Counter$,$ Cookie})\}
 \end{align*}
-A subset relationship is asymmetrical, and so two entities can be
+A subset relation is asymmetrical, and so two entities can be
 specified as equivalent by including a tuple and its inverse in the
-same relation; for this example, Alice here indicates that the set of
-operations of type \textsf{GetPage} is exactly the operations of type
-\textsf{GET}.
+same relation; for example, $r_{O}$ here specifies that
+\textsf{GetPage} operations are the only kind of \textsf{GET}
+operations that will be exported by \textsf{NYTimes} running on top of
+a HTTP server.
 
 % Intuitively, these relationships correspond to the system designer's
-% decisions about how modules, operations, and data are to be realized
+% decisions about how components, operations, and data are to be realized
 % and implemented. By varying these relationships, the designer can
 % explore the security implications of different design decisions. For
 % example, in another variation of OAuth, the designer may decide to
@@ -82,7 +83,7 @@ operations of type \textsf{GetPage} is exactly the operations of type
 \Let{$h_{D}(D1)$}{\textsf{MergeData}($D1$, $D2$)}
 \EndFor
 \ForAll{$(m1, m2) \in r_{C}$}
-\Let{$h_{C}(m1), h_{C}(m2)$}{\textsf{MergeModules}($m1$, $m2$, $r_{O}$)}
+\Let{$h_{C}(m1), h_{C}(m2)$}{\textsf{MergeComp}($m1$, $m2$, $r_{O}$)}
 \EndFor
 \State \Return{$(h_{C}, h_{D})$}
 \EndFunction
@@ -90,7 +91,7 @@ operations of type \textsf{GetPage} is exactly the operations of type
 \item[]
 \Function{BuildModel}{$m1, m2, (h_{C}, h_{D})$}
 \Let{$C', D'$}{$\varnothing$}
-\ForAll{$m \in m1.modules \cup m2.modules$}
+\ForAll{$m \in m1.components \cup m2.components$}
 \If{$m \in dom(h_{C})$}
 \Let{$C'$}{$C' \cup \{h_{C}(m)\}$}
 \Else
@@ -118,9 +119,9 @@ operations of type \textsf{GetPage} is exactly the operations of type
 \EndFunction
 
 \item[]
-\Function{MergeModules}{$m1, m2, r_{O}$}
+\Function{MergeComp}{$m1, m2, r_{O}$}
 \Let{$e, i$}{$m2.exports, m2.invokes$}
-\Let{$s, c$}{$m1.stores \cup m2.stores, m1.cons \cup m2.cons$}
+\Let{$s, c$}{$m1.stores \cup m2.stores, m1.guard \cup m2.guard$}
 \ForAll{$(O1, O2) \subseteq m1.exports \times m2.exports$}
 \If{$(O1, O2) \in r_{O}$}
 \Let{$e$}{$e \cup \textsf{MergeOp}(O1, O2)$}
@@ -164,11 +165,10 @@ operations of type \textsf{GetPage} is exactly the operations of type
 The algorithm for merging, shown in Algorithm~\ref{alg-merge-models},
 accepts two models, $m1, m2 \in M$, and a relationship $r \in R$
 between them, and produces a new model, $m' \in M$. The algorithm is
-divided into two steps. First, for every pair of entities specified in
-$r$, it merges the two entities into a single entity that retains the
-characteristics of the two original entities (Line 2). Then, the
-algorithm builds a new model by replacing the original entities in
-$r$ with the new entities (Line 3).
+divided into two steps. First, for every pair of entities $e1$ and
+$e2$ specified in $r$, it merges them into a single entity $e'$ that is a
+subset of $e2$ and corresponds to $e1$ (Line 2). Then, the algorithm
+builds a new model by replacing every $e1$ in $r$ with $e'$ (Line 3).
 
 % \begin{figure*}[!t]
 % \centering
@@ -179,15 +179,12 @@ $r$ with the new entities (Line 3).
 
 \subsubsection{Step 1: Merging Related Entities}
 
-For every pair of entities $e1, e2$ specified in $r$, our goal is to
-produce a new entity $e'$ that (1) replaces $e1$ in the merged model
-$m'$, and (2) obtains the characteristics of $e2$. The procedure
-\textsf{BuildMapping} performs this task in two-fold, first merging
-each pair of related data sets (Line 7), and then merging the related
-modules (Line 9). As it performs the merging tasks,
-\textsf{BuildMapping} incrementally builds a pair of functions
-($h_{D}$ and $h_{C}$) that map the original modules and data sets from
-$r$ to their merged counterparts.
+Procedure \textsf{BuildMapping} performs the task of merging indivudal
+entities in two-fold, first merging each pair of related data sets
+(Line 7), and then merging the related components (Line 9). As it
+merges these entities, \textsf{BuildMapping} incrementally builds a
+pair of functions ($h_{C}$ and $h_{D}$) that map the original
+components and data sets from $r$ to their merged counterparts.
 
 % \begin{figure}[!t]
 % \centering
@@ -236,15 +233,15 @@ invalidating existing references to $\textsf{Article}$ in $m1$.
 Finally, the set of fields associated with $D'$ is constructed as the
 union of fields in $D1$ and $D2$. 
 
-\paragraph{\textbf{Merging Modules}} Given a pair of modules $(m1, m2)
+\paragraph{\textbf{Merging Components}} Given a pair of components $(m1, m2)
 \in r_{C}$, along with pairs of related operations $r_{O}$,
-\textsf{MergeModule} produces a new module $m'$ behaves like $m1$
+\textsf{MergeComp} produces a new component $m'$ behaves like $m1$
 while also obtaining the characteristics of $m2$.
 
-The behaviors of the two modules may be related through one or more
+The behaviors of the two components may be related through one or more
 pairs of operations specified in $r_{O}$. If $m1$ exports or invokes
 a set of operations $O1$ that are related to another set of operations
-$O2$ in $m2$, \textsf{MergeModule} merges the two sets by using the
+$O2$ in $m2$, \textsf{MergeComp} merges the two sets by using the
 procedure \textsf{MergeOp} (lines 34 and 39). 
 
 \paragraph{\textbf{Merging Operations}} Operations are merged in the
@@ -264,16 +261,16 @@ may receive other kinds of HTTP responses besides the ones that carry
 an article from \textsf{NYTimes}; i.e., there may exist $r \in
 \textsf{Resp}$ that is not a member of $\textsf{SendPage}_{\textsf{Resp}}$.
 
-The constrain function of the merged module $m'$ is constructed
-as the union of $m1.cons$ and $m2.cons$ (Line 31). This ensures that $m'$
+The guard function of the merged component $m'$ is constructed
+as the union of $m1.guard$ and $m2.guard$ (Line 31). This ensures that $m'$
 maintains the behaviors of both $m1$ and $m2$ with respect to the
 operations that they export and invoke, including the merged
 operations. In particular, the set of constraints applicable to $o' \in O' =
 MergeOp(O1, O2)$ can be characterized as follows:
 \begin{align*}
-m'.cons(o') = \{& l \in F \;|\; l \in m2.cons(o') \; \lor \\
+m'.guard(o') = \{& l \in F \;|\; l \in m2.guard(o') \; \lor \\
 &\exists o1 \in O1 
-\cdot o' = f_{O1, O2}(o1) \land l \in m1.cons(o1) \} 
+\cdot o' = f_{O1, O2}(o1) \land l \in m1.guard(o1) \} 
 \end{align*}
 In other words, since $o'$ can be considered a member of both $O1$ and
 $O2$, $o'$ retains all of the constraints that $m1$ and $m2$ impose
@@ -289,12 +286,12 @@ does not enforce any constraint between the arguments of two
 operations being merged, or the fields of two data sets. \todo{Say
 this was intentionally done to make the mapping lightweight}
 
-% To be more precise about what it means for a module to behave like
+% To be more precise about what it means for a component to behave like
 % another, we use the notion of observational refinement that we
 % introduced earlier:
 % \begin{thm}
 % \label{thm-refinement}
-% Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeModule(m1,
+% Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeComp(m1,
 % m2, r_{O})$. Then, $m'$
 % is an observation refinement of both $m1$ and $m2$.
 % \end{thm}
@@ -309,9 +306,9 @@ this was intentionally done to make the mapping lightweight}
 %   refinement of $m2$.
 % \end{proof}
 % The key intuition behind the proof is that the merging operation only
-% restricts the behaviors of the modules on merged operations, and
+% restricts the behaviors of the components on merged operations, and
 % retains the same behaviors for all other operations. For example, from
-% \textsf{Client}'s perspective, the merged module
+% \textsf{Client}'s perspective, the merged component
 % $\textsf{AuthorizationServer}_\textsf{TS}$ still behaves like
 % \textsf{AuthorizationServer}, receiving
 % requests and sending back an access token only if a valid credential
@@ -321,9 +318,9 @@ this was intentionally done to make the mapping lightweight}
 
 Once the different parts of the models have been merged according to
 the given relationships, constructing the merged model is a
-straightforward process. Using the function $h_{C}$ that maps a module
-from an existing module to its merged counterpart, \textsf{BuildModel}
-simply replaces each of the modules that appear in $r_{C}$ with the
+straightforward process. Using the function $h_{C}$ that maps a component
+from an existing component to its merged counterpart, \textsf{BuildModel}
+simply replaces each of the components that appear in $r_{C}$ with the
 new merged one (Line 15), while leaving those that do not appear in
 $r_{C}$ intact (Line 17). Similarly, \textsf{BuildModel} uses $h_{D}$
 to replace each of the data sets from $m1$ that appears in $r_{D}$
@@ -337,7 +334,7 @@ of a property that prior analyses might have ruled out. We categorize
 different types of interactions that arises as a result of
 merging. Let $C_1, C_2 \in C$ be components from models $M_1$ and
 $M_2$, $D_1, D_2 \subseteq D$ be data sets from $M_1$ and $M_2$, and
-$O_1, O_2 \subseteq O$ be the set of operations that $C_1$ and $C_2$
+$O_1, O_2 \subseteq O$ be the sets of operations that $C_1$ and $C_2$
 exports, respectively. 
 
 \textbf{A merged component exports additional operations}. Let $C'$ be
@@ -349,7 +346,7 @@ For example, $\textsf{Client}_\textsf{Browser}$ exports two additional
 operations, \textsf{ExtractCookie} and \textsf{SetCookie}, that are
 invoked by $\textsf{Reader}_\textsf{WebUser}$.
 
-\textbf{A merged operation is invoked by additional modules}. Let $O'$
+\textbf{A merged operation is invoked by additional components}. Let $O'$
 be the result of embedding $O_1$ into $O_2$. Then, $O'$ may be invoked
 by all components in $M_2$ that invoke $O_2$, introducing new interactions
 between $C_1$ and the invokers of $O_2$ in $M_2$.
@@ -366,7 +363,7 @@ argument in $ExtractCookie$.
 
 % One
 % consequence of the merging is that there are new interactions among
-% modules that did not exist before. For example, the malicious server
+% components that did not exist before. For example, the malicious server
 % now interacts with the client application by receiving and sending
 % HTTP messages.
 

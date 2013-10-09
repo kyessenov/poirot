@@ -5,18 +5,19 @@
 In this section, we give an informal overview of how an analyst would
 use the framework to incrementally construct and analyze a model of a
 system. We use an example from the web application domain to
-illustrate our appraoch.
+illustrate our approach.
 
 \paragraph{\textbf{Building an Initial Model}} Let us assume that the
-director of the \textit{New York Times}, a well-known news organization,
-wishes to design a \textit{paywall} system for its online web site. A
-paywall system is used to limit readers to a set number of free
-articles over a time period, requiring them to signup for a paid
-subscription once they reach the limit.  \aleks{At the same time, for
-  optimal user experience, new users should not be required to create
-  an account to start reading the news articles.} One desirable
-property of this paywall system is that \textit{readers who have
-  already exceeded the limit should not be able to access an article}.
+director of the \textit{New York Times}, a well-known news
+organization, wishes to design a \textit{paywall} system for its
+online web site. A paywall system is used to limit readers to a set
+number of free articles over a time period, requiring them to signup
+for a paid subscription once they reach the limit. \ek{need this? Was:
+  At the same time, for optimal user experience, new users should not
+  be required to create an account to start reading the articles.} One
+desirable property of this paywall system is that \textit{readers who
+  have already exceeded the limit should not be able to access an
+  article}.
 
 Alice, the chief web designer of the New York Times, devises a simple
 design of the paywall system, as shown in
@@ -29,7 +30,7 @@ link to an article, \textsf{Client} forwards the request for the
 article to the \textsf{NYTimes} server, sending along a counter
 (\textsf{currCounter}) that represents the number of articles
 \textsf{Reader} has accessed so far. \textsf{NYTimes} accepts a
-request \textsf{GetPage} from \textsf{Client} only if
+ \textsf{GetPage} request from \textsf{Client} only if
 \textsf{currCounter} is less than the limit. Once processing the
 request, \textsf{NYTimes} then sends back a page that contains the
 requested article, along with an increment of the original counter
@@ -44,7 +45,9 @@ requested article, along with an increment of the original counter
   component, and a directed edge from one component \textsf{A} to a
   port of another component \textsf{B} with label \textsf{O}
   represents \textsf{A}'s invocation of operation \textsf{O} that is
-  exported by \textsf{B}.}
+  exported by \textsf{B}. Each operation may require one or more
+  arugments, listed inside brackets; for brevity, argument lists are
+  omitted in (d).}
 \label{fig-nytimes}
 \end{figure}
 
@@ -52,7 +55,7 @@ Note that the model in Figure~\ref{fig-nytimes}(a) describes the system
 interactions in terms of web API operations. This level of abstraction
 is suitable for the designer to capture the essential functionality of
 the system; it omits low-level details that are irrelevant to the
-system workflow, such as what kind of devices various participants
+paywall workflow, such as what kind of devices various participants
 are deployed on, how various API operations are implemented, or the
 type of data structure that is used to represent counters and pages.
 
@@ -74,20 +77,18 @@ Alice decides to explore the potential implications of these design
 decisions on the security of the system using our framework. \fix{Let
   us assume that the repository is already populated with models that
   describe different types of attacks that are applicable to web-based
-  systems.}{Therefore, Alice first searches the repository for
-  security threat models defined for the category of web-based
-  system.}  \fix{For example, one type of attack that the paywall
-  system might be vulnerable to is a \textit{cookie replay
-    attack}}{She finds a model of the \textit{cookie replay attack}
-  and decides to check if her system is vulnerable to it}.
+  systems.}{She searches an existing repository of common security
+  vulnerability models for web-based systems, finds a model of the
+  \textit{cookie replay vulnerability}, and decides to check whether
+  her system is susceptible to it}.
 
-The cookie replay attack involves a malicious user obtaining a cookie
-and repeating its transmission to a server.  In the corresponding
-model, shown in Figure~\ref{fig-nytimes}(b), \textsf{Browser}
-communicates to \textsf{HTTPServer} by sending \textsf{GET} requests
-and receiving responses (\textsf{Resp}) in return. In addition, a
-potentially malicious browser user (named \textsf{WebUser}) interacts
-with \textsf{Browser} by extracting a cookie from it
+The cookie replay vulnerability involves a malicious user obtaining a
+cookie and repeating its transmission to a server.  In
+Figure~\ref{fig-nytimes}(b), \textsf{Browser} communicates to
+\textsf{HTTPServer} by sending \textsf{GET} requests and receiving
+responses (\textsf{Resp}) in return. In addition, a potentially
+malicious browser user (named \textsf{WebUser}) interacts with
+\textsf{Browser} by extracting a cookie from it
 (\textsf{ExtractCookie}), or overwriting an existing cookie at a
 particualr address (\textsf{SetCookie}); this allows \textsf{WebUser}
 to manipulate \textsf{Browser} into sending a request with a fixed
@@ -110,25 +111,24 @@ between parts of the two models before they can be merged.
 Our observation is that relationships between a pair of models
 correspond to the designer's decisions about how different parts of
 the system are to be realized. For example, based on Alice's decisions
-about the implementation of the paywall system, we may infer that
-\textsf{NYTimes} and \textsf{HTTPServer} can be treated as the same
-component; in particular, \textsf{NYTimes} can be considered a kind of
-\textsf{HTTPServer} that performs a specialized function of serving
-articles to its client. A similar kind of relationship can be
-specified between a pair of operations (e.g., \textsf{GetPage} and
-\textsf{GET}) or data sets (e.g, \textsf{Link} and \textsf{URL}). Given
-the relationships specified by Alice, our framework merges the two
-models and produces a new model that combines both aspects of the
-system, as shown in Figure~\ref{fig-merged}.
+about the implementation of the paywall system, \textsf{NYTimes} can
+be treated as a kind of \textsf{HTTPServer} that performs a
+specialized function of serving articles to its client. A similar kind
+of relationship can be specified between a pair of operations (e.g.,
+\textsf{GetPage} and \textsf{GET}) or data sets (e.g, \textsf{Link}
+and \textsf{URL}). Alice specifies these relationships as a mapping in
+Figure~\ref{fig-nytimes}(c). Then, given this mapping, our framework
+produces a new model that combines the characteristics of the two
+models, as shown in Figure~\ref{fig-nytimes}(d).
 
 \paragraph{\textbf{Re-Analyzing the Model}}
 
-Alice re-runs the analysis engine on the new, merged model to check
+Alice re-runs the analysis engine on the merged model to check
 whethe the elaborated system still satisfies the desired
 property. This time, the analysis engine discovers a counterexample
 that demonstrates how the system might allow the reader to access an
 article beyond the limit. In this scenario, \textsf{Reader}, now
-acting like\am{as?} \textsf{WebUser}, extracts a
+acting as a \textsf{WebUser}, extracts a
 cookie that represents the access counter prior to reaching the
 limit. Then, \textsf{Reader} simply overwrites the existing cookie
 with the extracted once the limit is exceeded, and \textsf{NYTimes}
@@ -141,8 +141,8 @@ cookie, it generates and includes a unique token that cannot be
 guessed by \textsf{Reader}, thereby rendering old cookies invalid.
 
 \am{CHECK: can we say the following?}
-
-\aleks{It is important to note that, to merge her initial model with
+\ek{Not sure; I still have a mapping from read to webuser.
+was:It is important to note that, to merge her initial model with
   the cookie replay attack, Alice did not have to explicitly specify
   that the \textsf{Reader} should be mapped to
   \textsf{WebUser}.  In contrast, Alice only had to specify her
@@ -154,10 +154,13 @@ guessed by \textsf{Reader}, thereby rendering old cookies invalid.
   in the repository model, and our system is able to take advantage of
   it.}
 
-Alice may repeat the whole process again, elaborating the system model
-with further details from other types of attack models in the
-repository, and re-running the analysis engine to discover more
-potential design flaws.
+Note that the mapping that Alice has provided is \textit{reusable};
+any other model in the repository that describes interaction between
+\textsf{HTTPServer} and \textsf{Browser} can be automatically merged
+with the current system model. She may repeat the whole process
+through multiple iterations, elaborating the system model with further
+details from other vulnerability models, and re-running the analysis
+engine to discover more potential design flaws.
 
 \am{General comments: (1) renaming suggestions: GetPage
   $\rightarrow$ GetArticle, SendPage $\rightarrow$ ReceiveArticle,
