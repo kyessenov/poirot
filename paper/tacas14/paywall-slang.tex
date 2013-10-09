@@ -1,21 +1,22 @@
-\begin{figure}[ht]
+ \begin{figure}[ht]
 \centering
   \begin{slang}
 view :Paywall do
   critical data Page
   data Link
   
-  trusted component NYTimes [articles: Int ** Page, limit: Int] do
-    creates Article
-    operation GetPage [link: Link, currCounter: Int] do
-      guard    { currCounter < limit) }
-      response { Client::SendPage[articles[link]] }
+  trusted component NYTimes [articles: Link ** Page, limit: Integer] do
+    creates Page
+    operation GetPage [link: Link, currCounter: Integer] do
+      guard    { currCounter < limit }
+      response { Client::SendPage[articles[link], currCounter + 1] }
     end
   end
 
-  trusted component Client [counter: Int] do
-    operation SendPage[article: Article] do 
-      response { Reader::Display[article] }
+  trusted component Client [counter: (dynamic Integer)] do
+    operation SendPage[page: Page, newCounter: Integer] do 
+      effects  { counter = newCounter }
+      response { Reader::Display[page] }
     end
     operation SelectLink[link: Link] do
       response { NYTimes::GetPage[link, counter] }
