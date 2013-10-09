@@ -49,7 +49,7 @@ abstract sig Op {
 	trigger : lone Op,
 	sender : Module,
 	receiver : lone Module,
-	args : set Data
+	args : set (Data + Int)
 }{
 	(args + args.^fields) in sender.accesses.pre
 	post = pre.next
@@ -72,7 +72,7 @@ fun sends[m : Module, es : set Op]  : set Op {
 pred triggeredBy[o : Op, t : set Op] {
 	some o.trigger & t
 }
-fun arg[d : Data] : set Data {
+fun arg[d : Data+Int] : set Data+Int {
 	d + d.^fields
 }
 

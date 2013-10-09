@@ -27,6 +27,8 @@ module Slang
         ).sig(*args, &block)
       end
 
+      alias_method :component, :mod
+
       def trusted(*args, &block)
         blder,blk = if args.size == 1 && Alloy::Dsl::SigBuilder === args.first
                       [args.first, block]
@@ -41,7 +43,13 @@ module Slang
       end
 
       def critical(*data_classes)
-        data_classes.each do |data_cls|
+        fst = data_classes.first
+        data_klasses = if data_classes.size == 1 && Alloy::Dsl::SigBuilder === fst
+                         data_klasses = fst.return_result(:array)
+                       else
+                         data_classes
+                       end
+        data_klasses.each do |data_cls|
           meta.add_critical(data_cls)
         end
       end

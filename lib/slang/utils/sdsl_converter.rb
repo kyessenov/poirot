@@ -237,6 +237,10 @@ module Slang
         evis.visit(pe.sub)
       end
 
+      def convert_intexpr(ie)
+        ae(ie.__value)
+      end
+
       def convert_callexpr(ce)
         case ce.fun
         when :key?
@@ -372,9 +376,10 @@ module Slang
       def _sig_name(sig_cls)
         case
         when sig_cls == Slang::Model::Operation; "Op"
-        when sig_cls < Slang::Model::Operation; _op_name(sig_cls)
-        when sig_cls < Slang::Model::Module;    _mod_name(sig_cls)
-        when sig_cls < Slang::Model::Data;      _data_name(sig_cls)
+        when sig_cls < Slang::Model::Operation;  _op_name(sig_cls)
+        when sig_cls < Slang::Model::Module;     _mod_name(sig_cls)
+        when sig_cls < Slang::Model::Data;       _data_name(sig_cls)
+        when sig_cls == Integer;                 "Int"
         else
           fail "Unknown sig cls: #{sig_cls}"
         end

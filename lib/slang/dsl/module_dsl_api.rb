@@ -23,6 +23,7 @@ module Slang
 
       alias_method :assumption, :guard
       alias_method :invokes, :sends
+      alias_method :response, :sends
 
       def creates(*data_classes)
         data_classes.each do |data_cls|

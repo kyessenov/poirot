@@ -432,22 +432,25 @@ class Expr
 
   alias_method :plus, :union
 
+  def iplus(otherExpr)
+    FuncApp.new(ae("plus"), self, otherExpr)
+  end
+
   def join otherExpr
     Join.new(self, otherExpr)
   end
 
   def contains otherExpr
     if not otherExpr.is_a? Expr then otherExpr = expr(otherExpr) end
-    some(intersect(self, otherExpr)) #TODO: this is not equivalent to `otherExpr in self'
+    some(intersect(self, otherExpr))#TODO: this is not equivalent to `otherExpr in self'
   end
 
-  def eq otherExpr
-    Equals.new(self, otherExpr)
-  end
-
-  def in otherExpr
-    otherExpr.contains(self)
-  end
+  def eq(otherExpr)  Equals.new(self, otherExpr) end
+  def in(otherExpr)  otherExpr.contains(self) end
+  def lt(otherExpr)  GenericBinOp.new(" < ", self, otherExpr) end
+  def lte(otherExpr) GenericBinOp.new(" <= ", self, otherExpr) end
+  def gt(otherExpr)  GenericBinOp.new(" > ", self, otherExpr) end
+  def gte(otherExpr) GenericBinOp.new(" >= ", self, otherExpr) end
 
   alias_method :equals, :eq
 
@@ -675,6 +678,14 @@ class BinOp < Expr
   def rewrite(ctx)
     self.class.new(@rel.rewrite(ctx), @col.rewrite(ctx))
   end
+end
+
+class GenericBinOp < BinOp
+  def initialize(op, lhs, rhs) 
+    super(lhs, rhs)
+    @op = op
+  end
+  def op() @op end
 end
 
 class Join < BinOp
