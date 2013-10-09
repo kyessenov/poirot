@@ -6,17 +6,16 @@
 % discussed in Section~\ref{sec-mismatch}, we first introduce the
 % underlying formalism that is used for specifying systems, attacks, and
 % security properties.
-In this section, we first introduce the underlying formalism that our
-framework uses to specify a system and its behavior. Our modeling
-approach is based on standard event-based architectural formalisms
-such as Darwin~\cite{darwin}.
+This section introduces the underlying formalism that our framework
+uses to specify a system and its behavior. We use a standard
+first-order logic to describe the formalism.
 
 \paragraph{\textbf{Structure}} In our approach, a system consists of a
-set of modules $M$ that asynchronously communicate with each other
-through operations $O$.  Each module \textit{exports} zero or more
+set of components $C$ that asynchronously communicate with each other
+through operations $O$.  Each component \textit{exports} zero or more
 operations at its interface, and \textit{stores} some set of data
 $D$\fix{ that can be transmitted}{. Data can flow from one} to another
-module \fix{by \textit{invoking} the latter's operations}{only by
+component \fix{by \textit{invoking} the latter's operations}{only by
   means of operation \textit{invocations}; this enables our system to
   accurately track data flows and automatically check standard
   information flow properties such as \textit{integrity} and
@@ -24,10 +23,10 @@ module \fix{by \textit{invoking} the latter's operations}{only by
   important, but I'm not sure it belongs here.  Maybe move it a few
   paragraphs below, where it talks about passing arguments.}.  For
 example, consider the \textsf{NYTimes} server from
-Figure~\ref{fig-nytimes}(a). One way to specify this module in our
+Figure~\ref{fig-nytimes}(a). One way to specify this component in our
 approach is as follows\footnote{For convenience, we use the dot (.)
-  notation to refer a tuple element by name; for example, $m.exports$
-  refers to $exports$ element of module $m$.}:
+  notation to refer a tuple element by name; for example, $c.exports$
+  refers to $exports$ element of component $c$.}:
 \begin{align*}
 &\textsf{NYTimes}.exports = \textsf{GetPage}\\
 &\textsf{NYTimes}.invokes = \textsf{SendPage}\\
@@ -43,30 +42,29 @@ type of data structure that maps a link to a page. \am{No
 
 \begin{figure}[!t]
 \fbox{
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.455\textwidth}
 \begin{tabular}{@{\quad}l@{\quad}l}
 \multicolumn{2}{l}{\textbf{Sorts}} \\
-$M, O, D, V$                    & \\
+$C, O, D, V$                    & \\
 $N, F$                          & \color{comment} // Name, Formula\\
 \\
-\multicolumn{2}{l}{\textbf{Module} ($M$)} \\
+\multicolumn{2}{l}{\textbf{Component} ($C$)} \\
 $exports : \mathcal P (O)$      & \color{comment} // exported ops \\
 $invokes : \mathcal P (O)$      & \color{comment} // invoked ops \\
-$stores : N \pfun D$            & \color{comment} // stored data \\
-$cons : O \pfun \mathcal P (F)$ & \color{comment} // constraints \ 
+$stores : N \pfun \mathcal P (D)$            & \color{comment} // stored data \\
+$cons : O \pfun F$ & \color{comment} // constraints \ 
 \end{tabular}
 \end{minipage}
 \quad
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.455\textwidth}
 \begin{tabular}{@{\quad}l@{\quad}l}
 \multicolumn{2}{l}{\textbf{Operation} ($O$)} \\
-$args : N \pfun D$       & \color{comment} // arguments \\
+$args : N \pfun \mathcal P (D)$       & \color{comment} // arguments \\
 \\
 \multicolumn{2}{l}{\textbf{Data} ($D$)} \\
-$fields : N \pfun D$     & \color{comment} // data fields \\
 \\
-\multicolumn{2}{l}{\textbf{View} ($V$)} \\
-$mods : \mathcal P (M)$  & \color{comment} // modules \\
+\multicolumn{2}{l}{\textbf{Model} ($V$)} \\
+$comps : \mathcal P (C)$  & \color{comment} // components \\
 $data : \mathcal P (D)$  & \color{comment} // data types \\
 \end{tabular}
 \end{minipage}
@@ -75,10 +73,74 @@ $data : \mathcal P (D)$  & \color{comment} // data types \\
 \label{fig-formalism}
 \end{figure}
 
+\begin{figure}[!t]
+\fbox{
+\begin{minipage}[t]{0.95\textwidth}
+$\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
+\textsf{Reader}\}$ 
+
+$\textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
+\textsf{Counter}$ 
+
+$\textsf{NYTimes}.exports \subseteq \textsf{GetPage} \land \textsf{NYTimes}.invokes \subseteq \textsf{SendPage}$
+
+$\textsf{GetPage}.args(\textsf{``link''}) \in \textsf{Link} \land \textsf{GetPage}.args(\textsf{``currCounter''}) \in \textsf{Counter}$
+
+$\textsf{NYTimes}.stores(\textsf{``articles''}) \in \textsf{Map[Link,Article]}$ 
+
+$\textsf{NYTimes}.cons = \{(\textsf{GetPage},f_1),
+(\textsf{SendPage}, f_2)\}$ where
+
+$f_1 \equiv \forall o \in \textsf{GetPage} \cdot o.args(\textsf{currCounter}) \leq \textsf{LIMIT}$
+
+$f_2 \equiv \exists o' \in \textsf{GetPage} \cdot o.args(\textsf{page}) =
+(\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
+\land$ 
+
+$\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1$
+
+\end{minipage}
+}
+\end{figure}
+
+% \begin{figure}[!t]
+% \fbox{
+% \begin{minipage}[t]{0.95\textwidth}
+% $\textsf{Paywall}.comps = \{\textsf{NYTimes}, \textsf{Client},
+% \textsf{Reader}\}$ 
+
+% $\textsf{Paywall}.data = \textsf{Article} \cup \textsf{Link} \cup
+% \textsf{Counter}$ 
+
+% $\textsf{NYTimes}.exports \subseteq \textsf{GetPage}$ 
+
+% $\textsf{GetPage}.args =
+% \{(\textsf{``link''}, \textsf{Link}),(\textsf{``currCounter''}, \textsf{Counter})\}$
+
+% $\textsf{NYTimes}.invokes \subseteq \textsf{SendPage}$
+
+% $\textsf{NYTimes}.stores =
+% \{\textsf{(\textsf{``articles''}, \textsf{Map[Link,Article]})}\}$ 
+
+% $\textsf{NYTimes}.cons = \{(\textsf{GetPage},f_1),
+% (\textsf{SendPage}, f_2)\}$ where
+
+% $f_1 \equiv \forall o \in \textsf{GetPage} \cdot o.args(\textsf{currCounter}) \leq \textsf{LIMIT}$
+
+% $f_2 \equiv \exists o' \in \textsf{GetPage} \cdot o.args(\textsf{page}) =
+% (\textsf{NYTimes}.stores(\textsf{articles}))[o'.args(\textsf{link})]
+% \land$ 
+
+% $\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\textsf{newCounter}) = o'.args(\textsf{currCounter}) + 1$
+
+% \end{minipage}
+% }
+% \end{figure}
+
 Each operation $o \in O$ \fix{is associated with}{has} zero or more
 named \textit{arguments}\fix{, which the invoker uses to transmit data
-  to its exporter}{; a module invoking an operation transmits data to
-  the module exporting that operation by setting the operation's
+  to its exporter}{; a component invoking an operation transmits data to
+  the component exporting that operation by setting the operation's
   arguments}. For example, every operation $o$ of type
 $\textsf{GetPage}$ carries two arguments: a link to an article
 ($\textsf{link}$), and a counter ($\textsf{currCounter}$) that
@@ -92,16 +154,13 @@ represents the number of articles accessed; i.e.,
 \begin{align*}
   \textsf{GetPage}.args = \{ ``link" \pfun \textsf{Link}, ``currCounter" \pfun \textsf{Int} \}
 \end{align*}
-Additionally, each data element may be assigned a named set of
-\textit{fields}, allowing construction of complex data types from
-simple ones.
 
-Finally, a system view $v \in V$ is simply defined as a set of modules
-($v.mods$) and data types ($v.data$). 
+Finally, a system model $m \in M$ is simply defined as a set of components
+($m.comps$) and data types ($m.data$). 
 
-\paragraph{\textbf{Behavior}} A module may not allow every incoming
+\paragraph{\textbf{Behavior}} A component may not allow every incoming
 operation, and may not send out arbitrary messages to other
-modules. For every type of operation that it exports, the module can
+components. For every type of operation that it exports, the component can
 impose a constraint on the set of the operations that it is willing to
 accept; the function $cons$ is used to specify such a constraint. For
 example, \textsf{NYTimes} may only accept an incoming request for an
@@ -115,13 +174,13 @@ f \equiv o.args(\textsf{currCounter}) \leq \textsf{LIMIT}
 where $\textsf{LIMIT}$ is a constant that represents the number of
 allowed articles.
 
-Similarly, a module may impose a constraint on the set of operations
+Similarly, a component may impose a constraint on the set of operations
 that it can send out. For example, the authorization server may invoke
 \textsf{SendPage} on the client only if it has already received and
 accepted a valid \textsf{GetPage} message. In addition,
 \textsf{SendPage} must include, as arguments, an article that
 corresponds to the requested link, and an increment of the current
-counter. Formally, for every $o \in m.invokes \cap \textsf{SendPage}$,
+counter. Formally, for every $o \in c.invokes \cap \textsf{SendPage}$,
 $\textsf{NYTimes}.cons(o)$ returns formula $f$ such that:
 \begin{align*}
 f \equiv \exists o' \in \textsf{GetPage} \cdot & o.args(\textsf{page}) =
@@ -131,20 +190,20 @@ f \equiv \exists o' \in \textsf{GetPage} \cdot & o.args(\textsf{page}) =
 \end{align*}
 
 In effect, constraints in $cons$ are being used to
-declaratively specify the behavior of a module in terms of input and
+declaratively specify the behavior of a component in terms of input and
 output operations that it is allowed to perform. The overall behavior
-of module $m$ is characterized by sets $m.in$ and $m.out$:
+of component $m$ is characterized by sets $c.in$ and $c.out$:
 \begin{align*}
-m.in = \{ o \in m.exports \;|\; \bigwedge m.cons(o) \} \\
-m.out = \{ o \in m.invokes \;|\; \bigwedge m.cons(o) \}
+c.in = \{ o \in c.exports \;|\; \bigwedge c.cons(o) \} \\
+c.out = \{ o \in c.invokes \;|\; \bigwedge c.cons(o) \}
 \end{align*}
-Intuitively, $m.in$ represents the set of incoming operations that $m$
-accepts, and $m.out$ represents the set of invocations that $m$ is
-allowed to make. Note that the domain of $m.cons$ is restricted to
-the set of operations that $m$ exports or invokes (i.e., $m.exports
-\cup m.invokes$). We assume that if the analyst does not specify a
+Intuitively, $c.in$ represents the set of incoming operations that $m$
+accepts, and $c.out$ represents the set of invocations that $m$ is
+allowed to make. Note that the domain of $c.cons$ is restricted to
+the set of operations that $m$ exports or invokes (i.e., $c.exports
+\cup c.invokes$). We assume that if the analyst does not specify a
 constraint for an operation that it exports or invokes,
 then it is assigned truth value $\top$ (i.e., the operation is always
 allowed).
 
-\input{paywall-formal.tex}
+%\input{paywall-formal.tex}
