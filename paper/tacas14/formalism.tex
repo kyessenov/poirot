@@ -61,7 +61,7 @@ $data$  & $:\fsep \mathcal P (D)$  & \mcom{data sets}\\
 $exports$ & $:\fsep \mathcal P (O)$         & \mcom{exported ops}\\
 $invokes$ & $:\fsep \mathcal P (O)$         & \mcom{invoked ops}\\
 $stores$  & $:\fsep N \pfun \mathcal P (D)$ & \mcom{stored data}\\
-$guard$   & $:\fsep O \pfun F$              & \mcom{guards on ops}\\
+$guards$   & $:\fsep O \pfun F$              & \mcom{guards on ops}\\
 \multicolumn{3}{l}{\textbf{Operation} ($O$)} \\
 $args$    & $:\fsep N \pfun \mathcal P (D)$ & \mcom{arguments}\\
 \end{tabular}
@@ -72,9 +72,9 @@ $args$    & $:\fsep N \pfun \mathcal P (D)$ & \mcom{arguments}\\
 \begin{minipage}[t]{0.97\textwidth}
 \begin{tabular}{@{\quad}r@{\;}l}
   \multicolumn{2}{l}{\textbf{Auxiliary Functions}} \\
-  $incoming(c)$ & $= {\{ o \in c.exports \;|\; c.guard(o) \}}$ \\
+  $incoming(c)$ & $= {\{ o \in c.exports \;|\; c.guards(o) \}}$ \\
   $canAccess(c)$ & $= \{ d \in D \;|\; d \in ran(c.stores) \;\lor \exists o \in incoming(c) \bullet d \in ran(o.args)\} $ \\
-  $outgoing(c)$ & $= {\{ o \in c.invokes \;|\; c.guard(o) \land ran(o.args) \subseteq
+  $outgoing(c)$ & $= {\{ o \in c.invokes \;|\; c.guards(o) \land ran(o.args) \subseteq
     canAccess(c)\}}$ \\
 \end{tabular}
 \end{minipage}
@@ -111,50 +111,50 @@ $\cname{SendPage}.args$ & $= \{(\strlit{page}, \cname{Article}),(\strlit{newCoun
 \end{tabular}
 \\
 \begin{tabular}{ll}
-$\cname{NYTimes}.guard(\cname{GetPage}) $  & $= f_1(o) \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$\\
-$\cname{NYTimes}.guard(\cname{SendPage}) $ & $= f_2(o) \equiv \exists t \in \cname{GetPage} \;\;\bullet $\\
+$\cname{NYTimes}.guards(\cname{GetPage}) $  & $= f_1(o) \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$\\
+$\cname{NYTimes}.guards(\cname{SendPage}) $ & $= f_2(o) \equiv \exists t \in \cname{GetPage} \;\;\bullet $\\
  & \bigsep $ t.args(\strlit{page}) = \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})] \;\land $ \\
  & \bigsep $ o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
 \end{tabular}
 \end{minipage}
 }
 %% keep above or below
-\fbox{
-\begin{minipage}[t]{0.97\textwidth}
-\mcom{definition of the \cname{Paywall} model}
+% \fbox{
+% \begin{minipage}[t]{0.97\textwidth}
+% \mcom{definition of the \cname{Paywall} model}
 
-$\cname{Paywall}.comps = \{\cname{NYTimes}, \cname{Client},
-\cname{Reader}\}, \cname{Paywall}.data = \cname{Article} \cup \cname{Link} \cup
-\cname{Counter}$ 
+% $\cname{Paywall}.comps = \{\cname{NYTimes}, \cname{Client},
+% \cname{Reader}\}, \cname{Paywall}.data = \cname{Article} \cup \cname{Link} \cup
+% \cname{Counter}$ 
 
-\mcom{operations for \textsf{NYTimes}}
+% \mcom{operations for \textsf{NYTimes}}
 
-$\cname{NYTimes}.exports = \cname{GetPage}, \cname{NYTimes}.invokes = \cname{SendPage}$
+% $\cname{NYTimes}.exports = \cname{GetPage}, \cname{NYTimes}.invokes = \cname{SendPage}$
 
-$\cname{GetPage}.args =
-\{(\strlit{link}, \cname{Link}),(\strlit{currCounter}, \cname{Counter})\}$
+% $\cname{GetPage}.args =
+% \{(\strlit{link}, \cname{Link}),(\strlit{currCounter}, \cname{Counter})\}$
 
-$\cname{SendPage}.args =
-\{(\strlit{page}, \cname{Article}),(\strlit{newCounter}, \cname{Counter})\}$
+% $\cname{SendPage}.args =
+% \{(\strlit{page}, \cname{Article}),(\strlit{newCounter}, \cname{Counter})\}$
 
-$\cname{NYTimes}.stores =
-\{\cname{(\strlit{articles}, \cname{Map[Link,Article]})}\}$ 
+% $\cname{NYTimes}.stores =
+% \{\cname{(\strlit{articles}, \cname{Map[Link,Article]})}\}$ 
 
-\mcom{behavior of \cname{NYTimes} with respect to its operations}
+% \mcom{behavior of \cname{NYTimes} with respect to its operations}
 
-$\forall o \in \cname{GetPage} \bullet \cname{NYTimes}.guard(o) = f_1 $
-where $f_1 \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$
+% $\forall o \in \cname{GetPage} \bullet \cname{NYTimes}.guards(o) = f_1 $
+% where $f_1 \equiv o.args(\strlit{currCounter}) \leq \cname{LIMIT}$
 
-$\forall o \in \cname{SendPage} \bullet \cname{NYTimes}.guard(o) = f_2
-$ where
+% $\forall o \in \cname{SendPage} \bullet \cname{NYTimes}.guards(o) = f_2
+% $ where
 
-$\quad f_2 \equiv \exists t \in \cname{GetPage} \bullet t.args(\strlit{page}) =
-\cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})]
-\land$ 
+% $\quad f_2 \equiv \exists t \in \cname{GetPage} \bullet t.args(\strlit{page}) =
+% \cname{NYTimes}.stores(\strlit{articles})[t.args(\strlit{link})]
+% \land$ 
 
-$\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
-\end{minipage}
-}
+% $\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad o.args(\strlit{newCounter}) = t.args(\strlit{currCounter}) + 1$
+% \end{minipage}
+% }
 \caption{A snippet of the New York Times paywall model. Assume that
   \cname{Map[K, V]} is a predefined data type that represents a map
   from \cname{K} to \cname{V}; $m[k]$ returns the value stored in

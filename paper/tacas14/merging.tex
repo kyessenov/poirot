@@ -19,7 +19,7 @@ specify a relationship between a pair of components, operations, or data
 elements. Our notion of a relationship between two entities is that of
 a \textit{subset} relation. Informally, two entities are related if
 they both describe the same concept in the real world, but one is a
-generic representation of the other. \ek{For example,
+more generic representation of the other. \ek{For example,
 \textsf{NYTimes} can be regarded as a specialized kind of
 \textsf{HTTPServer} with the role of controlling access to articles
 that it stores.  A similar kind of relationship can be introduced
@@ -70,35 +70,35 @@ a HTTP server.
 
 \begin{algorithm}[!t]
 \begin{algorithmic}[1]
-\Function{MergeModels}{$m1, m2, r$}
-\Let{$h$}{\textsf{BuildMapping}($m1$, $m2$, $r$)}
-\Let{$m'$}{\textsf{BuildModel}($m1$, $m2$, $h$)}
+\Function{MergeModels}{$m_{1}, m_{2}, r$}
+\Let{$h$}{\textsf{BuildMapping}($m_{1}$, $m_{2}$, $r$)}
+\Let{$m'$}{\textsf{BuildModel}($m_{1}$, $m_{2}$, $h$)}
 %\Let{$m'$}{\textsf{Substitute}}($m'$, $h$)
 \State \Return{$m'$}
 \EndFunction
 
 \item[]
-\Function{BuildMapping}{$m1, m2, (r_{C}, r_{O}, r_{D})$}
-\ForAll{$(D1, D2) \in r_{D}$}
-\Let{$h_{D}(D1)$}{\textsf{MergeData}($D1$, $D2$)}
+\Function{BuildMapping}{$m_{1}, m_{2}, (r_{C}, r_{O}, r_{D})$}
+\ForAll{$(D_{1}, D_{2}) \in r_{D}$}
+\Let{$h_{D}(D_{1})$}{\textsf{MergeData}($D_{1}$, $D_{2}$)}
 \EndFor
-\ForAll{$(m1, m2) \in r_{C}$}
-\Let{$h_{C}(m1), h_{C}(m2)$}{\textsf{MergeComp}($m1$, $m2$, $r_{O}$)}
+\ForAll{$(c_{1}, c_{2}) \in r_{C}$}
+\Let{$h_{C}(c_{1}), h_{C}(c_{2})$}{\textsf{MergeComp}($c_{1}$, $c_{2}$, $r_{O}$)}
 \EndFor
 \State \Return{$(h_{C}, h_{D})$}
 \EndFunction
 
 \item[]
-\Function{BuildModel}{$m1, m2, (h_{C}, h_{D})$}
+\Function{BuildModel}{$m_{1}, m_{2}, (h_{C}, h_{D})$}
 \Let{$C', D'$}{$\varnothing$}
-\ForAll{$m \in m1.components \cup m2.components$}
+\ForAll{$m \in m_{1}.comps \cup m_{2}.comps$}
 \If{$m \in dom(h_{C})$}
 \Let{$C'$}{$C' \cup \{h_{C}(m)\}$}
 \Else
 \Let{$C'$}{$C' \cup \{m\}$}
 \EndIf
 \EndFor
-\ForAll{$ds \subseteq m1.data \cup m2.data$}
+\ForAll{$ds \subseteq m_{1}.data \cup m_{2}.data$}
 \If{$ds \in dom(h_{D})$}
 \Let{$D'$}{$D' \cup h_{D}(ds)$}
 \Else
@@ -109,43 +109,39 @@ a HTTP server.
 \EndFunction
 
 \item[]
-\Function{MergeData}{$D1, D2$}
-\Let{$D'$}{$\{d2 \in D2\; |\; \exists d1 \in D1 \cdot d2 =
-  f_{D1,D2}(d1)\}$}
-\ForAll{$d \in D1$}
-\Let{$f_{D1,D2}(d).fields$}{$f_{D1,D2}(d).fields \cup d.fields$}
-\EndFor
+\Function{MergeData}{$D_{1}, D_{2}$}
+\Let{$f_{D_{1},D_{2}}$}{\textsf{BuildEmbeddingFunc}($D_{1}$, $D_{2}$)}
+\Let{$D'$}{$f_{D_{1},D_{2}}(D_{1})$}
 \State \Return{$D'$}
 \EndFunction
 
 \item[]
-\Function{MergeComp}{$m1, m2, r_{O}$}
-\Let{$e, i$}{$m2.exports, m2.invokes$}
-\Let{$s, c$}{$m1.stores \cup m2.stores, m1.guard \cup m2.guard$}
-\ForAll{$(O1, O2) \subseteq m1.exports \times m2.exports$}
-\If{$(O1, O2) \in r_{O}$}
-\Let{$e$}{$e \cup \textsf{MergeOp}(O1, O2)$}
+\Function{MergeComp}{$c_{1}, c_{2}, r_{O}$}
+\Let{$e, i$}{$c_{2}.exports, c_{2}.invokes$}
+\Let{$s, g$}{$c_{1}.stores \cup c_{2}.stores, c_{1}.guard \cup c_{2}.guard$}
+\ForAll{$(O_{1}, O_{2}) \subseteq c_{1}.exports \times c_{2}.exports$}
+\If{$(O_{1}, O_{2}) \in r_{O}$}
+\Let{$e$}{$e \cup \textsf{MergeOp}(O_{1}, O_{2})$}
 \Else
-\Let{$e$}{$e \cup O1$}
+\Let{$e$}{$e \cup O_{1}$}
 \EndIf
 \EndFor
-\ForAll{$(O1, O2) \subseteq m1.invokes \times m2.invokes$}
-\If{$(O1, O2) \in r_{O}$}
-\Let{$i$}{$i \cup \textsf{MergeOp}(O1, O2)$}
+\ForAll{$(O_{1}, O_{2}) \subseteq c_{1}.invokes \times c_{2}.invokes$}
+\If{$(O_{1}, O_{2}) \in r_{O}$}
+\Let{$i$}{$i \cup \textsf{MergeOp}(O_{1}, O_{2})$}
 \Else
-\Let{$i$}{$i \cup O1$}
+\Let{$i$}{$i \cup O_{1}$}
 \EndIf
 \EndFor
-\Let{$m'$}{$(e,i,s,c)$}
-\State \Return{$m'$}
+\Let{$c'$}{$(e,i,s,g)$}
+\State \Return{$c'$}
 \EndFunction
 
 \item[]
-\Function{MergeOp}{$O1, O2$}
-\Let{$O'$}{$\{o2 \in O2\; |\; \exists o1 \in O1 \cdot o2 =
-  f_{O1,O2}(o1)\}$}
-\ForAll{$o \in O1$}
-\Let{$f_{O1,O2}(o).args$}{$f_{O1,O2}(o).args \cup o.args$}
+\Function{MergeOp}{$O_{1}, O_{2}$}
+\Let{$f_{O_{1},O_{2}}$}{\textsf{BuildEmbeddingFunc}($O_{1}$, $O_{2}$)}
+\Let{$O'$}{$f_{O_{1},O_{2}}(O_{1})$}
+\ForAll{$o \in O_{1}$} \Let{$f_{O_{1},O_{2}}(o).args$}{$f_{O_{1},O_{2}}(o).args \cup o.args$}
 \EndFor
 \State \Return{$O'$}
 \EndFunction
@@ -163,11 +159,11 @@ a HTTP server.
 \subsection{Merging Algorithm}
 
 The algorithm for merging, shown in Algorithm~\ref{alg-merge-models},
-accepts two models, $m1, m2 \in M$, and a relationship $r \in R$
+accepts two models, $m_{1}, m_{2} \in M$, and a relationship $r \in R$
 between them, and produces a new model, $m' \in M$. The algorithm is
 divided into two steps. First, for every pair of entities $e1$ and
 $e2$ specified in $r$, it merges them into a single entity $e'$ that is a
-subset of $e2$ and corresponds to $e1$ (Line 2). Then, the algorithm
+subset of $e2$, and corresponds to $e1$ (Line 2). Then, the algorithm
 builds a new model by replacing every $e1$ in $r$ with $e'$ (Line 3).
 
 % \begin{figure*}[!t]
@@ -181,10 +177,11 @@ builds a new model by replacing every $e1$ in $r$ with $e'$ (Line 3).
 
 Procedure \textsf{BuildMapping} performs the task of merging indivudal
 entities in two-fold, first merging each pair of related data sets
-(Line 7), and then merging the related components (Line 9). As it
-merges these entities, \textsf{BuildMapping} incrementally builds a
-pair of functions ($h_{C}$ and $h_{D}$) that map the original
-components and data sets from $r$ to their merged counterparts.
+(Line 7), and then merging the related components (Line
+9). As output, \textsf{BuildMapping} returns a pair of functions
+($h_{C}$ and $h_{D}$) that map the original components and data sets
+from $r$ to their merged counterparts; these functions are then used
+in Step 2 to construct a merged model.
 
 % \begin{figure}[!t]
 % \centering
@@ -193,62 +190,57 @@ components and data sets from $r$ to their merged counterparts.
 % \label{fig-embedding}
 % \end{figure}
 
-\paragraph{\textbf{Merging Data}} For each pair of data sets $(D1,
-D2)$ in $r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
-that replaces $D1$ in the merged model $m'$, and can still be treated
-like instances of $D2$. 
+\paragraph{\textbf{Merging Data}} For each pair of data sets $(D_{1},
+D_{2})$ in $r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
+that replaces $D_{1}$ in the merged model $m'$, and can be treated
+like instances of $D_{2}$. 
 
 For example, given $(\textsf{Article}, \textsf{HTML}) \in r_{D}$,
 \textsf{MergedData} produces a new data set
 $\textsf{Article}_{\textsf{HTML}}$, which conceptually represents the
 encodings of the New York Times articles in HTML
-format. $\textsf{Article}$ and $\textsf{Article}_{\textsf{HTML}}$ are
-isomorphic; for every $a \in \textsf{Article}$, $m'$ contains a unique
-$a' \in \textsf{Article}_{\textsf{HTML}}$ such that $a'$ represents an
-HTML encoding of $a$. Note that $m'$ may contain some HTML documents
-that do not correspond to any article (i.e.,
-$\textsf{Article}_{\textsf{HTML}}$ may be a strict subset of $\textsf{HTML}$).
+format. $\textsf{Article}$ and $\textsf{Article}_{\textsf{HTML}}$
+correspond one-to-one; for every $a \in \textsf{Article}$, there
+exists a unique $a' \in \textsf{Article}_{\textsf{HTML}}$ such that
+$a'$ represents an HTML encoding of $a$. Note that there may be some
+HTML documents that do not correspond to any article (i.e.,
+$\textsf{Article}_{\textsf{HTML}}$ is a strict subset of
+$\textsf{HTML}$).
 
-Formally, $D'$ represents the result of \textit{embedding} $D1$ into
-$D2$.
-\begin{defn} An embedding from set $A$ to $B$ is an injective function
-  $f : A \rightarrow B$.
-\end{defn}
-The embedding establishes a subset relation between $D1$ and $D2$ by
-ensuring that every element $d$ of $D1$ has a unique counterpart
-$f(d)$ that is a member of $D2$. For example, the embedding from
-\textsf{Article} to \textsf{HTML} is a function $f$ that maps each
-article to its HTML counterpart. Then, in the merged model $m'$, every
-$a \in \textsf{Article}$ can be replaced by $f(a)$ without
-invalidating existing references to $\textsf{Article}$ in $m1$.
+Formally, $D'$ represents the result of \textit{embedding} $D_{1}$ into
+$D_{2}$. Since members of $D_{1}$ and $D_{2}$ are abstract values, we can
+construct an injective function $f : D_{1} \rightarrow D_{2}$ by assigning
+to each $d_{1} \in D_{1}$ a unique counterpart $d_{2} \in D_{2}$. Then, an
+embedding of $D_{1}$ into $D_{2}$ is simply the set $f(D_{1})$. For example,
+let $f_{(\textsf{A,H})}$ be an embedding function that maps each
+article to its HTML counterpart. Then, every $a \in \textsf{Article}$
+in the original model $m_{1}$ can be substituted by
+$f_{(\textsf{A,H})}(a)$ in the merged model $m'$.
 
-\begin{thm} For every $D1, D2 \subseteq D$, there always exists a
-  function $f : D1 \rightarrow D2$ such that f is an embedding from
-  $D1$ to $D2$.
-\end{thm}
-\todo{need proof here}
+% \begin{thm} For every $D_{1}, D_{2} \subseteq D$, there always exists a
+%   function $f : D_{1} \rightarrow D_{2}$ such that f is an embedding from
+%   $D_{1}$ to $D_{2}$.
+% \end{thm}
+% \todo{need proof here}
 % \begin{proof} Omitted.
 % \end{proof}
 
-Finally, the set of fields associated with $D'$ is constructed as the
-union of fields in $D1$ and $D2$. 
-
-\paragraph{\textbf{Merging Components}} Given a pair of components $(m1, m2)
-\in r_{C}$, along with pairs of related operations $r_{O}$,
-\textsf{MergeComp} produces a new component $m'$ behaves like $m1$
-while also obtaining the characteristics of $m2$.
+\paragraph{\textbf{Merging Components}} Given a pair of components
+$(c_{1}, c_{2}) \in r_{C}$, along with pairs of related operations $r_{O}$,
+\textsf{MergeComp} produces a new component $c'$ that combines the
+behavior of $c_{1}$ and $c_{2}$.
 
 The behaviors of the two components may be related through one or more
-pairs of operations specified in $r_{O}$. If $m1$ exports or invokes
-a set of operations $O1$ that are related to another set of operations
-$O2$ in $m2$, \textsf{MergeComp} merges the two sets by using the
-procedure \textsf{MergeOp} (lines 34 and 39). 
+pairs of operations specified in $r_{O}$. If $c_{1}$ exports or invokes
+a set of operations $O_{1}$ that are related to another set of operations
+$O_{2}$ in $c_{2}$, \textsf{MergeComp} merges the two sets by using the
+procedure \textsf{MergeOp}. 
 
 \paragraph{\textbf{Merging Operations}} Operations are merged in the
 similar fashion as the data elements; an embedding is used to
-establish a subset relation between $O1$ and $O2$, resulting in a new
-set of operations $O' \subseteq O2$, which also inheirts all of the
-arguments from $O1$ and $O2$ (Line 47).
+establish a subset relation between $O_{1}$ and $O_{2}$, resulting in a new
+set of operations $O' \subseteq O_{2}$, which also inheirts all of the
+arguments from $O_{1}$ and $O_{2}$ (Line 47).
 
 For example, given $(\textsf{SendPage}, \textsf{Resp}) \in r_{O}$,
 $MergeOp$ produces $\textsf{SendPage}_{\textsf{Resp}}$, which
@@ -261,29 +253,31 @@ may receive other kinds of HTTP responses besides the ones that carry
 an article from \textsf{NYTimes}; i.e., there may exist $r \in
 \textsf{Resp}$ that is not a member of $\textsf{SendPage}_{\textsf{Resp}}$.
 
-The guard function of the merged component $m'$ is constructed
-as the union of $m1.guard$ and $m2.guard$ (Line 31). This ensures that $m'$
-maintains the behaviors of both $m1$ and $m2$ with respect to the
+The guard function of the merged component $c'$ is constructed
+as the union of $c_{1}.guard$ and $c_{2}.guard$ (Line 30). This ensures that $c'$
+maintains the behaviors of both $c_{1}$ and $c_{2}$ with respect to the
 operations that they export and invoke, including the merged
-operations. In particular, the set of constraints applicable to $o' \in O' =
-MergeOp(O1, O2)$ can be characterized as follows:
+operations. To be more precise, the set of constraints applicable to $o' =
+MergeOp(O_{1}, O_{2})$ can be characterized as follows:
 \begin{align*}
-m'.guard(o') = \{& l \in F \;|\; l \in m2.guard(o') \; \lor \\
-&\exists o1 \in O1 
-\cdot o' = f_{O1, O2}(o1) \land l \in m1.guard(o1) \} 
+c'.guard(o') = \bigwedge \{& l \in F \;|\; l \in c_{2}.guard(o') \; \lor \\
+&\exists o1 \in O_{1} 
+\cdot o' = f_{O_{1}, O_{2}}(o1) \land l \in c_{1}.guard(o1) \} 
 \end{align*}
-In other words, since $o'$ can be considered a member of both $O1$ and
-$O2$, $o'$ retains all of the constraints that $m1$ and $m2$ impose
-on $O1$ and $O2$, respectively. Similarly, the set of data that $m'$
-stores is constructed as the union of $m1.stores$ and $m2.stores$ (Line 31).
+In other words, since $o'$ can be considered a member of both $O_{1}$ and
+$O_{2}$, $o'$ retains all of the constraints that $c_{1}$ and $c_{2}$ impose
+on $O_{1}$ and $O_{2}$, respectively. 
+
+Finally, the set of data that $c'$ stores is constructed as the union
+of $c_{1}.stores$ and $c_{2}.stores$ (Line 31).
 
 \todo{example with invokes constraints on SendResp}
 
 \todo{Explain why Alice specified GET and GetPage to be equivalent}
 
-\paragraph{\textbf{Remarks}} Note that the merging algorithm
+\ek{ \paragraph{\textbf{Remarks}} Note that the merging algorithm
 does not enforce any constraint between the arguments of two
-operations being merged, or the fields of two data sets. \todo{Say
+operations being merged, or the fields of two data sets. Say
 this was intentionally done to make the mapping lightweight}
 
 % To be more precise about what it means for a component to behave like
@@ -291,19 +285,19 @@ this was intentionally done to make the mapping lightweight}
 % introduced earlier:
 % \begin{thm}
 % \label{thm-refinement}
-% Given $r \in R$ and $(m1, m2) \in r_{M}$, let $m' = MergeComp(m1,
-% m2, r_{O})$. Then, $m'$
-% is an observation refinement of both $m1$ and $m2$.
+% Given $r \in R$ and $(m_{1}, m_{2}) \in r_{M}$, let $m' = MergeComp(m_{1},
+% m_{2}, r_{O})$. Then, $m'$
+% is an observation refinement of both $m_{1}$ and $m_{2}$.
 % \end{thm}
 % \begin{proof}
 %   By construction, for every operation $o \in O$ in $m'$ that
-%   originated from $m1$, $m'$ retains all of the constraints on $o$
-%   from $m1$ (i.e., $m1.cons(o) \subseteq m'.cons(o)$). Thus, $m'.in$
-%   and $m'.out$ are subsets of $m1.in$, and $m1.out$, respectively,
-%   satisfying the conditions for an observational refinement of $m1$ by
+%   originated from $m_{1}$, $m'$ retains all of the constraints on $o$
+%   from $m_{1}$ (i.e., $m_{1}.cons(o) \subseteq m'.cons(o)$). Thus, $m'.in$
+%   and $m'.out$ are subsets of $m_{1}.in$, and $m_{1}.out$, respectively,
+%   satisfying the conditions for an observational refinement of $m_{1}$ by
 %   $m'$.  Similarly, since $m'$ retains all of the constraints on every
-%   operation that it inherits from $m2$, $m'$ is an observational
-%   refinement of $m2$.
+%   operation that it inherits from $m_{2}$, $m'$ is an observational
+%   refinement of $m_{2}$.
 % \end{proof}
 % The key intuition behind the proof is that the merging operation only
 % restricts the behaviors of the components on merged operations, and
@@ -323,7 +317,7 @@ from an existing component to its merged counterpart, \textsf{BuildModel}
 simply replaces each of the components that appear in $r_{C}$ with the
 new merged one (Line 15), while leaving those that do not appear in
 $r_{C}$ intact (Line 17). Similarly, \textsf{BuildModel} uses $h_{D}$
-to replace each of the data sets from $m1$ that appears in $r_{D}$
+to replace each of the data sets from $m_{1}$ that appears in $r_{D}$
 with its embedded counterpart (Line 20).  
 
 \subsection{Implications of Merging}
@@ -332,34 +326,47 @@ Merging two models introduces a new set of behaviors into
 the original model of the system, some of which may lead a violation
 of a property that prior analyses might have ruled out. We categorize
 different types of interactions that arises as a result of
-merging. Let $C_1, C_2 \in C$ be components from models $M_1$ and
-$M_2$, $D_1, D_2 \subseteq D$ be data sets from $M_1$ and $M_2$, and
-$O_1, O_2 \subseteq O$ be the sets of operations that $C_1$ and $C_2$
+merging. Let $c_1, c_2 \in C$ be components from models $m_{1}$ and
+$m_{2}$, $D_1, D_2 \subseteq D$ be data sets from $m_{1}$ and $m_{2}$, and
+$O_1, O_2 \subseteq O$ be the sets of operations that $c_1$ and $c_2$
 exports, respectively. 
 
-\textbf{A merged component exports additional operations}. Let $C'$ be
-the result of merging $C_1$ with $C_2$. Then, $C'$ exports operations
-$O_2$ (which are absent from $M_1$), introducing new interactions
-between $C_1$ and the invokers of $O_2$ in $M_2$. 
-
-For example, $\textsf{Client}_\textsf{Browser}$ exports two additional
-operations, \textsf{ExtractCookie} and \textsf{SetCookie}, that are
-invoked by $\textsf{Reader}_\textsf{WebUser}$.
+\textbf{A merged component exports additional operations}. Let $c'$ be
+the result of merging $c_1$ with $c_2$. Then, $c'$ exports operations
+$O_2$, which are absent from $m_1$, introducing new interactions
+between $c_1$ and the invokers of $O_2$ in $m_2$. Going back to the
+New York Times example in Figure~\ref{fig-nytimes}, by being merged
+with \textsf{Browser}, \textsf{Client} obtains two additional
+operations, \textsf{ExtractCookie} and \textsf{SetCookie}, allowing
+$\textsf{Reader}_\textsf{WebUser}$ to manipulate the counter stored in
+$\textsf{Client}_\textsf{Browser}$.
 
 \textbf{A merged operation is invoked by additional components}. Let $O'$
 be the result of embedding $O_1$ into $O_2$. Then, $O'$ may be invoked
-by all components in $M_2$ that invoke $O_2$, introducing new interactions
-between $C_1$ and the invokers of $O_2$ in $M_2$.
+by all components in $m_2$ that invoke $O_2$, introducing new interactions
+between $c_1$ and the invokers of $O_2$ in $m_2$. By being merged with
+\textsf{GET}, \textsf{GetPage} becomes a kind of HTTP GET operations;
+this means that, for example, any component that invokes \textsf{GET}
+may also invoke $\textsf{GetPage}_\textsf{GET}$.
 
-\textbf{A merged data is included as arguments in additional
+\textbf{A merged data element is included as arguments in additional
   operations.}  Let $D'$ be the result of embedding $D_1$ into
-$D_2$. Then, for some $O_2$ that expects an argument $a \in D_2$,
-a member of $D'$ may also be substituted for $a$, introducing new
-flows of data $D_1$ to the exporters of $O_2$ in $M_2$.
+$D_2$. Then, for some $O_2$ that expects an argument $a \in D_2$, a
+member of $D'$ may also be substituted for $a$, introducing new flows
+of data $D_1$ to the exporters of $O_2$ in $m_2$. Since
+$\textsf{Counter}_\textsf{Cookie}$ is now a subset of
+$\textsf{Cookie}$, a counter can be provided as the $\textsf{cookie}$
+argument in $\textsf{ExtractCookie}$.
 
-Since $\textsf{Counter}_\textsf{Cookie}$ is now a
-subset of $\textsf{Cookie}$, a counter can be provided as the $cookie$
-argument in $ExtractCookie$.
+It may be a combination of one or more of the above interactions that
+lead to a property violation. For example, it is
+$\textsf{Reader}_\textsf{WebUser}$ being able to set a cookie inside
+$\textsf{Client}_\textsf{Browser}$, combined with the design decision
+that a \textsf{Counter} be stored as a \textsf{Cookie}, that allows
+the reader to access an article beyond the limit. Then, the task of
+the analysis engine is to consider all combinations of interactions
+that arise from merging and check whether any one of them could lead
+to a violation.
 
 % One
 % consequence of the merging is that there are new interactions among
