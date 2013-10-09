@@ -5,6 +5,8 @@
 \definecolor{SlangBkgColor}{rgb}{0.98, 0.98, 0.98}
 \def\myemphstyle{\color{green!40!black}\bfseries}
 
+%% \newcommand\pfun{\mathrel{\ooalign{\hfil$\mapstochar\mkern5mu$\hfil\cr$\to$\cr}}}
+
 \lstdefinelanguage{slang}{
   literate=%
     {-|->}{$\pfun$}1
@@ -77,10 +79,11 @@
   morestring=[b]',
   morestring=[b]",
   showstringspaces=false, 
-  numbers=none,
-  firstnumber=0,
+  frame=single,
+  numbers=left,
+  firstnumber=1,
+  stepnumber=1,
   numberstyle=\tiny,
-  stepnumber=5,
   basicstyle=\scriptsize\ttfamily,
   commentstyle=\itshape\color{SlangCommentColor},
   keywordstyle=\bfseries\color{SlangKeywordColor},
