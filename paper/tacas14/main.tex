@@ -26,7 +26,8 @@
 \newfloat{algorithm}{t}{lop}
 \newcommand*\Let[2]{\State #1 $\gets$ #2}
 \usepackage{xcolor}
-\definecolor{comment}{rgb}{0,0.5,0.0}
+\definecolor{comment}{rgb}{0,0.4,0.0}
+\definecolor{stringcolor}{rgb}{0.4,0.0,0.0}
 \newcommand\todo[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand\pfun{\mathrel{\ooalign{\hfil$\mapstochar\mkern5mu$\hfil\cr$\to$\cr}}}
 \newtheorem{defn}{Definition}
@@ -58,6 +59,11 @@
 
 \def\sLang{{\sc sLang}\xspace}
 \def\sLangLong{\sLang}
+\def\strlit#1{\textsf{\color{stringcolor} ``#1''}}
+\def\cname#1{\textsf{#1}}
+\def\mcom#1{{\color{comment} // #1}}
+\def\txtstrlit#1{\strlit{\small #1}}
+\def\txtcname#1{\cname{\small #1}}
 
 % NOTE: set this to either \MREV or \MFIN. 
 %
