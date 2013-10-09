@@ -3,7 +3,7 @@
 \label{sec-merging}
 
 In this section, we describe a technique for merging two potentially
-mistmached models that describe different aspects of a system. The
+mismatched models that describe different aspects of a system. The
 merging process is two-fold. First, the analyst specifies the
 relationship between two models as a mapping between different
 entities in them. Then, given this mapping, we apply an algorithm to
@@ -70,17 +70,19 @@ a HTTP server.
 % \txtcname{TrustedServer}, and now be susceptible to server-side attacks
 % instead of browser-based ones.
 
-\begin{algorithm}[!t]
+\begin{algorithm}[t!]
 \begin{algorithmic}[1]
+\hskip-20pt
+\begin{minipage}[t]{0.60\linewidth}
 \Function{MergeModels}{$m_{1}, m_{2}, r$}
-\Let{$h$}{\textsf{BuildMapping}($m_{1}$, $m_{2}$, $r$)}
-\Let{$m'$}{\textsf{BuildModel}($m_{1}$, $m_{2}$, $h$)}
+\Let{$h$}{\textsf{MkMap}($m_{1}$, $m_{2}$, $r$)}
+\Let{$m'$}{\textsf{MkModel}($m_{1}$, $m_{2}$, $h$)}
 %\Let{$m'$}{\textsf{Substitute}}($m'$, $h$)
 \State \Return{$m'$}
 \EndFunction
 
 \item[]
-\Function{BuildMapping}{$m_{1}, m_{2}, (r_{C}, r_{O}, r_{D})$}
+\Function{MkMap}{$m_{1}, m_{2}, (r_{C}, r_{O}, r_{D})$}
 \ForAll{$(D_{1}, D_{2}) \in r_{D}$}
 \Let{$h_{D}(D_{1})$}{\textsf{MergeData}($D_{1}$, $D_{2}$)}
 \EndFor
@@ -91,7 +93,7 @@ a HTTP server.
 \EndFunction
 
 \item[]
-\Function{BuildModel}{$m_{1}, m_{2}, (h_{C}, h_{D})$}
+\Function{MkModel}{$m_{1}, m_{2}, (h_{C}, h_{D})$}
 \Let{$C', D'$}{$\varnothing$}
 \ForAll{$m \in m_{1}.comps \cup m_{2}.comps$}
 \If{$m \in dom(h_{C})$}
@@ -112,11 +114,13 @@ a HTTP server.
 
 \item[]
 \Function{MergeData}{$D_{1}, D_{2}$}
-\Let{$f_{D_{1},D_{2}}$}{\textsf{BuildEmbeddingFunc}($D_{1}$, $D_{2}$)}
+\Let{$f_{D_{1},D_{2}}$}{\textsf{MkEmbeddingFunc}($D_{1}$, $D_{2}$)}
 \Let{$D'$}{$f_{D_{1},D_{2}}(D_{1})$}
 \State \Return{$D'$}
 \EndFunction
-
+\end{minipage}
+\quad
+\begin{minipage}[t]{0.55\linewidth}
 \item[]
 \Function{MergeComp}{$c_{1}, c_{2}, r_{O}$}
 \Let{$e, i$}{$c_{2}.exports, c_{2}.invokes$}
@@ -141,7 +145,7 @@ a HTTP server.
 
 \item[]
 \Function{MergeOp}{$O_{1}, O_{2}$}
-\Let{$f_{O_{1},O_{2}}$}{\textsf{BuildEmbeddingFunc}($O_{1}$, $O_{2}$)}
+\Let{$f_{O_{1},O_{2}}$}{\textsf{MkEmbeddingFunc}($O_{1}$, $O_{2}$)}
 \Let{$O'$}{$f_{O_{1},O_{2}}(O_{1})$}
 \ForAll{$o \in O_{1}$} \Let{$f_{O_{1},O_{2}}(o).args$}{$f_{O_{1},O_{2}}(o).args \cup o.args$}
 \EndFor
@@ -153,6 +157,8 @@ a HTTP server.
 % \State ... // Omitted
 % \State \Return{$v$}
 % \EndFunction
+\end{minipage}
+
 \end{algorithmic}
 \caption{Merging Models}
 \label{alg-merge-models}
@@ -177,10 +183,10 @@ builds a new model by replacing every $e1$ in $r$ with $e'$ (Line 3).
 
 \subsubsection{Step 1: Merging Related Entities}
 
-Procedure \txtcname{BuildMapping} performs the task of merging indivudal
+Procedure \txtcname{MkMap} performs the task of merging individual
 entities in two-fold, first merging each pair of related data sets
 (Line 7), and then merging the related components (Line
-9). As output, \textsf{BuildMapping} returns a pair of functions
+9). As output, \txtcname{MkMap} returns a pair of functions
 ($h_{C}$ and $h_{D}$) that map the original components and data sets
 from $r$ to their merged counterparts; these functions are then used
 in Step 2 to construct a merged model.
@@ -232,7 +238,7 @@ procedure \textsf{MergeOp}.
 \paragraph{\textbf{Merging Operations}} Operations are merged in the
 similar fashion as the data elements; an embedding is used to
 establish a subset relation between $O_{1}$ and $O_{2}$, resulting in a new
-set of operations $O' \subseteq O_{2}$, which also inheirts all of the
+set of operations $O' \subseteq O_{2}$, which also inherits all of the
 arguments from $O_{1}$ and $O_{2}$ (Line 47).
 
 For example, given $(\txtcname{SendPage}, \txtcname{Resp}) \in r_{O}$,
@@ -262,7 +268,7 @@ $O_{2}$, $o'$ retains all of the constraints that $c_{1}$ and $c_{2}$ impose
 on $O_{1}$ and $O_{2}$, respectively. 
 
 Finally, the set of data that $c'$ stores is constructed as the union
-of $c_{1}.stores$ and $c_{2}.stores$ (Line 31).
+of $c_{1}.stores$ and $c_{2}.stores$ (Line 30).
 
 \todo{example with invokes constraints on SendResp}
 
@@ -301,15 +307,15 @@ this was intentionally done to make the mapping lightweight}
 % requests and sending back an access token only if a valid credential
 % is provided.
 
-\subsubsection{Step 2: Building a New Model}
+\subsubsection{Step 2: Mking a New Model}
 
 Once the different parts of the models have been merged according to
 the given relationships, constructing the merged model is a
 straightforward process. Using the function $h_{C}$ that maps a component
-from an existing component to its merged counterpart, \txtcname{BuildModel}
+from an existing component to its merged counterpart, \txtcname{MkModel}
 simply replaces each of the components that appear in $r_{C}$ with the
 new merged one (Line 15), while leaving those that do not appear in
-$r_{C}$ intact (Line 17). Similarly, \txtcname{BuildModel} uses $h_{D}$
+$r_{C}$ intact (Line 17). Similarly, \txtcname{MkModel} uses $h_{D}$
 to replace each of the data sets from $m1$ that appears in $r_{D}$
 with its embedded counterpart (Line 20).  
 

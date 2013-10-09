@@ -46,7 +46,7 @@ requested article, along with an increment of the original counter
   port of another component \textsf{B} with label \textsf{O}
   represents \textsf{A}'s invocation of operation \textsf{O} that is
   exported by \textsf{B}. Each operation may require one or more
-  arugments, listed inside brackets; for brevity, argument lists are
+  arguments, listed inside brackets; for brevity, argument lists are
   omitted in (d).}
 \label{fig-nytimes}
 \end{figure}
@@ -68,7 +68,7 @@ the reader from accessing an article beyond the limit.
 \paragraph{\textbf{Elaborating the System Model}} Being satisfied with the
 initial design, Alice moves onto exploring lower-level design
 choices for the system. She decides that \textsf{NYTimes} will run on
-top of an HTTP server, with \textsf{GetPage} implemeneted as a
+top of an HTTP server, with \textsf{GetPage} implemented as a
 standard HTTP GET operation. Similarly, she
 designates \textsf{Client} to run on top of a standard web browser,
 and the access counter to be stored as a cookie inside the browser.
@@ -90,7 +90,7 @@ responses (\textsf{Resp}) in return. In addition, a potentially
 malicious browser user (named \textsf{WebUser}) interacts with
 \textsf{Browser} by extracting a cookie from it
 (\textsf{ExtractCookie}), or overwriting an existing cookie at a
-particualr address (\textsf{SetCookie}); this allows \textsf{WebUser}
+particular address (\textsf{SetCookie}); this allows \textsf{WebUser}
 to manipulate \textsf{Browser} into sending a request with a fixed
 cookie value.
 
@@ -124,7 +124,7 @@ models, as shown in Figure~\ref{fig-nytimes}(d).
 \paragraph{\textbf{Re-Analyzing the Model}}
 
 Alice re-runs the analysis engine on the merged model to check
-whethe the elaborated system still satisfies the desired
+whether the elaborated system still satisfies the desired
 property. This time, the analysis engine discovers a counterexample
 that demonstrates how the system might allow the reader to access an
 article beyond the limit. In this scenario, \textsf{Reader}, now
