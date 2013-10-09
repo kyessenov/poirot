@@ -31,11 +31,11 @@ Constructing a model that is sufficiently detailed to account for
 possible failures, however, is a challenging task that requires
 significant expertise in the problem domain. The analyst---often the
 designer of the system---may initially have a rather limited, partial
-knowledge about the system, or ignore details that appear irrelevant
+knowledge about the system, or ignore details that seem irrelevant
 to its core functionality. As the analyst improves her understanding
 of the system, its operating environment, and potential failures, she
 may incrementally elaborate the existing system model with additional
-details and perform multiple iterations of analysis,
+details, and perform multiple iterations of analysis,
 each time discovering new violations that the prior analyses had ruled
 out. Unfortunately, this process is often carried out in an ad hoc,
 manual fashion.
@@ -50,32 +50,30 @@ manual fashion.
 In this paper, we propose a framework to aid the analyst in
 incremental construction and analysis of a system model. The analyst
 can use our framework to automatically augment an initial, high-level
-design model with domain-specific knowledge and uncover potential
+design model with domain-specific knowledge, and uncover potential
 violation of a property that may result from different design choices.
 
-Our framework consists of three key
-components, as shown in Figure~\ref{fig-overview}: (1) a repository of
-models that encode partial knowledge about the problem domain, (2) an
-algorithm that merges two independent models of a system, and (3) an
-analysis engine that checks whether a system model satisfies a given
-property, and if not, produces a counterexample. In a typical
-workflow, the analyst begins by constructing a partial model of the
-system, and runs an initial analysis to check the system against a
-desired property. The analyst then incrementally elaborates the
-initial model into a more detailed one by \fix{merging it with the
-  existing models in the repository, one-by-one}{selecting a set of
-  existing models from the repository, relevant for the particular
-  category of the system under design, and merging them into the
-  initial one.  Each such model from the repository is written by a
-  domain expert and serves as a formal specification of a known
-  feature (e.g., aspect, consideration, security threat,
-  vulnerability, etc.) of an entire category of systems (e.g., the
-  HTTP protocol, web servers, web applications, etc.).}\am{it's
-  probably not very important to say here that this is done one at a
-  time; your tool could in principal merge many of them}. After every
-merge step, the analyst re-runs the analysis on the elaborated model
-to detect any potential violations that were absent from prior
-analyses.
+Our framework consists of three key components, as shown in
+Figure~\ref{fig-overview}: (1) a repository of models that encode
+common knowledge about the problem domain, (2) an algorithm that
+merges two independent models of a system, and (3) an analysis engine
+that checks whether a system model satisfies a given property, and if
+not, produces a counterexample. In a typical workflow, the analyst
+begins by constructing a partial model of the system, and runs an
+initial analysis to check the system against a desired property. The
+analyst then incrementally elaborates the initial model into a more
+detailed one by \fix{merging it with the existing models in the
+  repository, one-by-one}{selecting a set of existing models from the
+  repository, relevant for the particular category of the system under
+  design, and merging them into the initial one.  Each such model from
+  the repository is written by a domain expert and encodes a piece of
+  domain knowledge (e.g., feature, security threat, vulnerability,
+  etc.) of an entire category of systems (e.g., networks, web
+  applications, HTTP servers, etc.).}\am{it's probably not very
+  important to say here that this is done one at a time; your tool
+  could in principal merge many of them}. After every merge step, the
+analyst re-runs the analysis on the elaborated model to detect any
+potential violations that were absent from prior analyses.
 
 A technical challenge in composing two independent models is that they
 may not be amenable to composition due to \textit{abstraction
@@ -90,12 +88,12 @@ models. Our merging algorithm then automatically constructs a new
 model that is the result of composing two mismatched models according
 to the specified relationships.
 
-Our goal is not to completely automate the model construction process;
-we still rely on the analyst to use insights about the system to drive
-the model elaboration process, and interpret the output of the
-analysis engine to devise meaningful fixes to the model. Our framework
-facilitates the model construction and analysis process in the
-following ways:
+We do not aim to completely automate the model construction process;
+our framework still relies on the analyst to use insights about the
+system to drive the model elaboration process, and interpret the
+output of the analysis engine to devise meaningful fixes to the
+model. Our goal is to facilitate the model construction and analysis
+process in the following ways:
 \begin{itemize}
 \item \textbf{Knowledge reuse}: A repository of generic domain models,
   constructed by a domain expert, can be reused for analysis of
@@ -117,20 +115,20 @@ following ways:
 \textbf{Contributions} The contributions of this paper are as
 follows:\am{small first letters in the following list?}
 \begin{itemize}
-\item A framework for incremental construction and analysis of a
+\item a framework for incremental construction and analysis of a
   system model that leverages a domain-specific model repository,
-\item A technique for merging two potentially mismatched models,
-\item An implementation of the framework, including a language for
+\item a technique for merging two potentially mismatched models,
+\item an implementation of the framework, including a language for
   specifying system models and an automated analysis engine built on
   top of a model finder, and
-\item Application of the framework to the analysis of two well-known
+\item application of the framework to the analysis of two well-known
   web protocols, OAuth~\cite{oauth} and OpenID~\cite{openid}.
 \end{itemize}
 
 \textbf{Outline} This paper is structured as
 follows. Section~\ref{sec-overview} provides an overview of our
 framework with an example from an online news paywall system.
-Section~\ref{sec-formalism} introduces the underlying formalism for
+Section~\ref{sec-formalism} introduces our underlying formalism for
 modeling systems. Section~\ref{sec-merging} describes the types of
 relationships that the analyst can specify between two potentially
 mismatched models, and the merging algorithm that composes the two
