@@ -56,4 +56,19 @@ precondition which must hold in order for the operation to be allowed
 (e.g., line 8, only when the given argument (\code{currCounter}) is
 less than the stored limit (\code{limit})), and the latter specifies
 which operations and under what conditions the component invokes
-whenever this operation is triggered.
+whenever this operation is triggered (e.g., line 9, every time the
+\code{GetPage} operation is invoked, the \code{NYTimes} component will
+invoke \code{SendPage} of the \code{Client} component, passing the
+article corresponding to the given link as the operation argument).
+
+\sLang supports certain declarative constructs as well, so it is not
+less expressive than the formalism described in
+\secref{sec-formalism}.  For example, operation invocations do not
+have to be fully specified, as in the \code{Reader} component which is
+allowed to invoke the \code{SelectLink} operation at arbitrary time
+points (line 24).  Passing exact arguments to operations is also
+unnecessary; arguments can be omitted, or a declarative constraint can
+be given to arbitrarily constrain argument values.  A detailed
+description of these more advanced features, as well as any discussion
+of how the embedding of \sLang in Ruby is actually implemented, are,
+however, outside the scope of this paper.
