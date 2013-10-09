@@ -20,13 +20,13 @@ elements. Our notion of a relationship between two entities is that of
 a \textit{subset} relation. Informally, two entities are related if
 they both describe the same concept in the real world, but one is a
 generic representation of the other. \ek{For example,
-\textsf{NYTimes} can be regarded as a specialized kind of
-\textsf{HTTPServer} with the role of controlling access to articles
+\txtcname{NYTimes} can be regarded as a specialized kind of
+\txtcname{HTTPServer} with the role of controlling access to articles
 that it stores.  A similar kind of relationship can be introduced
-between operations or data elements. Operation \textsf{GetPage},
+between operations or data elements. Operation \txtcname{GetPage},
 implemented using a generic HTTP request, can be regarded as a kind of
-\textsf{GET} operation. Similarly, since a counter is stored as a
-cookie, \textsf{Counter} can be treated as a kind of \textsf{Cookie}.}
+\txtcname{GET} operation. Similarly, since a counter is stored as a
+cookie, \txtcname{Counter} can be treated as a kind of \txtcname{Cookie}.}
 
 \begin{defn} A relationship $r \in R$ between two models is a tuple
   $(r_{C}, r_{O}, r_{D})$ where $r_{C} \subseteq C \times C$, $r_{O}
@@ -38,6 +38,7 @@ cookie, \textsf{Counter} can be treated as a kind of \textsf{Cookie}.}
 For example, to merge the paywall and cookie replay models from
 Figure~\ref{fig-nytimes}, Alice may specify the following
 relationships between the two models:
+\begin{scriptsize}
 \begin{align*}
   r_{C} = \{&(\textsf{Client$,$ Browser}),(\textsf{NYTimes$,$
     HTTPServer}), (\textsf{Reader$,$
@@ -48,11 +49,12 @@ relationships between the two models:
   r_{D} = \{&(\textsf{Article$,$ HTML}),(\textsf{Link$,$ URL}),
   (\textsf{Counter$,$ Cookie})\}
 \end{align*}
+\end{scriptsize}
 A subset relation is asymmetrical, and so two entities can be
 specified as equivalent by including a tuple and its inverse in the
 same relation; for example, $r_{O}$ here specifies that
-\textsf{GetPage} operations are the only kind of \textsf{GET}
-operations that will be exported by \textsf{NYTimes} running on top of
+\txtcname{GetPage} operations are the only kind of \txtcname{GET}
+operations that will be exported by \txtcname{NYTimes} running on top of
 a HTTP server.
 
 % Intuitively, these relationships correspond to the system designer's
@@ -60,12 +62,12 @@ a HTTP server.
 % and implemented. By varying these relationships, the designer can
 % explore the security implications of different design decisions. For
 % example, in another variation of OAuth, the designer may decide to
-% deploy \textsf{Client} as a server-side application instead of a
+% deploy \txtcname{Client} as a server-side application instead of a
 % client-side application running on the top of a browser; in this
-% case,\textsf{Client} and \textsf{TrustedServer} would be specified as
+% case,\txtcname{Client} and \txtcname{TrustedServer} would be specified as
 % an entry in $r_{M}$. As a consequence of this relationship,
-% \textsf{Client} would inherit the characteristics of
-% \textsf{TrustedServer}, and now be susceptible to server-side attacks
+% \txtcname{Client} would inherit the characteristics of
+% \txtcname{TrustedServer}, and now be susceptible to server-side attacks
 % instead of browser-based ones.
 
 \begin{algorithm}[!t]
@@ -179,10 +181,10 @@ builds a new model by replacing every $e1$ in $r$ with $e'$ (Line 3).
 
 \subsubsection{Step 1: Merging Related Entities}
 
-Procedure \textsf{BuildMapping} performs the task of merging indivudal
+Procedure \txtcname{BuildMapping} performs the task of merging indivudal
 entities in two-fold, first merging each pair of related data sets
 (Line 7), and then merging the related components (Line 9). As it
-merges these entities, \textsf{BuildMapping} incrementally builds a
+merges these entities, \txtcname{BuildMapping} incrementally builds a
 pair of functions ($h_{C}$ and $h_{D}$) that map the original
 components and data sets from $r$ to their merged counterparts.
 
@@ -194,20 +196,20 @@ components and data sets from $r$ to their merged counterparts.
 % \end{figure}
 
 \paragraph{\textbf{Merging Data}} For each pair of data sets $(D1,
-D2)$ in $r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
+D2)$ in $r_{D}$, \txtcname{MergeData} produces a new set of data, $D'$,
 that replaces $D1$ in the merged model $m'$, and can still be treated
 like instances of $D2$. 
 
-For example, given $(\textsf{Article}, \textsf{HTML}) \in r_{D}$,
-\textsf{MergedData} produces a new data set
-$\textsf{Article}_{\textsf{HTML}}$, which conceptually represents the
+For example, given $(\txtcname{Article}, \txtcname{HTML}) \in r_{D}$,
+\txtcname{MergedData} produces a new data set
+$\txtcname{Article}_{\textsf{HTML}}$, which conceptually represents the
 encodings of the New York Times articles in HTML
-format. $\textsf{Article}$ and $\textsf{Article}_{\textsf{HTML}}$ are
-isomorphic; for every $a \in \textsf{Article}$, $m'$ contains a unique
-$a' \in \textsf{Article}_{\textsf{HTML}}$ such that $a'$ represents an
+format. $\txtcname{Article}$ and $\txtcname{Article}_{\textsf{HTML}}$ are
+isomorphic; for every $a \in \txtcname{Article}$, $m'$ contains a unique
+$a' \in \txtcname{Article}_{\textsf{HTML}}$ such that $a'$ represents an
 HTML encoding of $a$. Note that $m'$ may contain some HTML documents
 that do not correspond to any article (i.e.,
-$\textsf{Article}_{\textsf{HTML}}$ may be a strict subset of $\textsf{HTML}$).
+$\txtcname{Article}_{\textsf{HTML}}$ may be a strict subset of $\txtcname{HTML}$).
 
 Formally, $D'$ represents the result of \textit{embedding} $D1$ into
 $D2$.
@@ -217,10 +219,10 @@ $D2$.
 The embedding establishes a subset relation between $D1$ and $D2$ by
 ensuring that every element $d$ of $D1$ has a unique counterpart
 $f(d)$ that is a member of $D2$. For example, the embedding from
-\textsf{Article} to \textsf{HTML} is a function $f$ that maps each
+\txtcname{Article} to \txtcname{HTML} is a function $f$ that maps each
 article to its HTML counterpart. Then, in the merged model $m'$, every
-$a \in \textsf{Article}$ can be replaced by $f(a)$ without
-invalidating existing references to $\textsf{Article}$ in $m1$.
+$a \in \txtcname{Article}$ can be replaced by $f(a)$ without
+invalidating existing references to $\txtcname{Article}$ in $m1$.
 
 \begin{thm} For every $D1, D2 \subseteq D$, there always exists a
   function $f : D1 \rightarrow D2$ such that f is an embedding from
@@ -235,14 +237,14 @@ union of fields in $D1$ and $D2$.
 
 \paragraph{\textbf{Merging Components}} Given a pair of components $(m1, m2)
 \in r_{C}$, along with pairs of related operations $r_{O}$,
-\textsf{MergeComp} produces a new component $m'$ behaves like $m1$
+\txtcname{MergeComp} produces a new component $m'$ behaves like $m1$
 while also obtaining the characteristics of $m2$.
 
 The behaviors of the two components may be related through one or more
 pairs of operations specified in $r_{O}$. If $m1$ exports or invokes
 a set of operations $O1$ that are related to another set of operations
-$O2$ in $m2$, \textsf{MergeComp} merges the two sets by using the
-procedure \textsf{MergeOp} (lines 34 and 39). 
+$O2$ in $m2$, \txtcname{MergeComp} merges the two sets by using the
+procedure \txtcname{MergeOp} (lines 34 and 39). 
 
 \paragraph{\textbf{Merging Operations}} Operations are merged in the
 similar fashion as the data elements; an embedding is used to
@@ -250,16 +252,16 @@ establish a subset relation between $O1$ and $O2$, resulting in a new
 set of operations $O' \subseteq O2$, which also inheirts all of the
 arguments from $O1$ and $O2$ (Line 47).
 
-For example, given $(\textsf{SendPage}, \textsf{Resp}) \in r_{O}$,
-$MergeOp$ produces $\textsf{SendPage}_{\textsf{Resp}}$, which
-represents the implementation of \textsf{SendPage} as a standard HTTP
-response.  $\textsf{SendPage}_{\textsf{Resp}}$ can be used by
-\textsf{NYTimes} to send an article back to
-$\textsf{Client}_\textsf{Browser}$, but is also treated like any
-standard HTTP response. Note that $\textsf{Client}_\textsf{Browser}$
+For example, given $(\txtcname{SendPage}, \txtcname{Resp}) \in r_{O}$,
+$MergeOp$ produces $\txtcname{SendPage}_{\textsf{Resp}}$, which
+represents the implementation of \txtcname{SendPage} as a standard HTTP
+response.  $\txtcname{SendPage}_{\textsf{Resp}}$ can be used by
+\txtcname{NYTimes} to send an article back to
+$\txtcname{Client}_\textsf{Browser}$, but is also treated like any
+standard HTTP response. Note that $\txtcname{Client}_\textsf{Browser}$
 may receive other kinds of HTTP responses besides the ones that carry
-an article from \textsf{NYTimes}; i.e., there may exist $r \in
-\textsf{Resp}$ that is not a member of $\textsf{SendPage}_{\textsf{Resp}}$.
+an article from \txtcname{NYTimes}; i.e., there may exist $r \in
+\txtcname{Resp}$ that is not a member of $\txtcname{SendPage}_{\textsf{Resp}}$.
 
 The guard function of the merged component $m'$ is constructed
 as the union of $m1.guard$ and $m2.guard$ (Line 31). This ensures that $m'$
@@ -308,9 +310,9 @@ this was intentionally done to make the mapping lightweight}
 % The key intuition behind the proof is that the merging operation only
 % restricts the behaviors of the components on merged operations, and
 % retains the same behaviors for all other operations. For example, from
-% \textsf{Client}'s perspective, the merged component
-% $\textsf{AuthorizationServer}_\textsf{TS}$ still behaves like
-% \textsf{AuthorizationServer}, receiving
+% \txtcname{Client}'s perspective, the merged component
+% $\txtcname{AuthorizationServer}_\textsf{TS}$ still behaves like
+% \txtcname{AuthorizationServer}, receiving
 % requests and sending back an access token only if a valid credential
 % is provided.
 
@@ -319,10 +321,10 @@ this was intentionally done to make the mapping lightweight}
 Once the different parts of the models have been merged according to
 the given relationships, constructing the merged model is a
 straightforward process. Using the function $h_{C}$ that maps a component
-from an existing component to its merged counterpart, \textsf{BuildModel}
+from an existing component to its merged counterpart, \txtcname{BuildModel}
 simply replaces each of the components that appear in $r_{C}$ with the
 new merged one (Line 15), while leaving those that do not appear in
-$r_{C}$ intact (Line 17). Similarly, \textsf{BuildModel} uses $h_{D}$
+$r_{C}$ intact (Line 17). Similarly, \txtcname{BuildModel} uses $h_{D}$
 to replace each of the data sets from $m1$ that appears in $r_{D}$
 with its embedded counterpart (Line 20).  
 
@@ -342,9 +344,9 @@ the result of merging $C_1$ with $C_2$. Then, $C'$ exports operations
 $O_2$ (which are absent from $M_1$), introducing new interactions
 between $C_1$ and the invokers of $O_2$ in $M_2$. 
 
-For example, $\textsf{Client}_\textsf{Browser}$ exports two additional
-operations, \textsf{ExtractCookie} and \textsf{SetCookie}, that are
-invoked by $\textsf{Reader}_\textsf{WebUser}$.
+For example, $\txtcname{Client}_\textsf{Browser}$ exports two additional
+operations, \txtcname{ExtractCookie} and \txtcname{SetCookie}, that are
+invoked by $\txtcname{Reader}_\textsf{WebUser}$.
 
 \textbf{A merged operation is invoked by additional components}. Let $O'$
 be the result of embedding $O_1$ into $O_2$. Then, $O'$ may be invoked
@@ -357,8 +359,8 @@ $D_2$. Then, for some $O_2$ that expects an argument $a \in D_2$,
 a member of $D'$ may also be substituted for $a$, introducing new
 flows of data $D_1$ to the exporters of $O_2$ in $M_2$.
 
-Since $\textsf{Counter}_\textsf{Cookie}$ is now a
-subset of $\textsf{Cookie}$, a counter can be provided as the $cookie$
+Since $\txtcname{Counter}_\textsf{Cookie}$ is now a
+subset of $\txtcname{Cookie}$, a counter can be provided as the $cookie$
 argument in $ExtractCookie$.
 
 % One
@@ -376,22 +378,22 @@ argument in $ExtractCookie$.
 % to the client than would be normally desirable by him or her (for
 % example, granting write access to the entire Facebook profile, instead
 % of just read access). The attack begins when
-% $\textsf{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
-% by \textsf{MraliciousServer}, which, then crafts a DOM that is designed
-% to force $\textsf{Client}_\textsf{B}$ into sending
-% $\textsf{reqAccessToken}_\textsf{hreq}$ to
-% $\textsf{AuthorizationServer}_\textsf{TS}$. In particular, this
+% $\txtcname{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
+% by \txtcname{MraliciousServer}, which, then crafts a DOM that is designed
+% to force $\txtcname{Client}_\textsf{B}$ into sending
+% $\txtcname{reqAccessToken}_\textsf{hreq}$ to
+% $\txtcname{AuthorizationServer}_\textsf{TS}$. In particular, this
 % request is constructed so that it includes, for argument
-% $\textsf{resID}$, some $\textsf{badResID}$ $\in$ $\textsf{ResourceID}$
+% $\txtcname{resID}$, some $\txtcname{badResID}$ $\in$ $\txtcname{ResourceID}$
 % that identifies the resource that the attacker wishes to access.
 
-% $\textsf{Client}_\textsf{B}$, having inherited the behavior of
-% \textsf{Browser}, includes any associated cookies as part of the
+% $\txtcname{Client}_\textsf{B}$, having inherited the behavior of
+% \txtcname{Browser}, includes any associated cookies as part of the
 % request headers. Since a cookie can be used as a credential,
-% $\textsf{AuthorizationServer}_\textsf{TS}$ accepts this request to be
+% $\txtcname{AuthorizationServer}_\textsf{TS}$ accepts this request to be
 % valid, and sends back the access token that corresponds to
-% $\textsf{badResID}$, giving $\textsf{Client}_\textsf{B}$ full access
+% $\txtcname{badResID}$, giving $\txtcname{Client}_\textsf{B}$ full access
 % to the resource. Note that the attacker was able to bypass the usual
-% interactions between $\textsf{Client}_\textsf{B}$ and
-% $\textsf{ResourceOwner}_\textsf{ES}$ and obtain an access token
+% interactions between $\txtcname{Client}_\textsf{B}$ and
+% $\txtcname{ResourceOwner}_\textsf{ES}$ and obtain an access token
 % without first gaining permission from the resource owner.

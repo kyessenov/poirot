@@ -1,9 +1,3 @@
-\def\strlit#1{\textsf{\color{stringcolor} ``#1''}}
-\def\cname#1{\textsf{#1}}
-\def\mcom#1{{\color{comment} // #1}}
-\def\txtstrlit#1{\strlit{\small #1}}
-\def\txtcname#1{\cname{\small #1}}
-
 \section{Modeling Formalism}
 \label{sec-formalism}
 
@@ -33,11 +27,13 @@ incoming requests for an article through \txtcname{GetPage}, which
 carries two named arguments: a link to an article (\txtstrlit{link})
 and a counter that represents the number of articles accessed so far
 (\txtstrlit{currCounter}). \txtcname{NYTimes} responds to to
-\txtcname{Client} by invoking the latter's \txtcname{SendPage} operation,
-which carries the requested article and a new counter to be stored
-inside the browser. \ek{was:this enables our system to accurately
-  track data flows and automatically check standard information flow
-  properties such as \textit{integrity} and \textit{confidentiality}}.
+\txtcname{Client} by invoking the latter's \txtcname{SendPage}
+operation, which carries the requested article and a new counter to be
+stored inside the browser. 
+
+\suppress{this enables our system to accurately track data flows and
+  automatically check standard information flow properties such as
+  \textit{integrity} and \textit{confidentiality}.}
 
 \def\fsep{\;}
 \def\bigsep{\quad\quad\quad\quad\;\;\:}
