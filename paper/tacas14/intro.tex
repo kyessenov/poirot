@@ -34,10 +34,11 @@ designer of the system---may initially have a rather limited, partial
 knowledge about the system, or ignore details that appear irrelevant
 to its core functionality. As the analyst improves her understanding
 of the system, its operating environment, and potential failures, she
-may incrementally elaborate the existing system model and perform
-multiple iterations of analysis, each time discovering new violations
-that the prior analyses had ruled out. Unfortunately, this process is
-often carried out in an ad hoc, manual fashion.
+may incrementally elaborate the existing system model with additional
+details and perform multiple iterations of analysis,
+each time discovering new violations that the prior analyses had ruled
+out. Unfortunately, this process is often carried out in an ad hoc,
+manual fashion.
 
 \begin{figure}[!t]
 \centering
@@ -47,29 +48,34 @@ often carried out in an ad hoc, manual fashion.
 \end{figure}
 
 In this paper, we propose a framework to aid the analyst in
-incremental construction and analysis of a system model. Our framework
-consists of three key components, as shown in
-Figure~\ref{fig-overview}: (1) a repository of models that encode
-partial knowledge about the problem domain, (2) an algorithm that
-merges two independent models of a system, and (3) an analysis engine
-that checks whether a system model satisfies a given property, and if
-not, produces a counterexample. In a typical workflow, the analyst
-begins by constructing a partial model of the system, and runs an
-initial analysis to check the system against a desired property. The
-analyst then incrementally elaborates the initial model into a more
-detailed one by \fix{merging it with the existing models in the
-  repository, one-by-one}{selecting a set of existing models from the
-  repository, relevant for the particular category of the system under
-  design, and merging them into the initial one.  Each such model from
-  the repository is written by a domain expert and serves as a formal
-  specification of a known feature (e.g., aspect, consideration,
-  security threat, vulnerability, etc.) of an entire category of
-  systems (e.g., the HTTP protocol, web servers, web applications,
-  etc.).}\am{it's probably not very important to say here that this is
-  done one at a time; your tool could in principal merge many of
-  them}. After every merge step, the analyst re-runs the analysis on
-the elaborated model to detect any potential violations that were
-absent from prior analyses.
+incremental construction and analysis of a system model. The analyst
+can use our framework to automatically augment an initial, high-level
+design model with domain-specific knowledge and uncover potential
+violation of a property that may result from different design choices.
+
+Our framework consists of three key
+components, as shown in Figure~\ref{fig-overview}: (1) a repository of
+models that encode partial knowledge about the problem domain, (2) an
+algorithm that merges two independent models of a system, and (3) an
+analysis engine that checks whether a system model satisfies a given
+property, and if not, produces a counterexample. In a typical
+workflow, the analyst begins by constructing a partial model of the
+system, and runs an initial analysis to check the system against a
+desired property. The analyst then incrementally elaborates the
+initial model into a more detailed one by \fix{merging it with the
+  existing models in the repository, one-by-one}{selecting a set of
+  existing models from the repository, relevant for the particular
+  category of the system under design, and merging them into the
+  initial one.  Each such model from the repository is written by a
+  domain expert and serves as a formal specification of a known
+  feature (e.g., aspect, consideration, security threat,
+  vulnerability, etc.) of an entire category of systems (e.g., the
+  HTTP protocol, web servers, web applications, etc.).}\am{it's
+  probably not very important to say here that this is done one at a
+  time; your tool could in principal merge many of them}. After every
+merge step, the analyst re-runs the analysis on the elaborated model
+to detect any potential violations that were absent from prior
+analyses.
 
 A technical challenge in composing two independent models is that they
 may not be amenable to composition due to \textit{abstraction

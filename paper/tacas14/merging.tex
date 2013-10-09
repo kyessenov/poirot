@@ -5,11 +5,11 @@
 In this section, we describe a technique for merging two potentially
 mistmached models that describe different aspects of a system. The
 merging process is two-fold. First, the analyst specifies the
-relationship between two views as a mapping between different elements
-of the views. Then, given this mapping, we apply a merging algorithm
-to produce a new view that retains the characteristics of the two,
+relationship between two models as a mapping between different
+entities in them. Then, given this mapping, we apply a merging algorithm
+to produce a new model that retains the characteristics of the two,
 with potentially new behaviors that arise from the interaction of the
-modules from the previously separate views.
+modules from the previously separate models.
 
 \subsection{Specifying Relationships}
 \label{sec-relationship}
@@ -28,8 +28,8 @@ implemented using a generic HTTP request, can be regarded as a type of
 \textsf{GET} operation. Similarly, since a counter is stored as a
 cookie, \textsf{Counter} can be treated as a type of \textsf{Cookie}.
 
-\begin{defn} A relationship $r \in R$ between two views is a tuple
-  $(r_{M}, r_{O}, r_{D})$ where $r_{M} \subseteq M \times M$, $r_{O}
+\begin{defn} A relationship $r \in R$ between two models is a tuple
+  $(r_{C}, r_{O}, r_{D})$ where $r_{C} \subseteq C \times C$, $r_{O}
   \subseteq \mathcal P (O) \times \mathcal P (O)$, and $r_{D}
   \subseteq \mathcal P (D) \times \mathcal P (D)$ represent
   declarations of subset relations between a pair of modules,
@@ -37,9 +37,9 @@ cookie, \textsf{Counter} can be treated as a type of \textsf{Cookie}.
 \end{defn}
 For example, to merge the paywall and cookie replay models from
 Figure~\ref{fig-nytimes}, Alice may specify the following
-relationships between the two views:
+relationships between the two models:
 \begin{align*}
-  r_{M} = \{&(\textsf{Client$,$ Browser}),(\textsf{NYTimes$,$
+  r_{C} = \{&(\textsf{Client$,$ Browser}),(\textsf{NYTimes$,$
     HTTPServer}), (\textsf{Reader$,$
     ReplayAttacker})\} \\
   r_{O} = \{&(\textsf{GetPage$,$ GET}), (\textsf{GET$,$ GetPage}),
@@ -69,42 +69,42 @@ operations of type \textsf{GetPage} is exactly the operations of type
 
 \begin{algorithm}[!t]
 \begin{algorithmic}[1]
-\Function{MergeViews}{$v1, v2, r$}
-\Let{$h$}{\textsf{BuildMapping}($v1$, $v2$, $r$)}
-\Let{$v'$}{\textsf{BuildView}($v1$, $v2$, $h$)}
-%\Let{$v'$}{\textsf{Substitute}}($v'$, $h$)
-\State \Return{$v'$}
+\Function{MergeModels}{$m1, m2, r$}
+\Let{$h$}{\textsf{BuildMapping}($m1$, $m2$, $r$)}
+\Let{$m'$}{\textsf{BuildModel}($m1$, $m2$, $h$)}
+%\Let{$m'$}{\textsf{Substitute}}($m'$, $h$)
+\State \Return{$m'$}
 \EndFunction
 
 \item[]
-\Function{BuildMapping}{$v1, v2, (r_{M}, r_{O}, r_{D})$}
+\Function{BuildMapping}{$m1, m2, (r_{C}, r_{O}, r_{D})$}
 \ForAll{$(D1, D2) \in r_{D}$}
 \Let{$h_{D}(D1)$}{\textsf{MergeData}($D1$, $D2$)}
 \EndFor
-\ForAll{$(m1, m2) \in r_{M}$}
-\Let{$h_{M}(m1), h_{M}(m2)$}{\textsf{MergeModules}($m1$, $m2$, $r_{O}$)}
+\ForAll{$(m1, m2) \in r_{C}$}
+\Let{$h_{C}(m1), h_{C}(m2)$}{\textsf{MergeModules}($m1$, $m2$, $r_{O}$)}
 \EndFor
-\State \Return{$(h_{M}, h_{D})$}
+\State \Return{$(h_{C}, h_{D})$}
 \EndFunction
 
 \item[]
-\Function{BuildView}{$v1, v2, (h_{M}, h_{D})$}
-\Let{$M', D'$}{$\varnothing$}
-\ForAll{$m \in v1.modules \cup v2.modules$}
-\If{$m \in dom(h_{M})$}
-\Let{$M'$}{$M' \cup \{h_{M}(m)\}$}
+\Function{BuildModel}{$m1, m2, (h_{C}, h_{D})$}
+\Let{$C', D'$}{$\varnothing$}
+\ForAll{$m \in m1.modules \cup m2.modules$}
+\If{$m \in dom(h_{C})$}
+\Let{$C'$}{$C' \cup \{h_{C}(m)\}$}
 \Else
-\Let{$M'$}{$M' \cup \{m\}$}
+\Let{$C'$}{$C' \cup \{m\}$}
 \EndIf
 \EndFor
-\ForAll{$ds \subseteq v1.data \cup v2.data$}
+\ForAll{$ds \subseteq m1.data \cup m2.data$}
 \If{$ds \in dom(h_{D})$}
 \Let{$D'$}{$D' \cup h_{D}(ds)$}
 \Else
 \Let{$D'$}{$D' \cup ds$}
 \EndIf
 \EndFor
-\State \Return{$(M',D')$}
+\State \Return{$(C',D')$}
 \EndFunction
 
 \item[]
@@ -155,19 +155,19 @@ operations of type \textsf{GetPage} is exactly the operations of type
 % \State \Return{$v$}
 % \EndFunction
 \end{algorithmic}
-\caption{Merging Views}
-\label{alg-merge-views}
+\caption{Merging Models}
+\label{alg-merge-models}
 \end{algorithm}
 
 \subsection{Merging Algorithm}
 
-The algorithm for merging, shown in Algorithm~\ref{alg-merge-views},
-accepts two views, $v1, v2 \in V$, and a relationship $r \in R$
-between them, and produces a new view, $v' \in V$. The algorithm is
+The algorithm for merging, shown in Algorithm~\ref{alg-merge-models},
+accepts two models, $m1, m2 \in M$, and a relationship $r \in R$
+between them, and produces a new model, $m' \in M$. The algorithm is
 divided into two steps. First, for every pair of entities specified in
 $r$, it merges the two entities into a single entity that retains the
 characteristics of the two original entities (Line 2). Then, the
-algorithm builds a new view by replacing the original entities in
+algorithm builds a new model by replacing the original entities in
 $r$ with the new entities (Line 3).
 
 % \begin{figure*}[!t]
@@ -180,13 +180,13 @@ $r$ with the new entities (Line 3).
 \subsubsection{Step 1: Merging Related Entities}
 
 For every pair of entities $e1, e2$ specified in $r$, our goal is to
-produce a new entity $e'$ that (1) replaces $e1$ in the merged view
-$v'$, and (2) obtains the characteristics of $e2$. The procedure
+produce a new entity $e'$ that (1) replaces $e1$ in the merged model
+$m'$, and (2) obtains the characteristics of $e2$. The procedure
 \textsf{BuildMapping} performs this task in two-fold, first merging
 each pair of related data sets (Line 7), and then merging the related
 modules (Line 9). As it performs the merging tasks,
 \textsf{BuildMapping} incrementally builds a pair of functions
-($h_{D}$ and $h_{M}$) that map the original modules and data sets from
+($h_{D}$ and $h_{C}$) that map the original modules and data sets from
 $r$ to their merged counterparts.
 
 % \begin{figure}[!t]
@@ -198,7 +198,7 @@ $r$ to their merged counterparts.
 
 \paragraph{\textbf{Merging Data}} For each pair of data sets $(D1,
 D2)$ in $r_{D}$, \textsf{MergeData} produces a new set of data, $D'$,
-that replaces $D1$ in the merged view $v'$, and can still be treated
+that replaces $D1$ in the merged model $m'$, and can still be treated
 like instances of $D2$. 
 
 For example, given $(\textsf{Article}, \textsf{HTML}) \in r_{D}$,
@@ -206,9 +206,9 @@ For example, given $(\textsf{Article}, \textsf{HTML}) \in r_{D}$,
 $\textsf{Article}_{\textsf{HTML}}$, which conceptually represents the
 encodings of the New York Times articles in HTML
 format. $\textsf{Article}$ and $\textsf{Article}_{\textsf{HTML}}$ are
-isomorphic; for every $a \in \textsf{Article}$, $v'$ contains a unique
+isomorphic; for every $a \in \textsf{Article}$, $m'$ contains a unique
 $a' \in \textsf{Article}_{\textsf{HTML}}$ such that $a'$ represents an
-HTML encoding of $a$. Note that $v'$ may contain some HTML documents
+HTML encoding of $a$. Note that $m'$ may contain some HTML documents
 that do not correspond to any article (i.e.,
 $\textsf{Article}_{\textsf{HTML}}$ may be a strict subset of $\textsf{HTML}$).
 
@@ -221,9 +221,9 @@ The embedding establishes a subset relation between $D1$ and $D2$ by
 ensuring that every element $d$ of $D1$ has a unique counterpart
 $f(d)$ that is a member of $D2$. For example, the embedding from
 \textsf{Article} to \textsf{HTML} is a function $f$ that maps each
-article to its HTML counterpart. Then, in the merged view $v'$, every
+article to its HTML counterpart. Then, in the merged model $m'$, every
 $a \in \textsf{Article}$ can be replaced by $f(a)$ without
-invalidating existing references to $\textsf{Article}$ in $v1$.
+invalidating existing references to $\textsf{Article}$ in $m1$.
 
 \begin{thm} For every $D1, D2 \subseteq D$, there always exists a
   function $f : D1 \rightarrow D2$ such that f is an embedding from
@@ -237,7 +237,7 @@ Finally, the set of fields associated with $D'$ is constructed as the
 union of fields in $D1$ and $D2$. 
 
 \paragraph{\textbf{Merging Modules}} Given a pair of modules $(m1, m2)
-\in r_{M}$, along with pairs of related operations $r_{O}$,
+\in r_{C}$, along with pairs of related operations $r_{O}$,
 \textsf{MergeModule} produces a new module $m'$ behaves like $m1$
 while also obtaining the characteristics of $m2$.
 
@@ -254,8 +254,8 @@ set of operations $O' \subseteq O2$, which also inheirts all of the
 arguments from $O1$ and $O2$ (Line 47).
 
 For example, given $(\textsf{SendPage}, \textsf{Resp}) \in r_{O}$,
-$MergeOp$ produces a set $\textsf{SendPage}_{\textsf{Resp}}$, which
-represents the implementation of \textsf{SendPage} as an HTTP
+$MergeOp$ produces $\textsf{SendPage}_{\textsf{Resp}}$, which
+represents the implementation of \textsf{SendPage} as a standard HTTP
 response.  $\textsf{SendPage}_{\textsf{Resp}}$ can be used by
 \textsf{NYTimes} to send an article back to
 $\textsf{Client}_\textsf{Browser}$, but is also treated like any
@@ -317,24 +317,52 @@ this was intentionally done to make the mapping lightweight}
 % requests and sending back an access token only if a valid credential
 % is provided.
 
-\subsubsection{Step 2: Building a New View}
+\subsubsection{Step 2: Building a New Model}
 
-Once the different parts of the views have been merged according to
-the given relationships, constructing the merged view is a
-straightforward process. Using the function $h_{M}$ that maps a module
-from an existing module to its merged counterpart, \textsf{BuildView}
-simply replaces each of the modules that appear in $r_{M}$ with the
+Once the different parts of the models have been merged according to
+the given relationships, constructing the merged model is a
+straightforward process. Using the function $h_{C}$ that maps a module
+from an existing module to its merged counterpart, \textsf{BuildModel}
+simply replaces each of the modules that appear in $r_{C}$ with the
 new merged one (Line 15), while leaving those that do not appear in
-$r_{M}$ intact (Line 17). Similarly, \textsf{BuildView} uses $h_{D}$
-to replace each of the data sets from $v1$ that appears in $r_{D}$
+$r_{C}$ intact (Line 17). Similarly, \textsf{BuildModel} uses $h_{D}$
+to replace each of the data sets from $m1$ that appears in $r_{D}$
 with its embedded counterpart (Line 20).  
 
 \subsection{Implications of Merging}
 
-\todo{new interactions when a module invokes a new operation}
+Merging two models introduces a new set of behaviors into
+the original model of the system, some of which may lead a violation
+of a property that prior analyses might have ruled out. We categorize
+different types of interactions that arises as a result of
+merging. Let $C_1, C_2 \in C$ be components from models $M_1$ and
+$M_2$, $D_1, D_2 \subseteq D$ be data sets from $M_1$ and $M_2$, and
+$O_1, O_2 \subseteq O$ be the set of operations that $C_1$ and $C_2$
+exports, respectively. 
 
-\todo{new interactions when two data sets are related, maybe included
-  as arguments}
+\textbf{A merged component exports additional operations}. Let $C'$ be
+the result of merging $C_1$ with $C_2$. Then, $C'$ exports operations
+$O_2$ (which are absent from $M_1$), introducing new interactions
+between $C_1$ and the invokers of $O_2$ in $M_2$. 
+
+For example, $\textsf{Client}_\textsf{Browser}$ exports two additional
+operations, \textsf{ExtractCookie} and \textsf{SetCookie}, that are
+invoked by $\textsf{Reader}_\textsf{WebUser}$.
+
+\textbf{A merged operation is invoked by additional modules}. Let $O'$
+be the result of embedding $O_1$ into $O_2$. Then, $O'$ may be invoked
+by all components in $M_2$ that invoke $O_2$, introducing new interactions
+between $C_1$ and the invokers of $O_2$ in $M_2$.
+
+\textbf{A merged data is included as arguments in additional
+  operations.}  Let $D'$ be the result of embedding $D_1$ into
+$D_2$. Then, for some $O_2$ that expects an argument $a \in D_2$,
+a member of $D'$ may also be substituted for $a$, introducing new
+flows of data $D_1$ to the exporters of $O_2$ in $M_2$.
+
+Since $\textsf{Counter}_\textsf{Cookie}$ is now a
+subset of $\textsf{Cookie}$, a counter can be provided as the $cookie$
+argument in $ExtractCookie$.
 
 % One
 % consequence of the merging is that there are new interactions among
@@ -352,7 +380,7 @@ with its embedded counterpart (Line 20).
 % example, granting write access to the entire Facebook profile, instead
 % of just read access). The attack begins when
 % $\textsf{ResourceOwner}_\textsf{EndUser}$ visits a URI that is owned
-% by \textsf{MaliciousServer}, which, then crafts a DOM that is designed
+% by \textsf{MraliciousServer}, which, then crafts a DOM that is designed
 % to force $\textsf{Client}_\textsf{B}$ into sending
 % $\textsf{reqAccessToken}_\textsf{hreq}$ to
 % $\textsf{AuthorizationServer}_\textsf{TS}$. In particular, this

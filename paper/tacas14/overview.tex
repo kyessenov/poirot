@@ -35,18 +35,17 @@ request, \textsf{NYTimes} then sends back a page that contains the
 requested article, along with an increment of the original counter
 (\textsf{newCounter}).
 
-\begin{figure*}[!t]
-  \centering \subfloat[NYTimes
-  Paywall]{\includegraphics[width=0.48\textwidth]{diagrams/nytimes}}
-  \hfil \subfloat[Cookie
-  Replay]{\includegraphics[width=0.51\textwidth]{diagrams/replay}}
-\caption{Models of (a) the New York Times paywall system and (b)
-  a cookie replay attack. A box represents a module, and a
-  directed edge from one module \textsf{A} to another module
+\begin{figure}[!t]
+\centering
+\includegraphics[width=1.0\textwidth]{diagrams/nytimes}
+\caption{Models of (a) the New York Times paywall system and (b) a
+  cookie replay attack, and (d) the result of merging the two models
+  according to the mapping in (c). A box represents a component, and a
+  directed edge from one component \textsf{A} to a port of another component
   \textsf{B} with label \textsf{O} represents \textsf{A}'s invocation
   of operation \textsf{O} that is exported by \textsf{B}.}
 \label{fig-nytimes}
-\end{figure*}
+\end{figure}
 
 Note that the model in Figure~\ref{fig-nytimes}(a) describes the system
 interactions in terms of web API operations. This level of abstraction
@@ -86,12 +85,12 @@ and repeating its transmission to a server.  In the corresponding
 model, shown in Figure~\ref{fig-nytimes}(b), \textsf{Browser}
 communicates to \textsf{HTTPServer} by sending \textsf{GET} requests
 and receiving responses (\textsf{Resp}) in return. In addition, a
-malicious user (named \textsf{ReplayAttacker}) interacts with
-\textsf{Browser} by extracting a cookie from it
+potentially malicious browser user (named \textsf{WebUser}) interacts
+with \textsf{Browser} by extracting a cookie from it
 (\textsf{ExtractCookie}), or overwriting an existing cookie at a
-particualr address (\textsf{SetCookie}); this allows
-\textsf{ReplayAttacker} to manipulate \textsf{Browser} into sending a
-request with a fixed cookie value.
+particualr address (\textsf{SetCookie}); this allows \textsf{WebUser}
+to manipulate \textsf{Browser} into sending a request with a fixed
+cookie value.
 
 A next step for Alice would be to extend the original paywall model
 with new details from the cookie replay model, and re-run the analysis
@@ -100,7 +99,7 @@ property. However, the two models, as in their current form, are not
 readily amenable to composition due to an \textit{abstraction
   mismatch}. These models describe the system at different layers of
 abstraction, using two distinct sets of vocabulary terms to describe
-modules, operations, and data elements. They serve as \textit{partial}
+components, operations, and data elements. They serve as \textit{partial}
 descriptions of a system, including only the details of the system
 that are necessary to illustrate a typical workflow (as in the paywall
 model) or the characteristics of a particular attack (in the replay
@@ -112,23 +111,14 @@ correspond to the designer's decisions about how different parts of
 the system are to be realized. For example, based on Alice's decisions
 about the implementation of the paywall system, we may infer that
 \textsf{NYTimes} and \textsf{HTTPServer} can be treated as the same
-component; in particular, \textsf{NYTimes} can be considered a type of
+component; in particular, \textsf{NYTimes} can be considered a kind of
 \textsf{HTTPServer} that performs a specialized function of serving
 articles to its client. A similar kind of relationship can be
 specified between a pair of operations (e.g., \textsf{GetPage} and
-\textsf{GET}) or data types (e.g, \textsf{Link} and \textsf{URL}). Given
+\textsf{GET}) or data sets (e.g, \textsf{Link} and \textsf{URL}). Given
 the relationships specified by Alice, our framework merges the two
 models and produces a new model that combines both aspects of the
 system, as shown in Figure~\ref{fig-merged}.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=0.9\textwidth]{diagrams/merged}
-\caption{Result of merging the two models from
-  Figure~\ref{fig-nytimes}. A subscript $Y$ in $X_{Y}$ implies that
-  $X$ is a type of $Y$.}
-\label{fig-merged}
-\end{figure}
 
 \paragraph{\textbf{Re-Analyzing the Model}}
 
@@ -137,7 +127,7 @@ whethe the elaborated system still satisfies the desired
 property. This time, the analysis engine discovers a counterexample
 that demonstrates how the system might allow the reader to access an
 article beyond the limit. In this scenario, \textsf{Reader}, now
-acting like\am{as?} \textsf{ReplayAttacker}, extracts a
+acting like\am{as?} \textsf{WebUser}, extracts a
 cookie that represents the access counter prior to reaching the
 limit. Then, \textsf{Reader} simply overwrites the existing cookie
 with the extracted once the limit is exceeded, and \textsf{NYTimes}
@@ -154,7 +144,7 @@ guessed by \textsf{Reader}, thereby rendering old cookies invalid.
 \aleks{It is important to note that, to merge her initial model with
   the cookie replay attack, Alice did not have to explicitly specify
   that the \textsf{Reader} should be mapped to
-  \textsf{ReplayAttacker}.  In contrast, Alice only had to specify her
+  \textsf{WebUser}.  In contrast, Alice only had to specify her
   architectural decision to implement the system on top of HTTP, which
   meant implementing \textsf{NYTimes::GetPage} as
   \textsf{HTTPServer::GET} and \textsf{Client::SendPage} as
