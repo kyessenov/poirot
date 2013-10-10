@@ -6,6 +6,7 @@
 \lstdefinelanguage{slangmath}{
   keywords={view, data, mods, exports, invokes, stores, cons, args, in, fun,
             fields, function, let, map, fold, return},
+  ndkeywords={MkEmbeddingFunc},
   literate=%
     {-|->}{$\pfun$}1
     {::}{$\bullet$}2
@@ -83,7 +84,7 @@
   keywordstyle=\bfseries\color{KeywordColor},
   stringstyle=\itshape\color{StringColor},
   emphstyle={\sffamily},
-  ndkeywordstyle=\bfseries,
+  ndkeywordstyle=\sc,
   morestring=[b]',
   morestring=[b]",
 }
@@ -95,3 +96,5 @@
   \lstinputlisting[language=slangmath,%
     frame=lines,xleftmargin=0pt,xrightmargin=0pt,columns=fixed]{#1}
 }
+\def\slangmathin{\lstinline[language=slangmath,basicstyle=\small\rmfamily]}
+\def\slangmathinscript{\lstinline[language=slangmath,basicstyle=\scriptsize\rmfamily]}

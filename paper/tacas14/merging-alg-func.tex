@@ -25,12 +25,13 @@ fun MapSum($set, f_{map}$)          \eqv fold(($\lambda a, e \cdot a \cup e),\; 
   \end{slangmath}
 \hrule\vskip7pt
 \caption{Algorithm for merging two models ($m_1$ and $m_2$) given a
-  mapping ($r_C, r_O, r_D$).  The algorithm make use of the {\rmfamily
-    MkEmbeddingFunc($set_1, set_2$)} function (which computes an
-  embedding of $set_1$ into $set_2$ and returns a 1-arg function for
-  mapping elements of $set_1$ to elements of $set_2$), as well as two
-  standard library functions, \textbf{map}($\lambda_{map},\; set$) and
-  \textbf{fold}($\lambda_{fold},\; init,\; set$).}
+  mapping ($r_C, r_O, r_D$).  The algorithm make use of the
+  \slangmathinscript|MkEmbeddingFunc($set_1, set_2$)| function (which
+  computes an embedding of $set_1$ into $set_2$ and returns a 1-arg
+  function for mapping elements of $set_1$ to elements of $set_2$), as
+  well as two standard library functions,
+  \slangmathinscript|map($\lambda_{map},\; set$)| and
+  \slangmathinscript|fold($\lambda_{fold},\; init,\; set$)|.}
 \label{fig-mergingin-alg-func}
 %\label{alg-merge-models}
 \end{figure}
