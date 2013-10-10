@@ -11,7 +11,7 @@ abstract sig Data {
 	fields : set Data
 }
 abstract sig Module {
-	accesses : Data -> Step,
+	accesses : (Data + Int) -> Step,
 	creates : set Data,
 }{
 	creates.^fields in creates
