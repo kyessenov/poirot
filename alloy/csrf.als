@@ -10,7 +10,7 @@ one sig User extends Module {
 
 -- module TrustedServer
 one sig TrustedServer extends Module {
-	TrustedServer__cookies : Op some -> lone Cookie,
+	TrustedServer__cookies : Op set -> lone Cookie,
 	TrustedServer__addr : lone Hostname,
 	TrustedServer__protectedOps : set Op,
 }{
@@ -27,7 +27,7 @@ one sig MaliciousServer extends Module {
 
 -- module Client
 one sig Client extends Module {
-	Client__cookies : URI some -> lone Cookie,
+	Client__cookies : URI set -> lone Cookie,
 }{
 	all o : this.sends[TrustedServer__HttpReq] | 
 		(((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__Visit <: Client__Visit__dest))]) and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))

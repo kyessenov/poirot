@@ -36,8 +36,8 @@ one sig ClientServer extends Module {
 
 -- module AuthServer
 one sig AuthServer extends Module {
-	AuthServer__authGrants : Credential some -> lone AuthGrant,
-	AuthServer__accessTokens : AuthGrant some -> lone AccessToken,
+	AuthServer__authGrants : Credential set -> lone AuthGrant,
+	AuthServer__accessTokens : AuthGrant set -> lone AccessToken,
 }{
 	all o : this.receives[AuthServer__ReqAuth] | (some AuthServer__authGrants[arg[o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__cred)]])
 	all o : this.receives[AuthServer__ReqAccessToken] | (some AuthServer__accessTokens[arg[o.(AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant)]])
@@ -49,7 +49,7 @@ one sig AuthServer extends Module {
 
 -- module ResourceServer
 one sig ResourceServer extends Module {
-	ResourceServer__resources : AccessToken some -> lone Resource,
+	ResourceServer__resources : AccessToken set -> lone Resource,
 }{
 	all o : this.receives[ResourceServer__ReqResource] | (some ResourceServer__resources[arg[o.(ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)]])
 	all o : this.sends[ClientServer__SendResource] | triggeredBy[o,ResourceServer__ReqResource]

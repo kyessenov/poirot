@@ -3,7 +3,7 @@ open models/crypto[Data]
 
 -- module NYTimes
 one sig NYTimes extends Module {
-	NYTimes__articles : Link some -> lone Page,
+	NYTimes__articles : Link set -> lone Page,
 	NYTimes__limit : lone Int,
 }{
 	all o : this.receives[NYTimes__GetPage] | arg[o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter)] < NYTimes__limit
@@ -14,7 +14,7 @@ one sig NYTimes extends Module {
 
 -- module Client
 one sig Client extends Module {
-	Client__counter : Int lone -> some Step,
+	Client__counter : Int lone -> set Step,
 }{
 	all o : this.receives[Client__SendPage] | Client__counter.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
 	all o : this.sends[Reader__Display] | triggeredBy[o,Client__SendPage]

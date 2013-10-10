@@ -3,7 +3,7 @@ open models/crypto[Data]
 
 -- module NYTimes
 one sig NYTimes extends Module {
-	NYTimes__articles : ArticleID some -> lone Article,
+	NYTimes__articles : ArticleID set -> lone Article,
 }{
 	all o : this.receives[NYTimes__GetArticle] | (some (BelowLimit & arg[o.(NYTimes__GetArticle <: NYTimes__GetArticle__numAccessed)]))
 	all o : this.sends[Browser__SendArticle] | triggeredBy[o,NYTimes__GetArticle]
