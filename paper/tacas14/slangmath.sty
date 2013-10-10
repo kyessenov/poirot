@@ -4,7 +4,7 @@
 \definecolor{BkgColor}{rgb}{1, 1, 1}
 
 \lstdefinelanguage{slangmath}{
-  keywords={view, data, mods, exports, invokes, stores, cons, args, 
+  keywords={view, data, mods, exports, invokes, stores, cons, args, in, fun,
             fields, function, let, map, fold, return},
   literate=%
     {-|->}{$\pfun$}1
@@ -19,7 +19,7 @@
     {||}{$\lor$}1
     {<=}{$\le$}1
     {>=}{$\ge$}1
-    % the following isn't actually Jennisys, but it gives the option to produce nicer latex
+    {\\eqv}{$\equiv$}1
     {|=>}{$\Rightarrow$}2
     {-->}{$\leftarrow$}2
     {<=set}{$\subseteq$}1

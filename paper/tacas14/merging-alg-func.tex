@@ -4,37 +4,24 @@
 \centering
   \begin{slangmath}[numbers=left,emph={MergeModels, MkMap, MkModel,%
                     MergeData, MergeComp, MergeOp, MapSum}]
-function MergeModels($m_1, m_2, (r_c,r_O,r_D)$)
+fun MergeModels($m_1, m_2, (r_c,r_O,r_D)$)
   let $h_D=$ map(($\lambda D_1,D_2 \cdot$($D_1$,MergeData($D_1, D_2$))), $r_D$)
-  let $h_C=$ map(($\lambda C_1,C_2 \cdot$ 
-                 let $C' =\; $MergeComp($C_1, C_2$)
-                 [$(C_1, C'),\; (C_2, C')$]), 
-               $r_C$)
+  let $h_C=$ map(($\lambda C_1,C_2 \cdot$ let $C' =\; $MergeComp($C_1, C_2$) in [$(C_1, C'),\; (C_2, C')$]), $r_C$)
   MkModel($m_1, m_2, h_C, h_D$)
 
-function MkModel($m_1, m_2, h_C, h_D$)
+fun MkModel($m_1, m_2, h_C, h_D$)
   let $f_{map} = \lambda h,e \cdot (e \in dom(h)) \;?\; \{h[e]\} : \{e\}$
-  let $C' =\; $MapSum($m_1.comps \cup m_2.comps,\; f_{map}(h_C)$)
-  let $D' =\; $MapSum($m_1.data \cup m_2.data,\; f_{map}(h_D)$)
-  ($C', D'$)
+  (MapSum($m_1.comps \cup m_2.comps,\; f_{map}(h_C)$), MapSum($m_1.data \cup m_2.data,\; f_{map}(h_D)$))
 
-function MergeData($D_1, D_2$)
-  MkEmbeddingFunc($D_1, D_2$)($D_1$)
- 
-function MergeOp($O_1, O_2$)
-  let $O'=\; $MkEmbeddingFunc($O_1, O_2$)($O_1$)
-  $O'.args= O_1.args \cup O_2.args$ 
-  $O'$
-
-function MergeComp($c_1, c_2, r_O$)
-  let $f_{map} = \lambda O_1,O_2 \cdot (O_1,O_2)\in r_O\;?\;$MergeOp($O_1,O_2$)$\;: O_1$
-  let $e = c_2.exports\;\cup\;$MapSum($c_1.exports \times c_2.exports,\; f_{map}$)
-  let $i = c_2.invokes\;\cup\;$MapSum($c_1.invokes \times c_2.invokes,\; f_{map}$)
-  let $s, g = c_1.stores \cup c_2.stores,\; c_1.guard \cup c_2.guard$
-  $(e, i, s, g)$
-
-function MapSum($set, f_{map}$)
-  fold(($\lambda a, e \cdot a \cup e),\; \{\},\; f_{map}(set)$)
+fun MergeData($D_1, D_2$)       \eqv MkEmbeddingFunc($D_1, D_2$)($D_1$)
+fun MergeOp($O_1, O_2$)         \eqv let $O'=\; $MkEmbeddingFunc($O_1, O_2$)($O_1$)
+                        $O'.args= O_1.args \cup O_2.args$ 
+                        $O'$
+fun MergeComp($c_1, c_2, r_O$)$\:$\eqv let $f_{map} = \lambda O_1,O_2 \cdot (O_1,O_2)\in r_O\;?\;$MergeOp($O_1,O_2$)$\;: O_1$
+                        let $e = c_2.exports\;\cup\;$MapSum($c_1.exports \times c_2.exports,\; f_{map}$)
+                        let $i = c_2.invokes\;\cup\;$MapSum($c_1.invokes \times c_2.invokes,\; f_{map}$)
+                        $(e,\; i,\; c_1.stores \cup c_2.stores,\; c_1.guard \cup c_2.guard)$
+fun MapSum($set, f_{map}$)          \eqv fold(($\lambda a, e \cdot a \cup e),\; \{\},\; f_{map}(set)$)
   \end{slangmath}
 \hrule\vskip7pt
 \caption{Algorithm for merging two models ($m_1$ and $m_2$) given a
