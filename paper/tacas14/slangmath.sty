@@ -4,7 +4,8 @@
 \definecolor{BkgColor}{rgb}{1, 1, 1}
 
 \lstdefinelanguage{slangmath}{
-  keywords={view, data, mods, exports, invokes, stores, cons, args, fields},
+  keywords={view, data, mods, exports, invokes, stores, cons, args, 
+            fields, function, let, map, fold, return},
   literate=%
     {-|->}{$\pfun$}1
     {::}{$\bullet$}2
@@ -20,9 +21,11 @@
     {>=}{$\ge$}1
     % the following isn't actually Jennisys, but it gives the option to produce nicer latex
     {|=>}{$\Rightarrow$}2
+    {-->}{$\leftarrow$}2
     {<=set}{$\subseteq$}1
     {+set}{$\cup$}1
     {*set}{$\cap$}1
+    {<-}{$\leftarrow$}1
     {==>}{$\Longrightarrow$}3 
     {=>}{$\Rightarrow$}2
     {<==>}{$\Longleftrightarrow$}4 
@@ -75,10 +78,11 @@
   firstnumber=0,
   numberstyle=\tiny,
   showspaces=false,
-  basicstyle=\small\ttfamily,
+  basicstyle=\scriptsize\rmfamily,
   commentstyle=\itshape\color{CommentColor},
-  keywordstyle=\itshape\color{KeywordColor},
+  keywordstyle=\bfseries\color{KeywordColor},
   stringstyle=\itshape\color{StringColor},
+  emphstyle={\sffamily},
   ndkeywordstyle=\bfseries,
   morestring=[b]',
   morestring=[b]",
