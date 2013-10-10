@@ -288,7 +288,7 @@ class Item < Rel
      other.type == self.type)
   end
   def dynamic
-    Map.new(name, type, STEP_TYPE, :lone, :some)
+    Map.new(name, type, STEP_TYPE, :lone, :set)
   end
 end
 def item(n, t)
@@ -318,7 +318,7 @@ class Bag < Rel
      other.type == self.type)
   end
   def dynamic
-    Map.new(name, type, STEP_TYPE, :some, :some)
+    Map.new(name, type, STEP_TYPE, :set, :set)
   end
 end
 def set(n, t)
@@ -328,7 +328,7 @@ end
 # Binary Rel
 class Map < Rel
   attr_reader :name, :type1, :type2, :constr1, :constr2
-  def initialize(n, t1, t2, c1=:some, c2=:lone)
+  def initialize(n, t1, t2, c1=:set, c2=:lone)
     @name = n
     @type1 = t1
     @type2 = t2
@@ -356,13 +356,13 @@ class Map < Rel
   end
 
   def dynamic
-    TernaryRel.new(name, type1, type2, STEP_TYPE, constr1, constr2, :some)
+    TernaryRel.new(name, type1, type2, STEP_TYPE, constr1, constr2, :set)
   end
 end
 
 class TernaryRel < Rel
   attr_reader :name, :type1, :type2, :type3, :constr1, :constr2, :constr3
-  def initialize(n, t1, t2, t3, c1=:some, c2=:some, c3=:some)
+  def initialize(n, t1, t2, t3, c1=:set, c2=:set, c3=:set)
     @name = n
     @type1 = t1
     @type2 = t2
