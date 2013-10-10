@@ -5,8 +5,8 @@
   \begin{slangmath}[numbers=left,emph={MergeModels, MkMap, MkModel,%
                     MergeData, MergeComp, MergeOp, MapSum}]
 fun MergeModels($m_1, m_2, (r_c,r_O,r_D)$)
-  let $h_D=$ map(($\lambda D_1,D_2 \cdot$($D_1$,MergeData($D_1, D_2$))), $r_D$)
-  let $h_C=$ map(($\lambda C_1,C_2 \cdot$ let $C' =\; $MergeComp($C_1, C_2$) in [$(C_1, C'),\; (C_2, C')$]), $r_C$)
+  let $h_D=$ map(($\lambda D_1,D_2 \cdot$($D_1,$MergeData($D_1, D_2$))), $r_D$)
+  let $h_C=$ map(($\lambda C_1,C_2 \cdot$ let $C'=\; $MergeComp($C_1, C_2$) in [$(C_1, C'),\; (C_2, C')$]), $r_C$)
   MkModel($m_1, m_2, h_C, h_D$)
 
 fun MkModel($m_1, m_2, h_C, h_D$)
