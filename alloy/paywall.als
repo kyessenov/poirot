@@ -3,22 +3,25 @@ open models/crypto[Data]
 
 -- module NYTimes
 one sig NYTimes extends Module {
-	NYTimes__articles : ArticleID set -> lone Article,
+	NYTimes__articles : Link set -> lone Article,
+	NYTimes__limit : lone Int,
 }{
-	all o : this.receives[NYTimes__GetArticle] | (some (BelowLimit & arg[o.(NYTimes__GetArticle <: NYTimes__GetArticle__numAccessed)]))
-	all o : this.sends[Browser__SendArticle] | triggeredBy[o,NYTimes__GetArticle]
-	all o : this.sends[Browser__SendArticle] | o.(Browser__SendArticle <: Browser__SendArticle__article) = NYTimes__articles[o.trigger.((NYTimes__GetArticle <: NYTimes__GetArticle__articleID))]
+	all o : this.receives[NYTimes__GetLink] | arg[o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed)] < NYTimes__limit
+	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
+	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
+	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = (o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)) + 1)
 }
 
--- module Browser
-one sig Browser extends Module {
-	Browser__numAccessed : lone Number,
+-- module Client
+one sig Client extends Module {
+	Client__numAccessed : Int lone -> set Step,
 }{
-	all o : this.sends[Reader__Display] | triggeredBy[o,Browser__SendArticle]
-	all o : this.sends[Reader__Display] | o.(Reader__Display <: Reader__Display__article) = o.trigger.((Browser__SendArticle <: Browser__SendArticle__article))
-	all o : this.sends[NYTimes__GetArticle] | triggeredBy[o,Browser__SelectArticle]
-	all o : this.sends[NYTimes__GetArticle] | o.(NYTimes__GetArticle <: NYTimes__GetArticle__articleID) = o.trigger.((Browser__SelectArticle <: Browser__SelectArticle__articleID))
-	all o : this.sends[NYTimes__GetArticle] | o.(NYTimes__GetArticle <: NYTimes__GetArticle__numAccessed) = Browser__numAccessed
+	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
+	all o : this.sends[Reader__Display] | triggeredBy[o,Client__SendPage]
+	all o : this.sends[Reader__Display] | o.(Reader__Display <: Reader__Display__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
+	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
+	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
+	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
 }
 
 -- module Reader
@@ -27,43 +30,44 @@ one sig Reader extends Module {
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
-	TrustedModule = NYTimes + Browser
+	TrustedModule = NYTimes + Client
 }
 
--- operation NYTimes__GetArticle
-sig NYTimes__GetArticle extends Op {
-	NYTimes__GetArticle__articleID : lone ArticleID,
-	NYTimes__GetArticle__numAccessed : lone Number,
+-- operation NYTimes__GetLink
+sig NYTimes__GetLink extends Op {
+	NYTimes__GetLink__link : lone Link,
+	NYTimes__GetLink__numAccessed : lone Int,
 }{
-	args = NYTimes__GetArticle__articleID + NYTimes__GetArticle__numAccessed
-	sender in Browser
+	args = NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
+	sender in Client
 	receiver in NYTimes
 }
 
--- operation Browser__SendArticle
-sig Browser__SendArticle extends Op {
-	Browser__SendArticle__article : lone Article,
+-- operation Client__SendPage
+sig Client__SendPage extends Op {
+	Client__SendPage__page : lone Page,
+	Client__SendPage__newCounter : lone Int,
 }{
-	args = Browser__SendArticle__article
+	args = Client__SendPage__page + Client__SendPage__newCounter
 	sender in NYTimes
-	receiver in Browser
+	receiver in Client
 }
 
--- operation Browser__SelectArticle
-sig Browser__SelectArticle extends Op {
-	Browser__SelectArticle__articleID : lone ArticleID,
+-- operation Client__SelectLink
+sig Client__SelectLink extends Op {
+	Client__SelectLink__link : lone Link,
 }{
-	args = Browser__SelectArticle__articleID
+	args = Client__SelectLink__link
 	sender in Reader
-	receiver in Browser
+	receiver in Client
 }
 
 -- operation Reader__Display
 sig Reader__Display extends Op {
-	Reader__Display__article : lone Article,
+	Reader__Display__page : lone Page,
 }{
-	args = Reader__Display__article
-	sender in Browser
+	args = Reader__Display__page
+	sender in Client
 	receiver in Reader
 }
 
@@ -73,22 +77,14 @@ fact dataFacts {
 }
 
 -- datatype declarations
-sig Article extends Data {
+abstract sig Page extends Data {
+}{
+}
+sig Article extends Page {
 }{
 	no fields
 }
-sig ArticleID extends Data {
-}{
-	no fields
-}
-abstract sig Number extends Data {
-}{
-}
-sig BelowLimit extends Number {
-}{
-	no fields
-}
-sig AboveLimit extends Number {
+sig Link extends Data {
 }{
 	no fields
 }

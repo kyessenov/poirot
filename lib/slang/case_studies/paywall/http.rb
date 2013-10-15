@@ -15,11 +15,11 @@ Slang::Dsl.view :HTTP do
     responses: URL ** HTML
   ] do
     operation SendReq[url: URL, headers: (set Pair)] do 
-      sends { Client::SendResp[responses[url]]}
+      sends { Browser::SendResp[responses[url]]}
     end
   end
 
-  trusted Client do
+  trusted Browser do
     operation SendResp[resp: HTML, headers: (set Pair)] do 
       sends { User::Display[resp] }
     end
@@ -31,7 +31,7 @@ Slang::Dsl.view :HTTP do
 
   mod User do
     operation Display[resp: HTML] do end
-    sends { Client::Visit }
+    sends { Browser::Visit }
   end
 
 end

@@ -4,41 +4,40 @@ include Slang::Dsl
 
 Slang::Dsl.view :Paywall do
 
-  data Article
-  data ArticleID
-  abstract data Number
-  data BelowLimit < Number
-  data AboveLimit < Number
-
-  critical Article
+  abstract data Page
+  critical data Article < Page
+  data Link
 
   trusted NYTimes [
-    articles: ArticleID ** Article
+    articles: Link ** Article,
+    limit: Int
   ] do
     creates Article
 
-    operation GetArticle[articleID: ArticleID, numAccessed: Number] do
-      guard { numAccessed.in?(BelowLimit) }
-      sends { Browser::SendArticle[articles[articleID]] }
+    operation GetLink[link: Link, numAccessed: Int] do
+      guard { numAccessed < limit }
+      sends { Client::SendPage[articles[link], numAccessed + 1] }
     end
   end
 
-  trusted Browser [
-    numAccessed: Number
+  trusted Client [
+    numAccessed: (dynamic Int)
   ] do
 
-    operation SendArticle[article: Article] do 
-      sends { Reader::Display[article] }
+    operation SendPage[page: Page, newCounter: Int] do 
+      effects { self.numAccessed = newCounter }
+      sends { Reader::Display[page] }
     end
 
-    operation SelectArticle[articleID: ArticleID] do
-      sends { NYTimes::GetArticle[articleID, numAccessed] }
+    operation SelectLink[link: Link] do
+      sends { NYTimes::GetLink[link, numAccessed] }
     end
   end
 
   mod Reader do
-    operation Display[article: Article]
-    sends { Browser::SelectArticle }
+    operation Display[page: Page]
+    sends { Client::SelectLink }
   end
 
 end
+
