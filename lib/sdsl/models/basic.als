@@ -1,4 +1,4 @@
-module baisc
+module basic
 
 open util/ordering[Step] as SO
 
@@ -21,7 +21,7 @@ abstract sig Module {
 		d in accesses.t implies {
 			-- (1) it already has access to date at time (t-1) or
 			(t not in SO/first and d in accesses.(t.prev)) or
-			-- (2) it creates the data itself or 
+			-- (2) it creates the data itself or
 			(t in SO/first and d in (creates + creates.^fields)) or
 			-- (3) another module calls operation on this and send the data as an argument
 			some m2 : Module - this | flows[m2, this, d, t]
@@ -31,7 +31,8 @@ abstract sig Module {
 pred flows[from, to : Module, d : Data, t : Step] {
 	(some o : SuccessOp {
 		t = o.post
-		((from = o.sender and to = o.receiver and d in (o.args + o.args.^fields)))
+		({from = o.sender and to = o.receiver and d in (o.args + o.args.^fields)} or
+		{from = o.receiver and to = o.sender and d in (o.ret + o.ret.^fields)})
 	})
 }
 
@@ -49,9 +50,11 @@ abstract sig Op {
 	trigger : lone Op,
 	sender : Module,
 	receiver : lone Module,
-	args : set (Data + Int)
+	args : set (Data + Int),
+	ret : set (Data + Int)
 }{
 	(args + args.^fields) in sender.accesses.pre
+	(ret + ret.^fields) in receiver.accesses.pre
 	post = pre.next
 	pre = SO/first implies no trigger
 	some trigger implies {
@@ -72,7 +75,7 @@ fun sends[m : Module, es : set Op]  : set Op {
 pred triggeredBy[o : Op, t : set Op] {
 	some o.trigger & t
 }
-fun arg[d : (Data + Int)] : set (Data + Int) {
+fun arg[d : Data+Int] : set Data+Int {
 	d + d.^fields
 }
 
@@ -98,7 +101,7 @@ fact {
 pred Confidentiality {
 	no m : UntrustedModule, t : Step |
 		some m.accesses.t & GoodData
-}	
+}
 
 pred Integrity {
 	no m : ProtectedModule, t : Step |

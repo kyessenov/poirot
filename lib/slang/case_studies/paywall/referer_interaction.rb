@@ -2,52 +2,53 @@ require 'slang/slang_dsl'
 
 include Slang::Dsl
 
-Slang::Dsl.view :PaywallReferer do
+Slang::Dsl.view :RefererInteraction do
 
-  data Article
-  data ArticleID
-  abstract data Referer
-  data GoogleReferer < Referer
+  data Addr
+  data Name
+  data Value
+  data Pair[n: Name, v: Value]
+  data URL[addr: Addr, queries: (set Pair)]
+  data HTML[links: (set URL)]
+  data RefererHeader < Pair
 
-  critical Article
-
-  trusted NYTimes [
-    articles: ArticleID ** Article
+  trusted Server [
+    responses: URL ** HTML
   ] do
-    creates Article
-
-    operation GetArticle[articleID: ArticleID, referer: Referer] do
-      guard { referer.in? GoogleReferer }
-      sends { Browser::SendArticle[articles[articleID]] }
+    op SendReq[url: URL, headers: (set Pair)] do 
+      sends { Browser::SendResp[responses[url]]}
     end
   end
-
-  trusted Browser do
-    operation SendArticle[article: Article] do end
-    operation SelectArticle[articleID: ArticleID] do
-      sends { NYTimes::GetArticle[articleID] }
-    end
-    operation SearchArticle[articleID: ArticleID] do
-      sends { Google::Search[articleID] }
-    end
-    operation SendSearchResult[articleID: ArticleID, referer: Referer] do end
-    
-    sends { Reader::Display }
-  end
-
-  trusted Google [
-    referer: GoogleReferer
+  
+  trusted Referer [
+    responses: URL ** HTML
   ] do
-    creates GoogleReferer
-    
-    operation Search[articleID: ArticleID] do
-      sends { Browser::SendSearchResult[articleID, referer] }
+    op SendReq[url: URL, headers: (set Pair)] do 
+      sends { Browser::SendResp[responses[url]]}
     end
   end
 
-  mod Reader do
-    operation Display[article: Article] do end
-    sends { Browser::SelectArticle }
+  trusted Browser [
+  ] do
+    op SendResp[resp: HTML, headers: (set Pair)] do 
+      sends { User::DisplayHTML[resp] }
+    end
+
+    op FollowLink[url: URL] do
+      sends { Server::SendReq[url] }
+    end
+
+    op Visit[url: URL] do
+      sends { Server::SendReq[url] }
+    end
+  end
+
+  mod User [
+  ] do
+    op DisplayHTML[html: HTML] do 
+      sends { Browser::FollowLink() {|o| o.url.in? html.links} }
+    end
+    sends { Browser::Visit }
   end
 
 end

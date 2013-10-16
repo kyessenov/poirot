@@ -3,34 +3,46 @@ require 'slang/slang_dsl'
 include Slang::Dsl
 
 Slang::Dsl.view :JavascriptHampering do
-  
+
+  data Addr
+  data Name
+  data Value
+  data HTML
+  data Pair[n: Name, v: Value]
+  data URL[addr: Addr, queries: (set Pair)]
+
   trusted Server [
     responses: URL ** HTML
   ] do
-    operation SendReq[url: URL, headers: (set Pair)] do 
+    op SendReq[url: URL, headers: (set Pair)] do 
       sends { Browser::SendResp[responses[url]]}
     end
   end
 
-  mod Script [
-    
-  ]
+  many mod Script [
+    original: HTML,
+    transformed: HTML      
+  ] do
+    op Exec[resp: HTML, ret: HTML] do
+      guard { resp == original and ret == transformed }
+    end
+  end
 
   trusted Browser [
+    transform: HTML ** HTML
   ] do
-    operation SendResp[resp: HTML, headers: (set Pair)] do 
-      sends { User::Display[resp] }
+    op SendResp[resp: HTML, headers: (set Pair)] do 
+      sends { User::DisplayHTML[transform[resp]] }
+      sends { Script::Exec[resp, transform[resp]] }
     end
-
-    operation Visit[url: URL] do
+    op Visit[url: URL] do
       sends { Server::SendReq[url] }
     end
   end
-
+  
   mod User do
-    operation Display[resp: HTML] do end
+    op DisplayHTML[resp: HTML] do end
     sends { Browser::Visit }
   end
-
 
 end

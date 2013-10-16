@@ -17,8 +17,8 @@ one sig Client extends Module {
 	Client__numAccessed : Int lone -> set Step,
 }{
 	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
-	all o : this.sends[Reader__Display] | triggeredBy[o,Client__SendPage]
-	all o : this.sends[Reader__Display] | o.(Reader__Display <: Reader__Display__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
+	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
+	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
@@ -39,6 +39,7 @@ sig NYTimes__GetLink extends Op {
 	NYTimes__GetLink__numAccessed : lone Int,
 }{
 	args = NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
+	no ret
 	sender in Client
 	receiver in NYTimes
 }
@@ -49,6 +50,7 @@ sig Client__SendPage extends Op {
 	Client__SendPage__newCounter : lone Int,
 }{
 	args = Client__SendPage__page + Client__SendPage__newCounter
+	no ret
 	sender in NYTimes
 	receiver in Client
 }
@@ -58,15 +60,17 @@ sig Client__SelectLink extends Op {
 	Client__SelectLink__link : lone Link,
 }{
 	args = Client__SelectLink__link
+	no ret
 	sender in Reader
 	receiver in Client
 }
 
--- operation Reader__Display
-sig Reader__Display extends Op {
-	Reader__Display__page : lone Page,
+-- operation Reader__DisplayPage
+sig Reader__DisplayPage extends Op {
+	Reader__DisplayPage__page : lone Page,
 }{
-	args = Reader__Display__page
+	args = Reader__DisplayPage__page
+	no ret
 	sender in Client
 	receiver in Reader
 }

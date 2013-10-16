@@ -14,23 +14,23 @@ Slang::Dsl.view :HTTP do
   trusted Server [
     responses: URL ** HTML
   ] do
-    operation SendReq[url: URL, headers: (set Pair)] do 
+    op SendReq[url: URL, headers: (set Pair)] do 
       sends { Browser::SendResp[responses[url]]}
     end
   end
 
   trusted Browser do
-    operation SendResp[resp: HTML, headers: (set Pair)] do 
-      sends { User::Display[resp] }
+    op SendResp[resp: HTML, headers: (set Pair)] do 
+      sends { User::DisplayHTML[resp] }
     end
 
-    operation Visit[url: URL] do
+    op Visit[url: URL] do
       sends { Server::SendReq[url] }
     end
   end
 
   mod User do
-    operation Display[resp: HTML] do end
+    op DisplayHTML[html: HTML] do end
     sends { Browser::Visit }
   end
 

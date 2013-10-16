@@ -6,6 +6,9 @@ require 'sdsl/module.rb'
 View = Struct.new(:name, :modules, :trusted, :data, :critical, :assumptions,
                   :protected, :ctx, :appendix)
 
+# HACK!
+RET_VAR_SUFFIX = "__ret"
+
 class View
   def findMod s
     (modules.select { |m| m.name == s })[0]
@@ -63,17 +66,27 @@ class View
         fields[n] = []
         sigfacts[n] = []
         args = []
+        ret = nil
         o.constraints[:args].each do |arg|
           if not arg.is_a? Rel
             arg = Item.new(arg, :Data)
-          end   
+          end
+          if arg.name.end_with? RET_VAR_SUFFIX
+            ret = arg.to_s
+          else
+            args << arg.to_s
+          end          
           fields[n] << arg
-          args << arg.to_s
         end
         
         if o.parent 
           o.parent.constraints[:args].each do |arg|
-            args << arg.to_s
+            if arg.name.end_with? RET_VAR_SUFFIX
+              if ret then raise "#{o.name} has multiple return values!" end
+              ret = arg.to_s
+            else
+              args << arg.to_s
+            end
           end
         end
                 
@@ -82,6 +95,11 @@ class View
         elsif args.empty?
           sigfacts[n] << "no args"
         end
+        if ret 
+          sigfacts[n] << "ret = " + ret
+        else
+          sigfacts[n] << "no ret"
+        end        
       end
 
       # data creations

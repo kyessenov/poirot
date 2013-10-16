@@ -13,11 +13,10 @@ one sig Server extends Module {
 one sig Browser extends Module {
 	Browser__cookies : (Addr set -> lone Cookie) -> set Step,
 }{
+	all o : this.receives[Browser__ExtractCookie] | (some (Browser__cookies.(o.pre)[arg[o.(Browser__ExtractCookie <: Browser__ExtractCookie__addr)]] & arg[o.(Browser__ExtractCookie <: Browser__ExtractCookie__ret)]))
 	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr)] -> arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie)])
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url)) and o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr])
-	all o : this.sends[User__Display] | triggeredBy[o,Browser__ExtractCookie]
-	all o : this.sends[User__Display] | o.(User__Display <: User__Display__c) = Browser__cookies.(o.pre)[o.trigger.((Browser__ExtractCookie <: Browser__ExtractCookie__addr))]
 }
 
 -- module User
@@ -35,6 +34,7 @@ sig Server__SendReq extends Op {
 	Server__SendReq__cookies : set Cookie,
 }{
 	args = Server__SendReq__url + Server__SendReq__cookies
+	no ret
 	sender in Browser
 	receiver in Server
 }
@@ -44,6 +44,7 @@ sig Browser__Visit extends Op {
 	Browser__Visit__url : lone URL,
 }{
 	args = Browser__Visit__url
+	no ret
 	sender in User
 	receiver in Browser
 }
@@ -53,6 +54,7 @@ sig Browser__SendResp extends Op {
 	Browser__SendResp__headers : set Pair,
 }{
 	args = Browser__SendResp__headers
+	no ret
 	sender in Server
 	receiver in Browser
 }
@@ -60,8 +62,10 @@ sig Browser__SendResp extends Op {
 -- operation Browser__ExtractCookie
 sig Browser__ExtractCookie extends Op {
 	Browser__ExtractCookie__addr : lone Addr,
+	Browser__ExtractCookie__ret : lone Cookie,
 }{
 	args = Browser__ExtractCookie__addr
+	ret = Browser__ExtractCookie__ret
 	sender in User
 	receiver in Browser
 }
@@ -72,17 +76,9 @@ sig Browser__OverwriteCookie extends Op {
 	Browser__OverwriteCookie__cookie : lone Cookie,
 }{
 	args = Browser__OverwriteCookie__addr + Browser__OverwriteCookie__cookie
+	no ret
 	sender in User
 	receiver in Browser
-}
-
--- operation User__Display
-sig User__Display extends Op {
-	User__Display__c : lone Cookie,
-}{
-	args = User__Display__c
-	sender in Browser
-	receiver in User
 }
 
 -- datatype declarations

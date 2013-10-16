@@ -14,7 +14,7 @@ Slang::Dsl.view :Paywall do
   ] do
     creates Article
 
-    operation GetLink[link: Link, numAccessed: Int] do
+    op GetLink[link: Link, numAccessed: Int] do
       guard { numAccessed < limit }
       sends { Client::SendPage[articles[link], numAccessed + 1] }
     end
@@ -24,18 +24,19 @@ Slang::Dsl.view :Paywall do
     numAccessed: (dynamic Int)
   ] do
 
-    operation SendPage[page: Page, newCounter: Int] do 
+    op SendPage[page: Page, newCounter: Int] do 
       effects { self.numAccessed = newCounter }
-      sends { Reader::Display[page] }
+      sends { Reader::DisplayPage[page] }
     end
 
-    operation SelectLink[link: Link] do
+    op SelectLink[link: Link] do
       sends { NYTimes::GetLink[link, numAccessed] }
     end
+    
   end
 
   mod Reader do
-    operation Display[page: Page]
+    op DisplayPage[page: Page] do end
     sends { Client::SelectLink }
   end
 

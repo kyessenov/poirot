@@ -31,7 +31,8 @@ abstract sig Module {
 pred flows[from, to : Module, d : Data, t : Step] {
 	(some o : SuccessOp {
 		t = o.post
-		((from = o.sender and to = o.receiver and d in (o.args + o.args.^fields)))
+		({from = o.sender and to = o.receiver and d in (o.args + o.args.^fields)} or
+		{from = o.receiver and to = o.sender and d in (o.ret + o.ret.^fields)})
 	})
 }
 
@@ -49,9 +50,11 @@ abstract sig Op {
 	trigger : lone Op,
 	sender : Module,
 	receiver : lone Module,
-	args : set (Data + Int)
+	args : set (Data + Int),
+	ret : set (Data + Int)
 }{
 	(args + args.^fields) in sender.accesses.pre
+	(ret + ret.^fields) in receiver.accesses.pre
 	post = pre.next
 	pre = SO/first implies no trigger
 	some trigger implies {

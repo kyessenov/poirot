@@ -31,6 +31,10 @@ module Slang
         end
       end
 
+      def op(*args, &body)
+        operation(*args, &body)
+      end
+
       def operation(*args, &body)
         # evaluate ops lazily
         ans = Alloy::Dsl::SigBuilder.new(
