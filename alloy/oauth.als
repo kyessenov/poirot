@@ -67,6 +67,7 @@ sig EndUser__PromptForCred extends Op {
 	EndUser__PromptForCred__uri : lone URI,
 }{
 	args = EndUser__PromptForCred__uri
+	no ret
 	sender in UserAgent
 	receiver in EndUser
 }
@@ -78,6 +79,7 @@ sig UserAgent__InitFlow extends Op {
 	UserAgent__InitFlow__scope : lone Scope,
 }{
 	args = UserAgent__InitFlow__redirect + UserAgent__InitFlow__id + UserAgent__InitFlow__scope
+	no ret
 	sender in ClientServer
 	receiver in UserAgent
 }
@@ -88,6 +90,7 @@ sig UserAgent__EnterCred extends Op {
 	UserAgent__EnterCred__uri : lone URI,
 }{
 	args = UserAgent__EnterCred__cred + UserAgent__EnterCred__uri
+	no ret
 	sender in EndUser
 	receiver in UserAgent
 }
@@ -97,6 +100,7 @@ sig UserAgent__Redirect extends Op {
 	UserAgent__Redirect__uri : lone URI,
 }{
 	args = UserAgent__Redirect__uri
+	no ret
 	sender in AuthServer
 	receiver in UserAgent
 }
@@ -106,6 +110,7 @@ sig ClientServer__SendAuthResp extends Op {
 	ClientServer__SendAuthResp__uri : lone URI,
 }{
 	args = ClientServer__SendAuthResp__uri
+	no ret
 	sender in UserAgent
 	receiver in ClientServer
 }
@@ -115,6 +120,7 @@ sig ClientServer__SendAccessToken extends Op {
 	ClientServer__SendAccessToken__token : lone AccessToken,
 }{
 	args = ClientServer__SendAccessToken__token
+	no ret
 	sender in AuthServer
 	receiver in ClientServer
 }
@@ -124,6 +130,7 @@ sig ClientServer__SendResource extends Op {
 	ClientServer__SendResource__res : lone Resource,
 }{
 	args = ClientServer__SendResource__res
+	no ret
 	sender in ResourceServer
 	receiver in ClientServer
 }
@@ -134,6 +141,7 @@ sig AuthServer__ReqAuth extends Op {
 	AuthServer__ReqAuth__uri : lone URI,
 }{
 	args = AuthServer__ReqAuth__cred + AuthServer__ReqAuth__uri
+	no ret
 	sender in UserAgent
 	receiver in AuthServer
 }
@@ -143,6 +151,7 @@ sig AuthServer__ReqAccessToken extends Op {
 	AuthServer__ReqAccessToken__authGrant : lone AuthGrant,
 }{
 	args = AuthServer__ReqAccessToken__authGrant
+	no ret
 	sender in ClientServer
 	receiver in AuthServer
 }
@@ -152,6 +161,7 @@ sig ResourceServer__ReqResource extends Op {
 	ResourceServer__ReqResource__accessToken : lone AccessToken,
 }{
 	args = ResourceServer__ReqResource__accessToken
+	no ret
 	sender in ClientServer
 	receiver in ResourceServer
 }

@@ -9,7 +9,7 @@ one sig NYTimes extends Module {
 	all o : this.receives[NYTimes__GetLink] | arg[o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed)] < NYTimes__limit
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
-	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = (o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)) + 1)
+	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)), 1]
 }
 
 -- module Client

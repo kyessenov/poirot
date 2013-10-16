@@ -53,6 +53,7 @@ sig TrustedServer__HttpReq extends Op {
 	TrustedServer__HttpReq__addr : lone URI,
 }{
 	args = TrustedServer__HttpReq__cookie + TrustedServer__HttpReq__addr
+	no ret
 	sender in Client
 	receiver in TrustedServer
 }
@@ -63,6 +64,7 @@ sig MaliciousServer__HttpReq extends Op {
 	MaliciousServer__HttpReq__addr : lone URI,
 }{
 	args = MaliciousServer__HttpReq__cookie + MaliciousServer__HttpReq__addr
+	no ret
 	sender in Client
 	receiver in MaliciousServer
 }
@@ -72,6 +74,7 @@ sig Client__Visit extends Op {
 	Client__Visit__dest : lone URI,
 }{
 	args = Client__Visit__dest
+	no ret
 	sender in User
 	receiver in Client
 }
@@ -82,6 +85,7 @@ sig Client__HttpResp extends Op {
 	Client__HttpResp__addr : lone URI,
 }{
 	args = Client__HttpResp__dom + Client__HttpResp__addr
+	no ret
 	sender in TrustedServer + MaliciousServer
 	receiver in Client
 }

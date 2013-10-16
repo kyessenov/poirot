@@ -68,6 +68,7 @@ sig EndUser__PromptCredential extends Op {
 	EndUser__PromptCredential__forId : lone Addr,
 }{
 	args = EndUser__PromptCredential__forId
+	no ret
 	sender in UserAgent
 	receiver in EndUser
 }
@@ -77,6 +78,7 @@ sig UserAgent__RedirectToProvider extends Op {
 	UserAgent__RedirectToProvider__addr : lone Addr,
 }{
 	args = UserAgent__RedirectToProvider__addr
+	no ret
 	sender in RelyingParty
 	receiver in UserAgent
 }
@@ -86,6 +88,7 @@ sig UserAgent__RequestCredential extends Op {
 	UserAgent__RequestCredential__id : lone Addr,
 }{
 	args = UserAgent__RequestCredential__id
+	no ret
 	sender in IdentityProvider
 	receiver in UserAgent
 }
@@ -96,6 +99,7 @@ sig UserAgent__EnterCred extends Op {
 	UserAgent__EnterCred__cred : lone Credential,
 }{
 	args = UserAgent__EnterCred__id + UserAgent__EnterCred__cred
+	no ret
 	sender in EndUser
 	receiver in UserAgent
 }
@@ -106,6 +110,7 @@ sig UserAgent__ReceiveOpenID extends Op {
 	UserAgent__ReceiveOpenID__openId : lone OpenId,
 }{
 	args = UserAgent__ReceiveOpenID__id + UserAgent__ReceiveOpenID__openId
+	no ret
 	sender in IdentityProvider
 	receiver in UserAgent
 }
@@ -114,6 +119,7 @@ sig UserAgent__ReceiveOpenID extends Op {
 sig UserAgent__LoginSuccessful extends Op {
 }{
 	no args
+	no ret
 	sender in RelyingParty
 	receiver in UserAgent
 }
@@ -123,6 +129,7 @@ sig RelyingParty__RequestLogIn extends Op {
 	RelyingParty__RequestLogIn__id : lone Addr,
 }{
 	args = RelyingParty__RequestLogIn__id
+	no ret
 	sender in EndUser
 	receiver in RelyingParty
 }
@@ -133,6 +140,7 @@ sig RelyingParty__LogIn extends Op {
 	RelyingParty__LogIn__openId : lone OpenId,
 }{
 	args = RelyingParty__LogIn__id + RelyingParty__LogIn__openId
+	no ret
 	sender in UserAgent
 	receiver in RelyingParty
 }
@@ -143,6 +151,7 @@ sig RelyingParty__AuthVerified extends Op {
 	RelyingParty__AuthVerified__openId : lone OpenId,
 }{
 	args = RelyingParty__AuthVerified__id + RelyingParty__AuthVerified__openId
+	no ret
 	sender in IdentityProvider
 	receiver in RelyingParty
 }
@@ -152,6 +161,7 @@ sig IdentityProvider__RequestAuth extends Op {
 	IdentityProvider__RequestAuth__id : lone Addr,
 }{
 	args = IdentityProvider__RequestAuth__id
+	no ret
 	sender in UserAgent
 	receiver in IdentityProvider
 }
@@ -162,6 +172,7 @@ sig IdentityProvider__ReceiveCred extends Op {
 	IdentityProvider__ReceiveCred__cred : lone Credential,
 }{
 	args = IdentityProvider__ReceiveCred__id + IdentityProvider__ReceiveCred__cred
+	no ret
 	sender in UserAgent
 	receiver in IdentityProvider
 }
@@ -172,6 +183,7 @@ sig IdentityProvider__CheckAuth extends Op {
 	IdentityProvider__CheckAuth__openId : lone OpenId,
 }{
 	args = IdentityProvider__CheckAuth__id + IdentityProvider__CheckAuth__openId
+	no ret
 	sender in RelyingParty
 	receiver in IdentityProvider
 }
