@@ -39,6 +39,7 @@ sig NYTimes__GetPage extends Op {
 	NYTimes__GetPage__currCounter : lone Int,
 }{
 	args = NYTimes__GetPage__link + NYTimes__GetPage__currCounter
+	no ret
 	sender in Client
 	receiver in NYTimes
 }
@@ -49,6 +50,7 @@ sig Client__SendPage extends Op {
 	Client__SendPage__newCounter : lone Int,
 }{
 	args = Client__SendPage__page + Client__SendPage__newCounter
+	no ret
 	sender in NYTimes
 	receiver in Client
 }
@@ -58,6 +60,7 @@ sig Client__SelectLink extends Op {
 	Client__SelectLink__link : lone Link,
 }{
 	args = Client__SelectLink__link
+	no ret
 	sender in Reader
 	receiver in Client
 }
@@ -67,6 +70,7 @@ sig Reader__Display extends Op {
 	Reader__Display__page : lone Page,
 }{
 	args = Reader__Display__page
+	no ret
 	sender in Client
 	receiver in Reader
 }
