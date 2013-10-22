@@ -9,14 +9,14 @@ one sig NYTimes extends Module {
 	all o : this.receives[NYTimes__GetLink] | arg[o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed)] < NYTimes__limit
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
-	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)), 1]
+	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = (o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)) + 1)
 }
 
 -- module Client
 one sig Client extends Module {
 	Client__numAccessed : Int lone -> set Step,
 }{
-	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
+	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)] and arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
 	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
 	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]

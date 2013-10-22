@@ -29,23 +29,15 @@ dump(cookie_replay_view, "cookie_replay")
 dump(javascript_hampering_view, "javascript_hampering")
 dump(referer_interaction_view, "referer_interaction")
 
-# mv = composeViews(paywall_view, http_view,
-#                   :Module => {
-#                     "NYTimes" => "Server",
-#                     "Browser" => "Client"
-#                   },
-#                   :Exports => {
-#                      "NYTimes__GetArticle" => "Server__SendReq",
-#                      "Browser__SendArticle" => "Client__SendResp",
-#                     "Server__SendReq" => "NYTimes__GetArticle",
-#                     "Client__SendResp" => "Browser__SendArticle"
-#                   }, 
-#                   :Invokes => {
-#                   },
-#                   :Data => {
-#                     "Article" => "HTML",
-#                     "ArticleID" => "Str",
-#                     "Number" => "Str"
-#                   })
+mv = composeViews(http_view, cookie_replay_view,
+                  :Module => {
+                  },
+                  :Exports => {
+                  }, 
+                  :Invokes => {
+                  },
+                  :Data => {
+                  })
 
-# dump(mv, "merged")
+dump(mv, "merged")
+
