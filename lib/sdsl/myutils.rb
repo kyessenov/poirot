@@ -16,21 +16,15 @@ CHILD_COLOR="beige"
 UNIVERSAL_FIELDS = ["trigger"]
 ALLOY_CMDS = "
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
-
 check Confidentiality {
-   Confidentiality
+  Confidentiality
 } for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
+  Integrity
 } for 1 but 7 Data, 7 Step, 6 Op
 "
 STEP_TYPE = :Step
@@ -243,6 +237,16 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
   f.close
 end
 
+def buildSanityCheck v
+  sanityCheck = "run SanityCheck {\n"
+  v.modules.each do |m|
+    m.exports.each do |o|
+      sanityCheck += "  some #{o.name} & SuccessOp\n"
+    end
+  end
+  sanityCheck += "} for 1 but 7 Data, 7 Step, 6 Op\n"
+end
+
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
@@ -252,6 +256,7 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.puts v.to_alloy
   # footers
   f.puts
+  f.puts buildSanityCheck(v)
   f.puts ALLOY_CMDS
   f.close
 end

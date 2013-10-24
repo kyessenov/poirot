@@ -30,6 +30,42 @@ dump(javascript_hampering_view, "javascript_hampering")
 dump(referer_interaction_view, "referer_interaction")
 
 mv = composeViews(http_view, cookie_replay_view)
+mv = composeViews(mv, javascript_hampering_view)
+mv = composeViews(mv, referer_interaction_view)
+mv = composeViews(paywall_view, mv, {
+                    # :Module => {
+                    #   NYTimes => Server,
+                    #   Client => Browser,
+                    #   Reader => User
+                    # },
+                    # :Exports => {
+                    #   NYTimes::GetLink => Server::SendReq,
+                    #   Client::SendPage => Browser::SendResp,
+                    #   Reader::DisplayPage => User::DisplayHTML
+                    # },
+                    # :Invokes => {
+                    #   NYTimes::GetLink => Server::SendReq,
+                    #   Client::SendPage => Browser::SendResp,
+                    #   Reader::DisplayPage => User::DisplayHTML
+                    # },
+                    # :Data => {}
+                    :Module => {
+                      "NYTimes" => "Server",
+                      "Client" => "Browser",
+                      "Reader" => "User"
+                    },
+                    :Exports => {
+                      "NYTimes__GetLink" => "Server__SendReq",
+                      "Client__SendPage" => "Browser__SendResp",
+                      "Reader__DisplayPage" => "User__DisplayHTML"
+                    },
+                    :Invokes => {
+                      "NYTimes__GetLink" => "Server__SendReq",
+                      "Client__SendPage" => "Browser__SendResp",
+                      "Reader__DisplayPage" => "User__DisplayHTML"
+                    },
+                    :Data => {}
+                  })
 
 dump(mv, "merged")
 

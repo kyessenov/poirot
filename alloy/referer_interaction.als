@@ -27,6 +27,8 @@ one sig Browser extends Module {
 		or
 		(triggeredBy[o,Browser__Visit] and o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url)))
 		)
+	all o : this.sends[Referer__SendReq] | triggeredBy[o,Browser__Visit]
+	all o : this.sends[Referer__SendReq] | o.(Referer__SendReq <: Referer__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url))
 }
 
 -- module User
@@ -60,6 +62,7 @@ sig Referer__SendReq extends Op {
 }{
 	args = Referer__SendReq__url + Referer__SendReq__headers
 	no ret
+	sender in Browser
 	receiver in Referer
 }
 

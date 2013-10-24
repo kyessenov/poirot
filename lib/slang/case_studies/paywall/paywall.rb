@@ -23,16 +23,13 @@ Slang::Dsl.view :Paywall do
   trusted Client [
     numAccessed: (dynamic Int)
   ] do
-
-    op SendPage[page: Page, newCounter: Int] do 
+    op SendPage[page: Page, newCounter: Int] do
       effects { self.numAccessed = newCounter }
       sends { Reader::DisplayPage[page] }
     end
-
     op SelectLink[link: Link] do
       sends { NYTimes::GetLink[link, numAccessed] }
-    end
-    
+    end    
   end
 
   mod Reader do
