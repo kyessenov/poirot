@@ -131,13 +131,13 @@ fun RelevantOp : Op -> Step {
 run SanityCheck {
 	all m : Module |
 		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op
 
 check Confidentiality {
    Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
    Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op

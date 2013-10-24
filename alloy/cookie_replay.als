@@ -14,7 +14,7 @@ one sig Browser extends Module {
 	Browser__cookies : (Addr set -> lone Cookie) -> set Step,
 }{
 	all o : this.receives[Browser__ExtractCookie] | (some (Browser__cookies.(o.pre)[arg[o.(Browser__ExtractCookie <: Browser__ExtractCookie__addr)]] & arg[o.(Browser__ExtractCookie <: Browser__ExtractCookie__ret)]))
-	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr)] -> arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie)]) and (Browser__cookies.(o.pre) + arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr)] -> arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie)])
+	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr)] -> arg[o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie)])
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url)) and o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr])
 }
@@ -120,13 +120,13 @@ fun RelevantOp : Op -> Step {
 run SanityCheck {
 	all m : Module |
 		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op
 
 check Confidentiality {
    Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
    Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+} for 1 but 7 Data, 7 Step, 6 Op

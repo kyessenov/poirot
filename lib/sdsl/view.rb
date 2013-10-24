@@ -623,16 +623,21 @@ def findModsWithExport(modules, n)
 end
 
 def inferMapping(v1, v2, refineRel) 
+  if not refineRel.has_key? :Module then refineRel[:Module] = {} end
+  if not refineRel.has_key? :Exports then refineRel[:Exports] = {} end
+  if not refineRel.has_key? :Invokes then refineRel[:Invokes] = {} end
+  if not refineRel.has_key? :Data then refineRel[:Data] = {} end
+
   newRel = refineRel.clone
   v1.modules.each do |m1|
     v2.modules.each do |m2|
       if m1.name == m2.name then
-        refineRel[:Module][m1.name] = m2.name
+        newRel[:Module][m1.name] = m2.name
         # check exports
         m1.exports.each do |e1|
           m2.exports.each do |e2|
             if e1.name == e2.name then
-              refineRel[:Exports][e1.name] = e2.name
+              newRel[:Exports][e1.name] = e2.name
             end
           end
         end
@@ -641,7 +646,7 @@ def inferMapping(v1, v2, refineRel)
         m1.invokes.each do |i1|
           m2.invokes.each do |i2|
             if i1.name == i2.name then
-              refineRel[:Invokes][i1.name] = i2.name
+              newRel[:Invokes][i1.name] = i2.name
             end
           end
         end

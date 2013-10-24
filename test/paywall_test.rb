@@ -29,15 +29,7 @@ dump(cookie_replay_view, "cookie_replay")
 dump(javascript_hampering_view, "javascript_hampering")
 dump(referer_interaction_view, "referer_interaction")
 
-mv = composeViews(http_view, cookie_replay_view,
-                  :Module => {
-                  },
-                  :Exports => {
-                  }, 
-                  :Invokes => {
-                  },
-                  :Data => {
-                  })
+mv = composeViews(http_view, cookie_replay_view)
 
 dump(mv, "merged")
 
