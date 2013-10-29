@@ -9,7 +9,7 @@ require 'pp'
 
 DOT_FILE = "out.dot"
 ALLOY_FILE = "out.als"
-FONTNAME = "courier"
+FONTNAME = "helvetica"
 UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
@@ -270,8 +270,7 @@ end
 class Rel
 end
 
-# Unary rel with multiplicity lone
-class Item < Rel
+class UnaryRel < Rel
   attr_reader :name, :type
   def initialize(n, t)
     @name = n
@@ -280,47 +279,53 @@ class Item < Rel
   def to_s
     @name.to_s
   end
-  def to_alloy(ctx=nil)
-    @name.to_s + " : lone " + @type.to_s
-  end
-  def rewrite(ctx)
-    Item.new(@name, @typ)
-  end
   def ==(other)
     other.equal?(self) ||
     (other.instance_of?(self.class) &&
      other.name == self.name &&
      other.type == self.type)
   end
+end
+
+# Unary rel with multiplicity "one"
+class Item < UnaryRel
+  def to_alloy(ctx=nil)
+    @name.to_s + " : one " + @type.to_s
+  end
+  def rewrite(ctx)
+    Item.new(@name, @typ)
+  end
   def dynamic
-    Map.new(name, type, STEP_TYPE, :lone, :set)
+    Map.new(name, type, STEP_TYPE, :one, :set)
   end
 end
 def item(n, t)
   Item.new(n, t)
 end
 
+# Unary rel with multiplicity "lone"
+class Maybe < UnaryRel
+  def to_alloy(ctx=nil)
+    @name.to_s + " : lone " + @type.to_s
+  end
+  def rewrite(ctx)
+    Item.new(@name, @typ)
+  end
+  def dynamic
+    Map.new(name, type, STEP_TYPE, :lone, :set)
+  end
+end
+def maybe(n, t)
+  Maybe.new(n, t)
+end
+
 # Alloy set
-class Bag < Rel
-  attr_reader :name, :type
-  def initialize(n, t)
-    @name = n
-    @type = t
-  end
-  def to_s
-    @name.to_s
-  end
+class Bag < UnaryRel
   def to_alloy(ctx=nil)
     @name.to_s + " : set " + @type.to_s
   end
   def rewrite(ctx)
     Bag.new(@name, @typ)
-  end
-  def ==(other)
-    other.equal?(self) ||
-    (other.instance_of?(self.class) &&
-     other.name == self.name &&
-     other.type == self.type)
   end
   def dynamic
     Map.new(name, type, STEP_TYPE, :set, :set)

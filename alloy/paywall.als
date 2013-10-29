@@ -15,7 +15,15 @@ one sig NYTimes extends Module {
 -- module Client
 one sig Client extends Module {
 	Client__numAccessed : Int lone -> set Step,
+}{
+	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
+	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
+	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
+	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
+	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
+	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
 }
+
 -- module Reader
 one sig Reader extends Module {
 }
@@ -32,6 +40,7 @@ sig NYTimes__GetLink extends Op {
 }{
 	args = NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
 	no ret
+	sender in Client
 	receiver in NYTimes
 }
 
@@ -62,6 +71,7 @@ sig Reader__DisplayPage extends Op {
 }{
 	args = Reader__DisplayPage__page
 	no ret
+	sender in Client
 	receiver in Reader
 }
 
@@ -89,21 +99,21 @@ fact criticalDataFacts {
 	CriticalData = Article
 }
 
-
-fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
-}
-
 run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
+  some NYTimes__GetLink & SuccessOp
+  some Client__SendPage & SuccessOp
+  some Client__SelectLink & SuccessOp
+  some Reader__DisplayPage & SuccessOp
 } for 1 but 7 Data, 7 Step, 6 Op
 
+fun RelevantOp : Op -> Step {
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
+}
 check Confidentiality {
-   Confidentiality
+  Confidentiality
 } for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
+  Integrity
 } for 1 but 7 Data, 7 Step, 6 Op

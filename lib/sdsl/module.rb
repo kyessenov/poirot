@@ -33,6 +33,24 @@ class Mod
     self.isAbstract = true
   end
 
+  def isDynamic field
+    dynamics.map{|e| "#{name}__#{e}"}.include? field.name
+  end
+
+  def rel2Set r
+    rname = "#{r.name}"
+    if isDynamic r
+      rname = "(#{r.name}.first)"
+    end
+    if r.is_a? UnaryRel
+      "#{rname}" 
+    elsif r.is_a? Map
+      "#{r.type1}.#{rname} + #{rname}.#{r.type2}"
+    else
+      raise "Can't convert rel #{r.to_alloy} to sets"
+    end
+  end
+
   def to_alloy(ctx)
     # (s1, s2) in decls => sig s1 extends s2
     sigfacts = []
@@ -82,7 +100,7 @@ class Mod
 
     # fields      
     fields.each do |f|      
-      if dynamics.map{|e| "#{name}__#{e}"}.include? f.name
+      if isDynamic f
         alloyChunk += wrap(f.dynamic.to_alloy(ctx) + ",", 1)
       else
         alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
@@ -90,17 +108,30 @@ class Mod
     end
     alloyChunk += "}"
     # signature facts
+    alloyChunk += wrap("{")
     if not sigfacts.empty? 
-      alloyChunk += wrap("{")
       sigfacts.each do |f|
         alloyChunk += wrap(f, 1)
       end
-      alloyChunk += wrap("}")
+    end
+    
+    # initial data access
+    if not (fields.empty? and creates.empty?)
+      initData = []
+      fields.each do |f|
+          initData << (rel2Set f)
+      end
+      creates.each do |d|
+        initData << "#{d}"
+      end
+      alloyChunk += wrap("accesses.first in " + initData.join(" + "), 1)
     end
 
+    alloyChunk += wrap("}")
     # facts
     alloyChunk += writeFacts(name.to_s + "Facts", facts)
   end
+
 end
 
 class ModuleBuilder

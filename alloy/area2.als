@@ -11,30 +11,40 @@ one sig A2Site extends Module {
 	all o : this.receives[A2Site__ViewProfile] | arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret)] = A2Site__profiles.(o.pre)[arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]]
 	all o : this.receives[A2Site__EditProfile] | arg[o.(A2Site__EditProfile <: A2Site__EditProfile__t)] = A2Site__tokens[arg[o.(A2Site__EditProfile <: A2Site__EditProfile__id)]]
 	all o : this.receives[A2Site__EditProfile] | A2Site__profiles.(o.post) = (A2Site__profiles.(o.pre) + arg[o.(A2Site__EditProfile <: A2Site__EditProfile__id)] -> arg[o.(A2Site__EditProfile <: A2Site__EditProfile__newProfile)])
+	accesses.first in StudentID.(A2Site__profiles.first) + (A2Site__profiles.first).Profile + StudentID.A2Site__advisor + A2Site__advisor.FacultyID + StudentID.A2Site__tokens + A2Site__tokens.Token + Token + Profile
 }
 
 -- module Faculty
-sig Faculty extends Module {
-	Faculty__id : lone FacultyID,
+one sig Faculty extends Module {
+	Faculty__id : one FacultyID,
+}{
+	accesses.first in Faculty__id
 }
+
 -- module Student
-sig Student extends Module {
-	Student__id : lone StudentID,
+one sig Student extends Module {
+	Student__id : one StudentID,
+	Student__token : one Token,
+}{
+	accesses.first in Student__id + Student__token
 }
+
 -- module Admin
 one sig Admin extends Module {
+}{
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
-	TrustedModule = A2Site + Admin
+	TrustedModule = A2Site + Faculty + Admin
 }
 
 -- operation A2Site__ViewProfile
 sig A2Site__ViewProfile extends Op {
-	A2Site__ViewProfile__id : lone StudentID,
-	A2Site__ViewProfile__t : lone Token,
-	A2Site__ViewProfile__ret : lone Profile,
+	A2Site__ViewProfile__id : one StudentID,
+	A2Site__ViewProfile__t : one Token,
+	A2Site__ViewProfile__ret : one Profile,
 }{
 	args = A2Site__ViewProfile__id + A2Site__ViewProfile__t
 	ret = A2Site__ViewProfile__ret
@@ -44,9 +54,9 @@ sig A2Site__ViewProfile extends Op {
 
 -- operation A2Site__EditProfile
 sig A2Site__EditProfile extends Op {
-	A2Site__EditProfile__id : lone StudentID,
-	A2Site__EditProfile__t : lone Token,
-	A2Site__EditProfile__newProfile : lone Profile,
+	A2Site__EditProfile__id : one StudentID,
+	A2Site__EditProfile__t : one Token,
+	A2Site__EditProfile__newProfile : one Profile,
 }{
 	args = A2Site__EditProfile__id + A2Site__EditProfile__t + A2Site__EditProfile__newProfile
 	no ret
@@ -56,7 +66,8 @@ sig A2Site__EditProfile extends Op {
 
 -- fact dataFacts
 fact dataFacts {
-	no creates.Profile
+	creates.Profile in A2Site
+	creates.Token in A2Site
 }
 
 -- datatype declarations

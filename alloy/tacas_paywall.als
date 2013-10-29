@@ -4,17 +4,18 @@ open models/crypto[Data]
 -- module NYTimes
 one sig NYTimes extends Module {
 	NYTimes__articles : Link set -> lone Page,
-	NYTimes__limit : lone Int,
+	NYTimes__limit : one Int,
 }{
 	all o : this.receives[NYTimes__GetPage] | arg[o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter)] < NYTimes__limit
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetPage]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__currCounter)), 1]
+	accesses.first in NYTimes__articles + NYTimes__limit + Page
 }
 
 -- module Client
 one sig Client extends Module {
-	Client__counter : Int lone -> set Step,
+	Client__counter : Int one -> set Step,
 }{
 	all o : this.receives[Client__SendPage] | Client__counter.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
 	all o : this.sends[Reader__Display] | triggeredBy[o,Client__SendPage]
@@ -22,11 +23,14 @@ one sig Client extends Module {
 	all o : this.sends[NYTimes__GetPage] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter) = Client__counter.(o.pre)
+	accesses.first in Client__counter.first
 }
 
 -- module Reader
 one sig Reader extends Module {
+}{
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
@@ -35,8 +39,8 @@ fact trustedModuleFacts {
 
 -- operation NYTimes__GetPage
 sig NYTimes__GetPage extends Op {
-	NYTimes__GetPage__link : lone Link,
-	NYTimes__GetPage__currCounter : lone Int,
+	NYTimes__GetPage__link : one Link,
+	NYTimes__GetPage__currCounter : one Int,
 }{
 	args = NYTimes__GetPage__link + NYTimes__GetPage__currCounter
 	no ret
@@ -46,8 +50,8 @@ sig NYTimes__GetPage extends Op {
 
 -- operation Client__SendPage
 sig Client__SendPage extends Op {
-	Client__SendPage__page : lone Page,
-	Client__SendPage__newCounter : lone Int,
+	Client__SendPage__page : one Page,
+	Client__SendPage__newCounter : one Int,
 }{
 	args = Client__SendPage__page + Client__SendPage__newCounter
 	no ret
@@ -57,7 +61,7 @@ sig Client__SendPage extends Op {
 
 -- operation Client__SelectLink
 sig Client__SelectLink extends Op {
-	Client__SelectLink__link : lone Link,
+	Client__SelectLink__link : one Link,
 }{
 	args = Client__SelectLink__link
 	no ret
@@ -67,7 +71,7 @@ sig Client__SelectLink extends Op {
 
 -- operation Reader__Display
 sig Reader__Display extends Op {
-	Reader__Display__page : lone Page,
+	Reader__Display__page : one Page,
 }{
 	args = Reader__Display__page
 	no ret
@@ -96,21 +100,21 @@ fact criticalDataFacts {
 	CriticalData = Page
 }
 
+run SanityCheck {
+  some NYTimes__GetPage & SuccessOp
+  some Client__SendPage & SuccessOp
+  some Client__SelectLink & SuccessOp
+  some Reader__Display & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op

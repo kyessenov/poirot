@@ -143,21 +143,23 @@ sig RefererHeader extends Pair {
 }
 sig OtherData extends Data {}{ no fields }
 
-
-fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
-}
-
 run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
+  some Server__SendReq & SuccessOp
+  some Referer__SendReq & SuccessOp
+  some Browser__SendResp & SuccessOp
+  some Browser__FollowLink & SuccessOp
+  some Browser__Visit & SuccessOp
+  some User__DisplayHTML & SuccessOp
 } for 1 but 7 Data, 7 Step, 6 Op
 
+fun RelevantOp : Op -> Step {
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
+}
 check Confidentiality {
-   Confidentiality
+  Confidentiality
 } for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
+  Integrity
 } for 1 but 7 Data, 7 Step, 6 Op

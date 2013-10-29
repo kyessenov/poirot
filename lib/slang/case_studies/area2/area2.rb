@@ -14,9 +14,11 @@ Slang::Dsl.view :Area2 do
     advisor: StudentID ** FacultyID,
     tokens: StudentID ** Token
   ] do
+    creates Token
+    creates Profile
 
     op ViewProfile[id: StudentID, t: Token, ret: Profile] do
-      guard { t == tokens[id] }
+      guard {  t == tokens[id] }
       effects { ret == profiles[id] }
     end
 
@@ -26,15 +28,16 @@ Slang::Dsl.view :Area2 do
     end
   end
 
-  many mod Faculty [
+  trusted Faculty [
     id: FacultyID
   ] do
     sends { A2Site::ViewProfile }
     sends { A2Site::EditProfile }
   end
 
-  many mod Student [
-    id: StudentID
+  mod Student [
+    id: StudentID,
+    token: Token
   ] do
     sends { A2Site::ViewProfile }
     sends { A2Site::EditProfile }    

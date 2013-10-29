@@ -11,18 +11,15 @@ abstract sig Data {
 	fields : set Data
 }
 abstract sig Module {
-	accesses : (Data + Int) -> Step,
-	creates : set Data,
+	accesses : (Data + Int) -> Step
 }{
-	creates.^fields in creates
-
 	all d : Data, t : Step |
 		-- can only access a data at time step t if
 		d in accesses.t implies {
 			-- (1) it already has access to date at time (t-1) or
 			(t not in SO/first and d in accesses.(t.prev)) or
 			-- (2) it creates the data itself or
-			(t in SO/first and d in (creates + creates.^fields)) or
+			(t in SO/first and d in accesses.t) or
 			-- (3) another module calls operation on this and send the data as an argument
 			some m2 : Module - this | flows[m2, this, d, t]
 		}
@@ -79,13 +76,17 @@ fun arg[d : Data+Int] : set Data+Int {
 	d + d.^fields
 }
 
+fun originates[d : Data] : set Module {
+	(accesses.first).d
+}
+
 sig CriticalData in Data {}
 sig GoodData, BadData in CriticalData {}
 fact DataFacts {
 	no GoodData & BadData
 	CriticalData = GoodData + BadData
-	creates.GoodData in TrustedModule
-	creates.BadData in UntrustedModule
+	originates[GoodData] in TrustedModule
+	originates[BadData] in UntrustedModule
 }
 sig TrustedModule, UntrustedModule in Module {}
 sig ProtectedModule in Module {}

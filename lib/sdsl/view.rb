@@ -176,7 +176,7 @@ class View
         if critical.any? { |c| c.name == dn }
           dataFacts << "no creates.#{dn}"
         end
-      end     
+      end 
     end
 
     alloyChunk += writeFacts("dataFacts", dataFacts)
