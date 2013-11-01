@@ -166,20 +166,20 @@ class View
     end
 
     # write facts about data creation
-    dataFacts = []
-    data.each do |d|
-      dn = d.name
+    # dataFacts = []
+    # data.each do |d|
+    #   dn = d.name
 
-      if creators.has_key? dn
-        dataFacts << "creates.#{dn} in " + creators[dn].join(" + ")
-      else 
-        if critical.any? { |c| c.name == dn }
-          dataFacts << "no creates.#{dn}"
-        end
-      end 
-    end
+    #   if creators.has_key? dn
+    #     dataFacts << "creates.#{dn} in " + creators[dn].join(" + ")
+    #   else 
+    #     if critical.any? { |c| c.name == dn }
+    #       dataFacts << "no creates.#{dn}"
+    #     end
+    #   end 
+    # end
 
-    alloyChunk += writeFacts("dataFacts", dataFacts)
+    # alloyChunk += writeFacts("dataFacts", dataFacts)
 
     
     # write data decls

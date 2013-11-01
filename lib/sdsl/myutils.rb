@@ -711,7 +711,8 @@ def arg(arg, op = nil)
   else
     e = op.join expr(arg)
   end
-  FuncApp.new(e(:arg), e)
+  #TODO: Not needed?
+  #FuncApp.new(e(:arg), e)
 end
 
 def trig

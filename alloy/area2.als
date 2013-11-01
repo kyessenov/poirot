@@ -7,10 +7,10 @@ one sig A2Site extends Module {
 	A2Site__advisor : StudentID set -> lone FacultyID,
 	A2Site__tokens : StudentID set -> lone Token,
 }{
-	all o : this.receives[A2Site__ViewProfile] | arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__t)] = A2Site__tokens[arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]]
-	all o : this.receives[A2Site__ViewProfile] | arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret)] = A2Site__profiles.(o.pre)[arg[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]]
-	all o : this.receives[A2Site__EditProfile] | arg[o.(A2Site__EditProfile <: A2Site__EditProfile__t)] = A2Site__tokens[arg[o.(A2Site__EditProfile <: A2Site__EditProfile__id)]]
-	all o : this.receives[A2Site__EditProfile] | A2Site__profiles.(o.post) = (A2Site__profiles.(o.pre) + arg[o.(A2Site__EditProfile <: A2Site__EditProfile__id)] -> arg[o.(A2Site__EditProfile <: A2Site__EditProfile__newProfile)])
+	all o : this.receives[A2Site__ViewProfile] | o.(A2Site__ViewProfile <: A2Site__ViewProfile__t) = A2Site__tokens[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]
+	all o : this.receives[A2Site__ViewProfile] | o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles.(o.pre)[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]
+	all o : this.receives[A2Site__EditProfile] | o.(A2Site__EditProfile <: A2Site__EditProfile__t) = A2Site__tokens[o.(A2Site__EditProfile <: A2Site__EditProfile__id)]
+	all o : this.receives[A2Site__EditProfile] | A2Site__profiles.(o.post) = (A2Site__profiles.(o.pre) + o.(A2Site__EditProfile <: A2Site__EditProfile__id) -> o.(A2Site__EditProfile <: A2Site__EditProfile__newProfile))
 	accesses.first in StudentID.(A2Site__profiles.first) + (A2Site__profiles.first).Profile + StudentID.A2Site__advisor + A2Site__advisor.FacultyID + StudentID.A2Site__tokens + A2Site__tokens.Token + Token + Profile
 }
 
@@ -64,17 +64,7 @@ sig A2Site__EditProfile extends Op {
 	receiver in A2Site
 }
 
--- fact dataFacts
-fact dataFacts {
-	creates.Profile in A2Site
-	creates.Token in A2Site
-}
-
 -- datatype declarations
-sig Profile extends Data {
-}{
-	no fields
-}
 sig Token extends Data {
 }{
 	no fields
@@ -86,6 +76,11 @@ sig FacultyID extends Data {
 sig StudentID extends Data {
 }{
 	no fields
+}
+sig Profile extends Data {
+	Profile__id : one StudentID,
+}{
+	fields = Profile__id
 }
 sig OtherData extends Data {}{ no fields }
 

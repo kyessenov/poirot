@@ -7,6 +7,7 @@ one sig Server extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
+	accesses.first in URL.Server__responses + Server__responses.HTML
 }
 
 -- module Browser
@@ -20,7 +21,9 @@ one sig Browser extends Module {
 
 -- module User
 one sig User extends Module {
+}{
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
@@ -29,7 +32,7 @@ fact trustedModuleFacts {
 
 -- operation Server__SendReq
 sig Server__SendReq extends Op {
-	Server__SendReq__url : lone URL,
+	Server__SendReq__url : one URL,
 	Server__SendReq__headers : set Pair,
 }{
 	args = Server__SendReq__url + Server__SendReq__headers
@@ -40,7 +43,7 @@ sig Server__SendReq extends Op {
 
 -- operation Browser__SendResp
 sig Browser__SendResp extends Op {
-	Browser__SendResp__resp : lone HTML,
+	Browser__SendResp__resp : one HTML,
 	Browser__SendResp__headers : set Pair,
 }{
 	args = Browser__SendResp__resp + Browser__SendResp__headers
@@ -51,7 +54,7 @@ sig Browser__SendResp extends Op {
 
 -- operation Browser__Visit
 sig Browser__Visit extends Op {
-	Browser__Visit__url : lone URL,
+	Browser__Visit__url : one URL,
 }{
 	args = Browser__Visit__url
 	no ret
@@ -61,7 +64,7 @@ sig Browser__Visit extends Op {
 
 -- operation User__DisplayHTML
 sig User__DisplayHTML extends Op {
-	User__DisplayHTML__html : lone HTML,
+	User__DisplayHTML__html : one HTML,
 }{
 	args = User__DisplayHTML__html
 	no ret
@@ -87,13 +90,13 @@ sig HTML extends Data {
 	no fields
 }
 sig Pair extends Data {
-	Pair__n : lone Name,
-	Pair__v : lone Value,
+	Pair__n : one Name,
+	Pair__v : one Value,
 }{
 	fields = Pair__n + Pair__v
 }
 sig URL extends Data {
-	URL__addr : lone Addr,
+	URL__addr : one Addr,
 	URL__queries : set Pair,
 }{
 	fields = URL__addr + URL__queries

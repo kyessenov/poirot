@@ -4,16 +4,21 @@ include Slang::Dsl
 
 Slang::Dsl.view :Area2 do
 
-  critical data Profile 
   data Token
   data FacultyID
   data StudentID
+  critical data Profile[id: StudentID]
 
   trusted A2Site [
     profiles: (dynamic StudentID ** Profile),
     advisor: StudentID ** FacultyID,
     tokens: StudentID ** Token
   ] do
+    #assumption {
+      # TODO: Throws an error
+      #profiles.all? {|si, p| p.id == si }
+    #}
+
     creates Token
     creates Profile
 

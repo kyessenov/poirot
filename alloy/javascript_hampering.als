@@ -7,14 +7,16 @@ one sig Server extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
+	accesses.first in URL.Server__responses + Server__responses.HTML
 }
 
 -- module Script
 sig Script extends Module {
-	Script__original : lone HTML,
-	Script__transformed : lone HTML,
+	Script__original : one HTML,
+	Script__transformed : one HTML,
 }{
-	all o : this.receives[Script__Exec] | (arg[o.(Script__Exec <: Script__Exec__resp)] = Script__original and arg[o.(Script__Exec <: Script__Exec__ret)] = Script__transformed)
+	all o : this.receives[Script__Exec] | (o.(Script__Exec <: Script__Exec__resp) = Script__original and o.(Script__Exec <: Script__Exec__ret) = Script__transformed)
+	accesses.first in Script__original + Script__transformed
 }
 
 -- module Browser
@@ -28,11 +30,14 @@ one sig Browser extends Module {
 	all o : this.sends[Script__Exec] | o.(Script__Exec <: Script__Exec__ret) = Browser__transform[o.trigger.((Browser__SendResp <: Browser__SendResp__resp))]
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url))
+	accesses.first in HTML.Browser__transform + Browser__transform.HTML
 }
 
 -- module User
 one sig User extends Module {
+}{
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
@@ -41,7 +46,7 @@ fact trustedModuleFacts {
 
 -- operation Server__SendReq
 sig Server__SendReq extends Op {
-	Server__SendReq__url : lone URL,
+	Server__SendReq__url : one URL,
 	Server__SendReq__headers : set Pair,
 }{
 	args = Server__SendReq__url + Server__SendReq__headers
@@ -52,8 +57,8 @@ sig Server__SendReq extends Op {
 
 -- operation Script__Exec
 sig Script__Exec extends Op {
-	Script__Exec__resp : lone HTML,
-	Script__Exec__ret : lone HTML,
+	Script__Exec__resp : one HTML,
+	Script__Exec__ret : one HTML,
 }{
 	args = Script__Exec__resp
 	ret = Script__Exec__ret
@@ -63,7 +68,7 @@ sig Script__Exec extends Op {
 
 -- operation Browser__SendResp
 sig Browser__SendResp extends Op {
-	Browser__SendResp__resp : lone HTML,
+	Browser__SendResp__resp : one HTML,
 	Browser__SendResp__headers : set Pair,
 }{
 	args = Browser__SendResp__resp + Browser__SendResp__headers
@@ -74,7 +79,7 @@ sig Browser__SendResp extends Op {
 
 -- operation Browser__Visit
 sig Browser__Visit extends Op {
-	Browser__Visit__url : lone URL,
+	Browser__Visit__url : one URL,
 }{
 	args = Browser__Visit__url
 	no ret
@@ -84,7 +89,7 @@ sig Browser__Visit extends Op {
 
 -- operation User__DisplayHTML
 sig User__DisplayHTML extends Op {
-	User__DisplayHTML__resp : lone HTML,
+	User__DisplayHTML__resp : one HTML,
 }{
 	args = User__DisplayHTML__resp
 	no ret
@@ -110,13 +115,13 @@ sig HTML extends Data {
 	no fields
 }
 sig Pair extends Data {
-	Pair__n : lone Name,
-	Pair__v : lone Value,
+	Pair__n : one Name,
+	Pair__v : one Value,
 }{
 	fields = Pair__n + Pair__v
 }
 sig URL extends Data {
-	URL__addr : lone Addr,
+	URL__addr : one Addr,
 	URL__queries : set Pair,
 }{
 	fields = URL__addr + URL__queries

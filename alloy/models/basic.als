@@ -73,7 +73,8 @@ pred triggeredBy[o : Op, t : set Op] {
 	some o.trigger & t
 }
 fun arg[d : Data+Int] : set Data+Int {
-	d + d.^fields
+//	d + d.^fields
+	d
 }
 
 fun originates[d : Data] : set Module {
