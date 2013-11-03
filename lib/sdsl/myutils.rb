@@ -125,7 +125,8 @@ def mkModname m
   end
 end
 
-def writeDot(mods, dotFile, color=CHILD_COLOR)
+def writeDot(view, dotFile, color=CHILD_COLOR)
+  mods = view.modules
   f = File.new(dotFile, 'w')
   f.puts "digraph g {"
   f.puts 'graph[fontname="' + FONTNAME + '", splines=true, concentrate=true];'
@@ -231,8 +232,13 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
         end
       end
     end
-
   end
+  
+  # draw data elements
+  view.data.each do |d|
+    f.puts("#{d.name}[shape=ellipse,style=\"filled\",color=\"greenyellow\"];")
+  end
+
   f.puts "}"
   f.close
 end
@@ -262,7 +268,7 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
 end
 
 def drawView(v, dotFile=DOT_FILE, color=CHILD_COLOR)
-  writeDot v.modules, dotFile, color
+  writeDot v, dotFile, color
 end
 
 #########################################

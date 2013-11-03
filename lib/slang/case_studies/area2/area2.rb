@@ -4,7 +4,7 @@ include Slang::Dsl
 
 Slang::Dsl.view :Area2 do
 
-  data Token
+  critical data Token
   data FacultyID
   data StudentID
   critical data Profile[id: StudentID]

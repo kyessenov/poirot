@@ -12,8 +12,9 @@ Mod = Struct.new(:name, :exports, :invokes, :assumptions,
                  :dynamics)
 Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract)
 
-class Mod
+NON_CRITICAL_DATA = "NonCriticalData"
 
+class Mod
   def findExport n
     (exports.select { |e| e.name == n })[0]
   end
@@ -51,16 +52,25 @@ class Mod
     end
   end
 
+  def initDataAccess  
+    initData = []
+    stores.each do |f|
+      initData << (rel2Set f)
+    end
+    creates.each do |d|
+      initData << "#{d}"
+    end
+    initData 
+  end
+
   def to_alloy(ctx)
     # (s1, s2) in decls => sig s1 extends s2
     sigfacts = []
     facts = []
-    fields = []
     alloyChunk = ""
 
     modn = name.to_s    
     # module declaration
-    fields = stores
 
     ctx[:nesting] = 1
     exports.each do |o|
@@ -99,7 +109,7 @@ class Mod
     end
 
     # fields      
-    fields.each do |f|      
+    stores.each do |f|      
       if isDynamic f
         alloyChunk += wrap(f.dynamic.to_alloy(ctx) + ",", 1)
       else
@@ -116,13 +126,13 @@ class Mod
     end
     
     # initial data access
-    if not (fields.empty? and creates.empty?)
-      initData = []
-      fields.each do |f|
-          initData << (rel2Set f)
-      end
-      creates.each do |d|
-        initData << "#{d}"
+    if not isAbstract then
+      initData = [NON_CRITICAL_DATA]
+      if not (stores.empty? and creates.empty?)
+        initData += initDataAccess
+        extends.each do |e|
+          initData += e.initDataAccess
+        end
       end
       alloyChunk += wrap("accesses.first in " + initData.join(" + "), 1)
     end

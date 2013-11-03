@@ -82,6 +82,7 @@ fun originates[d : Data] : set Module {
 }
 
 sig CriticalData in Data {}
+fun NonCriticalData : set Data { Data - CriticalData }
 sig GoodData, BadData in CriticalData {}
 fact DataFacts {
 	no GoodData & BadData

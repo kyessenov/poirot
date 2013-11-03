@@ -11,14 +11,14 @@ one sig A2Site extends Module {
 	all o : this.receives[A2Site__ViewProfile] | o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles.(o.pre)[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]
 	all o : this.receives[A2Site__EditProfile] | o.(A2Site__EditProfile <: A2Site__EditProfile__t) = A2Site__tokens[o.(A2Site__EditProfile <: A2Site__EditProfile__id)]
 	all o : this.receives[A2Site__EditProfile] | A2Site__profiles.(o.post) = (A2Site__profiles.(o.pre) + o.(A2Site__EditProfile <: A2Site__EditProfile__id) -> o.(A2Site__EditProfile <: A2Site__EditProfile__newProfile))
-	accesses.first in StudentID.(A2Site__profiles.first) + (A2Site__profiles.first).Profile + StudentID.A2Site__advisor + A2Site__advisor.FacultyID + StudentID.A2Site__tokens + A2Site__tokens.Token + Token + Profile
+	accesses.first in NonCriticalData + StudentID.(A2Site__profiles.first) + (A2Site__profiles.first).Profile + StudentID.A2Site__advisor + A2Site__advisor.FacultyID + StudentID.A2Site__tokens + A2Site__tokens.Token + Token + Profile
 }
 
 -- module Faculty
 one sig Faculty extends Module {
 	Faculty__id : one FacultyID,
 }{
-	accesses.first in Faculty__id
+	accesses.first in NonCriticalData + Faculty__id
 }
 
 -- module Student
@@ -26,12 +26,13 @@ one sig Student extends Module {
 	Student__id : one StudentID,
 	Student__token : one Token,
 }{
-	accesses.first in Student__id + Student__token
+	accesses.first in NonCriticalData + Student__id + Student__token
 }
 
 -- module Admin
 one sig Admin extends Module {
 }{
+	accesses.first in NonCriticalData
 }
 
 
@@ -86,7 +87,7 @@ sig OtherData extends Data {}{ no fields }
 
 -- fact criticalDataFacts
 fact criticalDataFacts {
-	CriticalData = Profile
+	CriticalData = Token + Profile
 }
 
 run SanityCheck {
