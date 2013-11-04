@@ -9,29 +9,23 @@ require 'pp'
 
 DOT_FILE = "out.dot"
 ALLOY_FILE = "out.als"
-FONTNAME = "courier"
+FONTNAME = "helvetica"
 UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
 UNIVERSAL_FIELDS = ["trigger"]
 ALLOY_CMDS = "
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op
 "
 STEP_TYPE = :Step
 
@@ -131,7 +125,8 @@ def mkModname m
   end
 end
 
-def writeDot(mods, dotFile, color=CHILD_COLOR)
+def writeDot(view, dotFile, color=CHILD_COLOR)
+  mods = view.modules
   f = File.new(dotFile, 'w')
   f.puts "digraph g {"
   f.puts 'graph[fontname="' + FONTNAME + '", splines=true, concentrate=true];'
@@ -237,10 +232,25 @@ def writeDot(mods, dotFile, color=CHILD_COLOR)
         end
       end
     end
-
   end
+  
+  # draw data elements
+  view.data.each do |d|
+    f.puts("#{d.name}[shape=ellipse,style=\"filled\",color=\"greenyellow\"];")
+  end
+
   f.puts "}"
   f.close
+end
+
+def buildSanityCheck v
+  sanityCheck = "run SanityCheck {\n"
+  v.modules.each do |m|
+    m.exports.each do |o|
+      sanityCheck += "  some #{o.name} & SuccessOp\n"
+    end
+  end
+  sanityCheck += "} for 1 but 7 Data, 7 Step, 6 Op\n"
 end
 
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
@@ -252,12 +262,13 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.puts v.to_alloy
   # footers
   f.puts
+  f.puts buildSanityCheck(v)
   f.puts ALLOY_CMDS
   f.close
 end
 
 def drawView(v, dotFile=DOT_FILE, color=CHILD_COLOR)
-  writeDot v.modules, dotFile, color
+  writeDot v, dotFile, color
 end
 
 #########################################
@@ -265,8 +276,7 @@ end
 class Rel
 end
 
-# Unary rel with multiplicity lone
-class Item < Rel
+class UnaryRel < Rel
   attr_reader :name, :type
   def initialize(n, t)
     @name = n
@@ -275,47 +285,53 @@ class Item < Rel
   def to_s
     @name.to_s
   end
-  def to_alloy(ctx=nil)
-    @name.to_s + " : lone " + @type.to_s
-  end
-  def rewrite(ctx)
-    Item.new(@name, @typ)
-  end
   def ==(other)
     other.equal?(self) ||
     (other.instance_of?(self.class) &&
      other.name == self.name &&
      other.type == self.type)
   end
+end
+
+# Unary rel with multiplicity "one"
+class Item < UnaryRel
+  def to_alloy(ctx=nil)
+    @name.to_s + " : one " + @type.to_s
+  end
+  def rewrite(ctx)
+    Item.new(@name, @typ)
+  end
   def dynamic
-    Map.new(name, type, STEP_TYPE, :lone, :set)
+    Map.new(name, type, STEP_TYPE, :one, :set)
   end
 end
 def item(n, t)
   Item.new(n, t)
 end
 
+# Unary rel with multiplicity "lone"
+class Maybe < UnaryRel
+  def to_alloy(ctx=nil)
+    @name.to_s + " : lone " + @type.to_s
+  end
+  def rewrite(ctx)
+    Item.new(@name, @typ)
+  end
+  def dynamic
+    Map.new(name, type, STEP_TYPE, :lone, :set)
+  end
+end
+def maybe(n, t)
+  Maybe.new(n, t)
+end
+
 # Alloy set
-class Bag < Rel
-  attr_reader :name, :type
-  def initialize(n, t)
-    @name = n
-    @type = t
-  end
-  def to_s
-    @name.to_s
-  end
+class Bag < UnaryRel
   def to_alloy(ctx=nil)
     @name.to_s + " : set " + @type.to_s
   end
   def rewrite(ctx)
     Bag.new(@name, @typ)
-  end
-  def ==(other)
-    other.equal?(self) ||
-    (other.instance_of?(self.class) &&
-     other.name == self.name &&
-     other.type == self.type)
   end
   def dynamic
     Map.new(name, type, STEP_TYPE, :set, :set)
@@ -420,7 +436,6 @@ def myuniq(a)
 end
 
 # Expressions
-
 class Expr
   def product otherExpr
     Product.new(self, otherExpr)
@@ -466,6 +481,7 @@ class Expr
   end
 end
 
+# A generic Alloy expression
 class AlloyExpr < Expr
   def initialize(e)
     @e = e
@@ -519,6 +535,7 @@ def e(e)
   expr(e)
 end
 
+# Function application f(e)1,e_2,..,e_n)
 class FuncApp < Expr
   def initialize(f, *e)
     @f = f
@@ -537,7 +554,6 @@ class FuncApp < Expr
 end
 
 class OpExpr < Expr
-
   def initialize(e)
     if e.is_a? String
       @e = e.to_sym
@@ -576,6 +592,7 @@ def op(e)
   OpExpr.new(e)
 end
 
+# Set union "+" in Alloy
 class Union < Expr
   def initialize(e1, e2)
     @e1 = e1
@@ -611,6 +628,7 @@ class Union < Expr
   end
 end
 
+# Set intersection "&" in Alloy
 class Intersect < Expr
   def initialize(e1, e2)
     @e1 = e1
@@ -632,7 +650,7 @@ def intersect(e1, e2)
   Intersect.new(e1, e2)
 end
 
-# Navigation expr
+# Navigation expr "m[i]"
 class Nav < Expr
   def initialize(m, i)
     @map = m
@@ -701,7 +719,8 @@ def arg(arg, op = nil)
   else
     e = op.join expr(arg)
   end
-  FuncApp.new(e(:arg), e)
+  #TODO: Not needed?
+  #FuncApp.new(e(:arg), e)
 end
 
 def trig
@@ -808,6 +827,52 @@ class Not < Formula
 end
 def neg(e)
   Not.new(e)
+end
+
+class ForAll < Formula
+  # v: quantified variable name (String)
+  # t: type expression (Expr)
+  # f: quantified formula (Formula)
+  def initialize(v, t, f)
+    @var = v
+    @typ = t
+    @formula = f
+  end
+  def to_s
+    "ForAll(#{@var}:#{@typ.to_s},#{@formula.to_s})"
+  end
+  def to_alloy(ctx=nil)
+    enclose("all #{@var} : #{@typ.to_alloy(ctx)} | #{@formula.to_alloy(ctx)}")
+  end
+  def rewrite(ctx)
+    ForAll.new(@var, @typ.rewrite(ctx), @formula.rewrite(ctx))
+  end
+end
+def forall(v, t, f)
+  ForAll.new(v, t, f)
+end
+
+class Exist < Formula
+  # v: quantified variable name (String)
+  # t: type expression (Expr)
+  # f: quantified formula (Formula)
+  def initialize(v, t, f)
+    @var = v
+    @typ = t
+    @formula = f
+  end
+  def to_s
+    "Exist(#{@var}:#{@typ.to_s},#{@formula.to_s})"
+  end
+  def to_alloy(ctx=nil)
+    enclose("some #{@var} : #{@typ.to_alloy(ctx)} | #{@formula.to_alloy(ctx)}")
+  end
+  def rewrite(ctx)
+    Exist.new(@var, @typ.rewrite(ctx), @formula.rewrite(ctx))
+  end
+end
+def exists(v, t, f)
+  Exist.new(v, t, f)
 end
 
 class No < Formula

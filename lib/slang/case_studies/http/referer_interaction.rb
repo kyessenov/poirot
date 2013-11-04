@@ -40,6 +40,7 @@ Slang::Dsl.view :RefererInteraction do
 
     op Visit[url: URL] do
       sends { Server::SendReq[url] }
+      sends { Referer::SendReq[url] }
     end
   end
 

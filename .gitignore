@@ -23,3 +23,4 @@ doc/
 alloy/*dot
 alloy/merged.*
 alloy/*pdf
+alloy/*png

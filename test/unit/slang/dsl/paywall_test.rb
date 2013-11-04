@@ -4,7 +4,7 @@ require 'slang/model/refinement'
 
 require 'slang/case_studies/paywall/http'
 require 'slang/case_studies/paywall/paywall'
-require 'slang/case_studies/paywall/referer'
+require 'slang/case_studies/paywall/referer_interaction'
 
 require 'sdsl/myutils'
 

@@ -12,8 +12,9 @@ Mod = Struct.new(:name, :exports, :invokes, :assumptions,
                  :dynamics)
 Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract)
 
-class Mod
+NON_CRITICAL_DATA = "NonCriticalData"
 
+class Mod
   def findExport n
     (exports.select { |e| e.name == n })[0]
   end
@@ -33,16 +34,43 @@ class Mod
     self.isAbstract = true
   end
 
+  def isDynamic field
+    dynamics.map{|e| "#{name}__#{e}"}.include? field.name
+  end
+
+  def rel2Set r
+    rname = "#{r.name}"
+    if isDynamic r
+      rname = "(#{r.name}.first)"
+    end
+    if r.is_a? UnaryRel
+      "#{rname}" 
+    elsif r.is_a? Map
+      "#{r.type1}.#{rname} + #{rname}.#{r.type2}"
+    else
+      raise "Can't convert rel #{r.to_alloy} to sets"
+    end
+  end
+
+  def initDataAccess  
+    initData = []
+    stores.each do |f|
+      initData << (rel2Set f)
+    end
+    creates.each do |d|
+      initData << "#{d}"
+    end
+    initData 
+  end
+
   def to_alloy(ctx)
     # (s1, s2) in decls => sig s1 extends s2
     sigfacts = []
     facts = []
-    fields = []
     alloyChunk = ""
 
     modn = name.to_s    
     # module declaration
-    fields = stores
 
     ctx[:nesting] = 1
     exports.each do |o|
@@ -81,8 +109,8 @@ class Mod
     end
 
     # fields      
-    fields.each do |f|      
-      if dynamics.map{|e| "#{name}__#{e}"}.include? f.name
+    stores.each do |f|      
+      if isDynamic f
         alloyChunk += wrap(f.dynamic.to_alloy(ctx) + ",", 1)
       else
         alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
@@ -90,17 +118,30 @@ class Mod
     end
     alloyChunk += "}"
     # signature facts
+    alloyChunk += wrap("{")
     if not sigfacts.empty? 
-      alloyChunk += wrap("{")
       sigfacts.each do |f|
         alloyChunk += wrap(f, 1)
       end
-      alloyChunk += wrap("}")
+    end
+    
+    # initial data access
+    if not isAbstract then
+      initData = [NON_CRITICAL_DATA]
+      if not (stores.empty? and creates.empty?)
+        initData += initDataAccess
+        extends.each do |e|
+          initData += e.initDataAccess
+        end
+      end
+      alloyChunk += wrap("accesses.first in " + initData.join(" + "), 1)
     end
 
+    alloyChunk += wrap("}")
     # facts
     alloyChunk += writeFacts(name.to_s + "Facts", facts)
   end
+
 end
 
 class ModuleBuilder

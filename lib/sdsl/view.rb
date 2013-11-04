@@ -166,20 +166,20 @@ class View
     end
 
     # write facts about data creation
-    dataFacts = []
-    data.each do |d|
-      dn = d.name
+    # dataFacts = []
+    # data.each do |d|
+    #   dn = d.name
 
-      if creators.has_key? dn
-        dataFacts << "creates.#{dn} in " + creators[dn].join(" + ")
-      else 
-        if critical.any? { |c| c.name == dn }
-          dataFacts << "no creates.#{dn}"
-        end
-      end     
-    end
+    #   if creators.has_key? dn
+    #     dataFacts << "creates.#{dn} in " + creators[dn].join(" + ")
+    #   else 
+    #     if critical.any? { |c| c.name == dn }
+    #       dataFacts << "no creates.#{dn}"
+    #     end
+    #   end 
+    # end
 
-    alloyChunk += writeFacts("dataFacts", dataFacts)
+    # alloyChunk += writeFacts("dataFacts", dataFacts)
 
     
     # write data decls
@@ -432,16 +432,16 @@ def mergeMod(m1, m2, exportsRel, invokesRel)
   assumptions = m2.assumptions + m1.assumptions
   stores = myuniq(m2.stores + m1.stores)
   creates = m2.creates + m1.creates
-  extends = m1
+# extends = m1
   isAbstract = false
   isUniq = m1.isUniq #TODO: Fix it later
-  dynamic = myuniq(m2.dynamics + m1.dynamics)
+  dynamics = myuniq(m2.dynamics + m1.dynamics)
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
           [], isAbstract, isUniq, dynamics)
 end
 
-def buildMapping(v1, v2, refineRel)
+def mergeParts(v1, v2, refineRel)
   dataMap = {}
   opMap = {}
   moduleMap = {}
@@ -486,23 +486,21 @@ def buildMapping(v1, v2, refineRel)
   modRel.each do |from, to|
     sup = v1.findMod(from)    
     sub = v2.findMod(to)
-#     if sup.name == sub.name      
-#       newMod = mergeMod(sup, sub, exportsRel, invokesRel)
-#       moduleMap[sup] = newMod
-#       moduleMap[sub] = newMod
-#     else
-#       newMod = refineMod(sup, sub, exportsRel, invokesRel)
-#       moduleMap[sup] = newMod
-#       moduleMap[sub] = sub.deepclone #TODO: too strong, fix later
-#       moduleMap[sub].isAbstract = true
-#       moduleMap[sub].isUniq = false      
-#     end
-    sub2 = sub.deepclone
-    newMod = refineMod(sup, sub2, exportsRel, invokesRel)
-    moduleMap[sup] = newMod
-    moduleMap[sub] = sub2 #TODO: too strong, fix later
-    moduleMap[sub].setAbstract
-    moduleMap[sub].isUniq = false      
+    if sup.name == sub.name
+      # merging; horizontal composition
+      sub2 = sub.deepclone
+      newMod = mergeMod(sup, sub, exportsRel, invokesRel)
+      moduleMap[sup] = newMod
+      moduleMap[sub] = newMod
+    else
+      # refinement; vertical composition
+      sub2 = sub.deepclone
+      newMod = refineMod(sup, sub2, exportsRel, invokesRel)
+      moduleMap[sup] = newMod
+      moduleMap[sub] = sub2 #TODO: too strong, fix later
+      moduleMap[sub].setAbstract
+      moduleMap[sub].isUniq = false      
+    end
   end
 
   dataMap.update(opMap).update(moduleMap)
@@ -512,7 +510,7 @@ end
 # 1. map from each datatype in (v1 + v2) to a dataype 
 # 2. map from each operation in (v1 + v2) to an operation
 # 3. map from each module in (v1 + v2) to a module
-def merge(v1, v2, mapping, refineRel)
+def buildView(v1, v2, mapping, refineRel)
   modRel = refineRel[:Module]
   exportsRel = refineRel[:Exports]
   invokesRel = refineRel[:Invokes]
@@ -624,17 +622,51 @@ def findModsWithExport(modules, n)
   (modules.select { |m| m.exports.any? { |e| e.name == n }})
 end
 
+def inferMapping(v1, v2, refineRel) 
+  if not refineRel.has_key? :Module then refineRel[:Module] = {} end
+  if not refineRel.has_key? :Exports then refineRel[:Exports] = {} end
+  if not refineRel.has_key? :Invokes then refineRel[:Invokes] = {} end
+  if not refineRel.has_key? :Data then refineRel[:Data] = {} end
+
+  newRel = refineRel.clone
+  v1.modules.each do |m1|
+    v2.modules.each do |m2|
+      if m1.name == m2.name then
+        newRel[:Module][m1.name] = m2.name
+        # check exports
+        m1.exports.each do |e1|
+          m2.exports.each do |e2|
+            if e1.name == e2.name then
+              newRel[:Exports][e1.name] = e2.name
+            end
+          end
+        end
+
+        # check invokes
+        m1.invokes.each do |i1|
+          m2.invokes.each do |i2|
+            if i1.name == i2.name then
+              newRel[:Invokes][i1.name] = i2.name
+            end
+          end
+        end
+      end
+    end
+  end
+  return newRel
+end
 
 def composeViews(v1, v2, refineRel = {})
   puts "*** Attempting to merge #{v1.name} and #{v2.name} ***:"
   # Given refinement relations, derive a mapping between elements of two views
-  mapping = buildMapping(v1, v2, refineRel)
+  refineRel = inferMapping(v1, v2, refineRel)  
+  mapping = mergeParts(v1, v2, refineRel)
 
 #  pp "*** Intermediate Mapping:"
 #  pp mapping
 
   # Construct a new view based on the relations between the two views
-  mergeResult = merge(v1, v2, mapping, refineRel)
+  mergeResult = buildView(v1, v2, mapping, refineRel)
 
   puts "*** Successfully merge #{v1.name} and #{v2.name} ***:"
   puts ""

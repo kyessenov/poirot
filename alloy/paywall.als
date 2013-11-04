@@ -4,29 +4,34 @@ open models/crypto[Data]
 -- module NYTimes
 one sig NYTimes extends Module {
 	NYTimes__articles : Link set -> lone Article,
-	NYTimes__limit : lone Int,
+	NYTimes__limit : one Int,
 }{
-	all o : this.receives[NYTimes__GetLink] | arg[o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed)] < NYTimes__limit
+	all o : this.receives[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) < NYTimes__limit
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)), 1]
+	accesses.first in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Article + NYTimes__limit + Article
 }
 
 -- module Client
 one sig Client extends Module {
-	Client__numAccessed : Int lone -> set Step,
+	Client__numAccessed : Int one -> set Step,
 }{
-	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
+	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = o.(Client__SendPage <: Client__SendPage__newCounter)
 	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
 	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
+	accesses.first in NonCriticalData + (Client__numAccessed.first)
 }
 
 -- module Reader
 one sig Reader extends Module {
+}{
+	accesses.first in NonCriticalData
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
@@ -35,8 +40,8 @@ fact trustedModuleFacts {
 
 -- operation NYTimes__GetLink
 sig NYTimes__GetLink extends Op {
-	NYTimes__GetLink__link : lone Link,
-	NYTimes__GetLink__numAccessed : lone Int,
+	NYTimes__GetLink__link : one Link,
+	NYTimes__GetLink__numAccessed : one Int,
 }{
 	args = NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
 	no ret
@@ -46,8 +51,8 @@ sig NYTimes__GetLink extends Op {
 
 -- operation Client__SendPage
 sig Client__SendPage extends Op {
-	Client__SendPage__page : lone Page,
-	Client__SendPage__newCounter : lone Int,
+	Client__SendPage__page : one Page,
+	Client__SendPage__newCounter : one Int,
 }{
 	args = Client__SendPage__page + Client__SendPage__newCounter
 	no ret
@@ -57,7 +62,7 @@ sig Client__SendPage extends Op {
 
 -- operation Client__SelectLink
 sig Client__SelectLink extends Op {
-	Client__SelectLink__link : lone Link,
+	Client__SelectLink__link : one Link,
 }{
 	args = Client__SelectLink__link
 	no ret
@@ -67,17 +72,12 @@ sig Client__SelectLink extends Op {
 
 -- operation Reader__DisplayPage
 sig Reader__DisplayPage extends Op {
-	Reader__DisplayPage__page : lone Page,
+	Reader__DisplayPage__page : one Page,
 }{
 	args = Reader__DisplayPage__page
 	no ret
 	sender in Client
 	receiver in Reader
-}
-
--- fact dataFacts
-fact dataFacts {
-	creates.Article in NYTimes
 }
 
 -- datatype declarations
@@ -99,21 +99,21 @@ fact criticalDataFacts {
 	CriticalData = Article
 }
 
+run SanityCheck {
+  some NYTimes__GetLink & SuccessOp
+  some Client__SendPage & SuccessOp
+  some Client__SelectLink & SuccessOp
+  some Reader__DisplayPage & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op
