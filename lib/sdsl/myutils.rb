@@ -436,7 +436,6 @@ def myuniq(a)
 end
 
 # Expressions
-
 class Expr
   def product otherExpr
     Product.new(self, otherExpr)
@@ -482,6 +481,7 @@ class Expr
   end
 end
 
+# A generic Alloy expression
 class AlloyExpr < Expr
   def initialize(e)
     @e = e
@@ -535,6 +535,7 @@ def e(e)
   expr(e)
 end
 
+# Function application f(e)1,e_2,..,e_n)
 class FuncApp < Expr
   def initialize(f, *e)
     @f = f
@@ -553,7 +554,6 @@ class FuncApp < Expr
 end
 
 class OpExpr < Expr
-
   def initialize(e)
     if e.is_a? String
       @e = e.to_sym
@@ -592,6 +592,7 @@ def op(e)
   OpExpr.new(e)
 end
 
+# Set union "+" in Alloy
 class Union < Expr
   def initialize(e1, e2)
     @e1 = e1
@@ -627,6 +628,7 @@ class Union < Expr
   end
 end
 
+# Set intersection "&" in Alloy
 class Intersect < Expr
   def initialize(e1, e2)
     @e1 = e1
@@ -648,7 +650,7 @@ def intersect(e1, e2)
   Intersect.new(e1, e2)
 end
 
-# Navigation expr
+# Navigation expr "m[i]"
 class Nav < Expr
   def initialize(m, i)
     @map = m
