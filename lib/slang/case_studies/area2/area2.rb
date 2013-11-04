@@ -15,11 +15,10 @@ Slang::Dsl.view :Area2 do
     tokens: StudentID ** Token
   ] do
     assumption {
-      #TODO: Throws an error
-      all s: StudentID, p: Profile do
-        p.id == s if profiles.contains?(s ** p) 
-      end
-#      profiles.all? {|si, p| p.id == si }
+      # all s: StudentID, p: Profile do
+      #   p.id == s if profiles.contains?(s ** p) 
+      # end
+      profiles.all? {|si, p| p.id == si }
     }
 
     creates Token

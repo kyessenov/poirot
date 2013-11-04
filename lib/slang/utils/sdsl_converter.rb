@@ -323,6 +323,29 @@ module Slang
         end
       end
 
+      def convert_quantexpr(q)
+        _convert_quantexpr(q, 0)
+      end
+
+      def _convert_quantexpr(q, pos)
+        var = q.decl[pos]
+        var_name = var.name
+        var_domain = var.expr
+        quant_body = if pos == q.arity - 1
+                       convert_expr(q.body)
+                     else
+                       _convert_quantexpr(q, pos+1)
+                     end   
+        mname = if q.all?
+                  :forall
+                elsif q.exists?
+                  :exists
+                else
+                  fail "unsupported quantifier kind: #{q.kind}"
+                end
+        method(mname).call(var_name, var_domain, quant_body)
+      end
+
       def convert_fieldexpr(f)
         fldname = _arg_name(f.__field)
         if f.__field.type.has_modifier?(:dynamic)
