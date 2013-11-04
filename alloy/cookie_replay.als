@@ -7,7 +7,7 @@ one sig Server extends Module {
 }{
 	all o : this.receives[Server__SendReq] | (some (o.(Server__SendReq <: Server__SendReq__cookies) & Server__sessions[o.(Server__SendReq <: Server__SendReq__url)]))
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
-	accesses.first in URL.Server__sessions + Server__sessions.Cookie
+	accesses.first in NonCriticalData + URL.Server__sessions + Server__sessions.Cookie
 }
 
 -- module Browser
@@ -18,12 +18,13 @@ one sig Browser extends Module {
 	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr) -> o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie))
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url)) and o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr])
-	accesses.first in Addr.(Browser__cookies.first) + (Browser__cookies.first).Cookie
+	accesses.first in NonCriticalData + Addr.(Browser__cookies.first) + (Browser__cookies.first).Cookie
 }
 
 -- module User
 one sig User extends Module {
 }{
+	accesses.first in NonCriticalData
 }
 
 

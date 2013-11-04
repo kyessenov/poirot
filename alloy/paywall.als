@@ -10,7 +10,7 @@ one sig NYTimes extends Module {
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)), 1]
-	accesses.first in Link.NYTimes__articles + NYTimes__articles.Article + NYTimes__limit + Article
+	accesses.first in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Article + NYTimes__limit + Article
 }
 
 -- module Client
@@ -23,12 +23,13 @@ one sig Client extends Module {
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
-	accesses.first in (Client__numAccessed.first)
+	accesses.first in NonCriticalData + (Client__numAccessed.first)
 }
 
 -- module Reader
 one sig Reader extends Module {
 }{
+	accesses.first in NonCriticalData
 }
 
 

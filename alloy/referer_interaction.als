@@ -7,7 +7,7 @@ one sig Server extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
-	accesses.first in URL.Server__responses + Server__responses.HTML
+	accesses.first in NonCriticalData + URL.Server__responses + Server__responses.HTML
 }
 
 -- module Referer
@@ -16,7 +16,7 @@ one sig Referer extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Referer__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Referer__responses[o.trigger.((Referer__SendReq <: Referer__SendReq__url))]
-	accesses.first in URL.Referer__responses + Referer__responses.HTML
+	accesses.first in NonCriticalData + URL.Referer__responses + Referer__responses.HTML
 }
 
 -- module Browser
@@ -31,6 +31,7 @@ one sig Browser extends Module {
 		)
 	all o : this.sends[Referer__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Referer__SendReq] | o.(Referer__SendReq <: Referer__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url))
+	accesses.first in NonCriticalData
 }
 
 -- module User
@@ -38,6 +39,7 @@ one sig User extends Module {
 }{
 	all o : this.sends[Browser__FollowLink] | triggeredBy[o,User__DisplayHTML]
 	all o : this.sends[Browser__FollowLink] | (some (o.trigger.((User__DisplayHTML <: User__DisplayHTML__html)).HTML__links & o.(Browser__FollowLink <: Browser__FollowLink__url)))
+	accesses.first in NonCriticalData
 }
 
 

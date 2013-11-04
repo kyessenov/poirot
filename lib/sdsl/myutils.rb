@@ -827,6 +827,52 @@ def neg(e)
   Not.new(e)
 end
 
+class ForAll < Formula
+  # v: quantified variable name (String)
+  # t: type expression (Expr)
+  # f: quantified formula (Formula)
+  def initialize(v, t, f)
+    @var = v
+    @typ = t
+    @formula = f
+  end
+  def to_s
+    "ForAll(#{@var}:#{@typ.to_s},#{@formula.to_s})"
+  end
+  def to_alloy(ctx=nil)
+    enclose("all #{@var} : #{@typ.to_alloy(ctx)} | #{@formula.to_alloy(ctx)}")
+  end
+  def rewrite(ctx)
+    ForAll.new(@var, @typ.rewrite(ctx), @formula.rewrite(ctx))
+  end
+end
+def forall(v, t, f)
+  ForAll.new(v, t, f)
+end
+
+class Exist < Formula
+  # v: quantified variable name (String)
+  # t: type expression (Expr)
+  # f: quantified formula (Formula)
+  def initialize(v, t, f)
+    @var = v
+    @typ = t
+    @formula = f
+  end
+  def to_s
+    "Exist(#{@var}:#{@typ.to_s},#{@formula.to_s})"
+  end
+  def to_alloy(ctx=nil)
+    enclose("some #{@var} : #{@typ.to_alloy(ctx)} | #{@formula.to_alloy(ctx)}")
+  end
+  def rewrite(ctx)
+    Exist.new(@var, @typ.rewrite(ctx), @formula.rewrite(ctx))
+  end
+end
+def exists(v, t, f)
+  Exist.new(v, t, f)
+end
+
 class No < Formula
   def initialize(e)
     @expr = e

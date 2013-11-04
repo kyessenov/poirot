@@ -7,7 +7,7 @@ one sig Server extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
-	accesses.first in URL.Server__responses + Server__responses.HTML
+	accesses.first in NonCriticalData + URL.Server__responses + Server__responses.HTML
 }
 
 -- module Script
@@ -16,7 +16,7 @@ sig Script extends Module {
 	Script__transformed : one HTML,
 }{
 	all o : this.receives[Script__Exec] | (o.(Script__Exec <: Script__Exec__resp) = Script__original and o.(Script__Exec <: Script__Exec__ret) = Script__transformed)
-	accesses.first in Script__original + Script__transformed
+	accesses.first in NonCriticalData + Script__original + Script__transformed
 }
 
 -- module Browser
@@ -30,12 +30,13 @@ one sig Browser extends Module {
 	all o : this.sends[Script__Exec] | o.(Script__Exec <: Script__Exec__ret) = Browser__transform[o.trigger.((Browser__SendResp <: Browser__SendResp__resp))]
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url))
-	accesses.first in HTML.Browser__transform + Browser__transform.HTML
+	accesses.first in NonCriticalData + HTML.Browser__transform + Browser__transform.HTML
 }
 
 -- module User
 one sig User extends Module {
 }{
+	accesses.first in NonCriticalData
 }
 
 

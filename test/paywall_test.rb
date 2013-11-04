@@ -7,10 +7,10 @@ $LOAD_PATH.unshift File.expand_path('../../../arby/lib', __FILE__)
 require 'sdsl/myutils'
 
 require "slang/case_studies/paywall/paywall"
-require "slang/case_studies/paywall/http"
-require "slang/case_studies/paywall/referer_interaction"
-require "slang/case_studies/paywall/cookie_replay"
-require "slang/case_studies/paywall/javascript_hampering"
+require "slang/case_studies/http/http"
+require "slang/case_studies/http/referer_interaction"
+require "slang/case_studies/http/cookie_replay"
+require "slang/case_studies/http/javascript_hampering"
 
 def dump(view, name, color="beige")
   dumpAlloy(view, "../alloy/#{name}.als")
