@@ -31,7 +31,7 @@ class DatatypeBuilder
   end
 
   def setSingleton
-    @isSingletone = true
+    @isSingleton = true
   end
 
   def build name

@@ -63,6 +63,9 @@ module Slang
           # abstract
           db.setAbstract if meta.abstract?
 
+          # multiplicity
+          db.setSingleton if meta.one?
+
           # super
           db.extends _data_name(meta.parent_sig)
 

@@ -93,15 +93,15 @@ sig Token extends Data {
 abstract sig UserType extends Data {
 }{
 }
-sig TypeStudent extends UserType {
+one sig TypeStudent extends UserType {
 }{
 	no fields
 }
-sig TypeAdmin extends UserType {
+one sig TypeAdmin extends UserType {
 }{
 	no fields
 }
-sig TypeFaculty extends UserType {
+one sig TypeFaculty extends UserType {
 }{
 	no fields
 }
