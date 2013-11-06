@@ -4,13 +4,14 @@ require 'rubygems'
 require 'docile'
 require 'sdsl/myutils'
 
-Datatype = Struct.new(:name, :fields, :extends, :isAbstract)
+Datatype = Struct.new(:name, :fields, :extends, :isAbstract, :isSingleton)
 
 class DatatypeBuilder
   def initialize 
     @fields = []
     @extends = :Data
     @isAbstract = false
+    @isSingleton = false
   end
 
   def field f 
@@ -29,8 +30,12 @@ class DatatypeBuilder
     @isAbstract = true
   end
 
+  def setSingleton
+    @isSingletone = true
+  end
+
   def build name
-    Datatype.new(name, @fields, @extends, @isAbstract)
+    Datatype.new(name, @fields, @extends, @isAbstract, @isSingleton)
   end
 end
 
@@ -39,6 +44,7 @@ class Datatype
     alloyChunk = ""
     
     if isAbstract then alloyChunk += "abstract " end
+    if isSingleton then alloyChunk += "one " end
 
     alloyChunk += wrap("sig #{name} extends #{extends} {")
     fields.each do |f|

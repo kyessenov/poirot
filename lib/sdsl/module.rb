@@ -10,7 +10,7 @@ Mod = Struct.new(:name, :exports, :invokes, :assumptions,
                  :stores, :creates,
                  :extends, :isAbstract, :isUniq,
                  :dynamics)
-Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract)
+Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract, :modifies)
 
 NON_CRITICAL_DATA = "NonCriticalData"
 
@@ -157,9 +157,10 @@ class ModuleBuilder
     @dynamics = []
   end
 
-  def exports(op, constraints = {})   
+  def exports(op, constraints = {}, modifies = [])   
     if constraints.empty?
-      @exports << Op.new(op, {:when => [], :args => []}, nil, nil, false)
+      @exports << Op.new(op, {:when => [], :args => []}, nil, nil, false, 
+                         modifies)
     else
       if not constraints.has_key? :args
         constraints[:args] = []
@@ -167,11 +168,11 @@ class ModuleBuilder
       if not constraints.has_key? :when
         constraints[:when] = []
       end
-      @exports << Op.new(op, constraints, nil, nil, false)
+      @exports << Op.new(op, constraints, nil, nil, false, modifies)
     end
   end
 
-  def invokes(op, constraints = {})
+  def invokes(op, constraints = {}, modifies = [])
     opnames = []
     if op.is_a? Array
       opnames = op 
@@ -181,12 +182,12 @@ class ModuleBuilder
 
     opnames.each do |o|    
       if constraints.empty?
-        @invokes << Op.new(o, {:when => []}, nil, nil, false)
+        @invokes << Op.new(o, {:when => []}, nil, nil, false, modifies)
       else 
         if not constraints.has_key? :when
           constraints[:when] = []
         end
-        @invokes << Op.new(o, constraints, nil, nil, false)
+        @invokes << Op.new(o, constraints, nil, nil, false, modifies)
       end
     end
   end
