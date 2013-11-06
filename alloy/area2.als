@@ -11,7 +11,7 @@ one sig A2Site extends Module {
 	all o : this.receives[A2Site__ViewProfile] | o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles.(o.pre)[o.(A2Site__ViewProfile <: A2Site__ViewProfile__id)]
 	all o : this.receives[A2Site__EditProfile] | o.(A2Site__EditProfile <: A2Site__EditProfile__t) = A2Site__tokens[o.(A2Site__EditProfile <: A2Site__EditProfile__id)]
 	all o : this.receives[A2Site__EditProfile] | A2Site__profiles.(o.post) = (A2Site__profiles.(o.pre) + o.(A2Site__EditProfile <: A2Site__EditProfile__id) -> o.(A2Site__EditProfile <: A2Site__EditProfile__newProfile))
-	(all s : StudentID.to_alloy[{:nesting=>1, :op=>"A2Site__EditProfile"}] | (all p : Profile.to_alloy[{:nesting=>1, :op=>"A2Site__EditProfile"}] | ((some (A2Site__profiles.(o.pre) & s -> p)) implies p.Profile__id = s)))
+	(all si : StudentID | (all p : Profile | ((some (A2Site__profiles.(o.pre) & si -> p)) implies p.Profile__id = si)))
 	accesses.first in NonCriticalData + StudentID.(A2Site__profiles.first) + (A2Site__profiles.first).Profile + StudentID.A2Site__advisor + A2Site__advisor.FacultyID + StudentID.A2Site__tokens + A2Site__tokens.Token + Token + Profile
 }
 

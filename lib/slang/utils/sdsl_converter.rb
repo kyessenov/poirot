@@ -330,7 +330,7 @@ module Slang
       def _convert_quantexpr(q, pos)
         var = q.decl[pos]
         var_name = var.name
-        var_domain = var.expr
+        var_domain = convert_expr(var.expr)
         quant_body = if pos == q.arity - 1
                        convert_expr(q.body)
                      else
