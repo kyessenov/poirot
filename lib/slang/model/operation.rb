@@ -69,7 +69,10 @@ module Slang
     end
 
     class ArgOfExpr < Alloy::Ast::Expr::UnaryExpr
-      def initialize(sub) super("arg", sub) end
+      def initialize(sub) 
+        super("arg", sub) 
+        set_type(sub.__type)
+      end
     end
 
     module ArgExpr
