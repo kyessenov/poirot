@@ -35,7 +35,7 @@ Slang::Dsl.view :Area2 do
       #   userType[token.encodes] == Admin
 #      userType[token.encodes] == ret.id
 #      }
-#      effects { ret == profiles[token.encodes] }
+      effects { ret == profiles[token.encodes] }
     end
 
   end
