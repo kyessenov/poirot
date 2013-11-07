@@ -32,10 +32,12 @@ Slang::Dsl.view :Area2 do
     op ViewProfile[uid: UserID, token: Token, ret: Profile] do
       guard { 
         (userType[token.encodes] == TypeStudent and ret.id == token.encodes) or
-        userType[token.encodes] == TypeFaculty or
-        userType[token.encodes] == TypeAdmin
+         userType[token.encodes] == TypeFaculty or
+         userType[token.encodes] == TypeAdmin
       }
-      effects { self.ret = profiles[uid] }
+      effects { 
+        self.ret = profiles[uid] 
+      }
     end
   end
   
@@ -43,7 +45,9 @@ Slang::Dsl.view :Area2 do
      userRecords: (dynamic set UserRecord)
   ] do
     op GetUserRecords[ret: (set UserRecord)] do
-      effects { self.ret = userRecords }
+      effects { 
+        self.ret = userRecords 
+      }
     end
   end
 
