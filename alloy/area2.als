@@ -24,6 +24,7 @@ one sig A2Site extends Module {
 one sig DirectoryService extends Module {
 	DirectoryService__userRecords : UserRecord set -> set Step,
 }{
+	all o : this.receives[DirectoryService__AddUserRecord] | DirectoryService__userRecords.(o.post) = (DirectoryService__userRecords.(o.pre) + o.(DirectoryService__AddUserRecord <: DirectoryService__AddUserRecord__newRecord))
 	all o : this.receives[DirectoryService__GetUserRecords] | o.(DirectoryService__GetUserRecords <: DirectoryService__GetUserRecords__ret) = DirectoryService__userRecords.(o.pre)
 	accesses.first in NonCriticalData + (DirectoryService__userRecords.first)
 }
@@ -68,6 +69,15 @@ sig A2Site__ViewProfile extends Op {
 	ret = A2Site__ViewProfile__ret
 	sender in Faculty + Student + Admin
 	receiver in A2Site
+}
+
+-- operation DirectoryService__AddUserRecord
+sig DirectoryService__AddUserRecord extends Op {
+	DirectoryService__AddUserRecord__newRecord : one UserRecord,
+}{
+	args = DirectoryService__AddUserRecord__newRecord
+	no ret
+	receiver in DirectoryService
 }
 
 -- operation DirectoryService__GetUserRecords
@@ -125,6 +135,7 @@ fact criticalDataFacts {
 
 run SanityCheck {
   some A2Site__ViewProfile & SuccessOp
+  some DirectoryService__AddUserRecord & SuccessOp
   some DirectoryService__GetUserRecords & SuccessOp
 } for 1 but 7 Data, 7 Step, 6 Op
 

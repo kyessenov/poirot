@@ -43,6 +43,10 @@ Slang::Dsl.view :Area2 do
   trusted DirectoryService [
      userRecords: (dynamic set UserRecord)
   ] do
+    op AddUserRecord[newRecord: UserRecord] do
+      effects { self.userRecords = self.userRecords + newRecord }
+    end
+
     op GetUserRecords[ret: (set UserRecord)] do
       effects { ret == self.userRecords }
     end
