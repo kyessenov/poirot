@@ -6,7 +6,7 @@ one sig A2Site extends Module {
 	A2Site__profiles : UserID set -> lone Profile,
 	A2Site__userType : UserID set -> lone UserType,
 }{
-	all o : this.receives[A2Site__ViewProfile] | 
+	all o : this.receives[A2Site__ViewProfile] | (
 		(
 			((A2Site__userType[o.(A2Site__ViewProfile <: A2Site__ViewProfile__token).Token__encodes] = TypeStudent and o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret).Profile__id = o.(A2Site__ViewProfile <: A2Site__ViewProfile__token).Token__encodes)
 			or
@@ -14,8 +14,7 @@ one sig A2Site extends Module {
 			)
 		or
 		A2Site__userType[o.(A2Site__ViewProfile <: A2Site__ViewProfile__token).Token__encodes] = TypeAdmin
-		)
-	all o : this.receives[A2Site__ViewProfile] | o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles[o.(A2Site__ViewProfile <: A2Site__ViewProfile__uid)]
+		) and o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles[o.(A2Site__ViewProfile <: A2Site__ViewProfile__uid)])
 	(all uid : UserID | (all p : Profile | ((some (A2Site__profiles & uid -> p)) implies p.Profile__id = uid)))
 	accesses.first in NonCriticalData + UserID.A2Site__profiles + A2Site__profiles.Profile + UserID.A2Site__userType + A2Site__userType.UserType + Token + Profile
 }

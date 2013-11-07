@@ -14,15 +14,15 @@ module Slang
     class SdslConverter
 
       def initialize
-        @assignlhs = false
+        @assignlhs          = false
+        @mod_field_names    = Set.new
         @must_find_in_cache = nil
       end
 
       # @param view [Module(? < Slang::Model::View)]
       # @return [View]
       def convert_view(view)
-        @assignlhs = false
-        @must_find_in_cache = nil
+        initialize
 
         vb = ViewBuilder.new
 
@@ -136,10 +136,15 @@ module Slang
       # @param op [Class(? < Slang::Model::Operation)]
       # @return [Op]
       def convert_op_to_exports(op)
-        Op.new "#{_op_name op}",
+        @mod_field_names = Set.new
+        ans = Op.new "#{_op_name op}"
+        ans.constraints = {
           :args => op.meta.fields.map(&method(:convert_arg)),
           :when => (op.meta.guards.map(&method(:convert_guard)) +
                     op.meta.effects.map(&method(:convert_effect)))
+        }
+        ans.modifies = @mod_field_names.to_a
+        ans
       end
 
       # @param op [Class(? < Slang::Model::Operation)]
@@ -353,6 +358,7 @@ module Slang
         fldname = _arg_name(f.__field)
         if f.__field.type.has_modifier?(:dynamic)
           prepost = @assignlhs ? "post" : "pre"
+          @mod_field_names << fldname if @assignlhs
           fldname = "#{fldname}.(o.#{prepost})"
         end
         e(fldname)
