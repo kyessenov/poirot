@@ -180,11 +180,9 @@ class View
     # end
 
     # alloyChunk += writeFacts("dataFacts", dataFacts)
-
     
     # write data decls
-    alloyChunk += writeComment("datatype declarations")
-    dataDecl = []
+    alloyChunk += writeComment("datatype declarations")   
     data.each do |d|
       alloyChunk += d.to_alloy(ctx)
     end
@@ -307,7 +305,7 @@ def refineExports(sup, sub, exportsRel)
         exports << Op.new(n, 
                           {:when => (o.constraints[:when]),
                             :args => (o.constraints[:args])}, o2, 
-                          nil, false)
+                          nil, false, o.modifies)
         if exportsRel.has_key? o2.name
           o2.isAbstract = true
         end
@@ -334,7 +332,7 @@ def refineInvokes(sup, sub, invokesRel)
         o2 = matches[0]    
         invokes << Op.new(n, 
                           {:when => (o.constraints[:when])},
-                          o2, nil, false)  
+                          o2, nil, false, o.modifies)  
 # TODO: Is this right? Too weak?        
 #        subInvokes.delete(o2)
         next
@@ -361,7 +359,7 @@ def abstractExports(m1, m2, exportsRel)
                             :args => myuniq(o.constraints[:args] + 
                                             o2.constraints[:args])}, 
                           nil, nil,
-                          false)
+                          false, o.modifies + o2.modifies)
         m2Exports.delete(o2)
         next
       end
@@ -388,7 +386,7 @@ def abstractInvokes(m1, m2, invokesRel)
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when])},
                           nil, nil,
-                          false)
+                          false, o.modifies + o2.modifies)
         m2Invokes.delete(o2)
         next
       end
