@@ -3,16 +3,23 @@ open models/crypto[Data]
 
 -- module EndPoint
 sig EndPoint extends Module {
+}{
+	accesses.first in NonCriticalData + Packet
 }
+
 -- module Channel
 one sig Channel extends Module {
 }{
 	all o : this.sends[Eavesdropper__Emit] | triggeredBy[o,Channel__Probe]
+	accesses.first in NonCriticalData
 }
 
 -- module Eavesdropper
 one sig Eavesdropper extends Module {
+}{
+	accesses.first in NonCriticalData
 }
+
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
@@ -59,11 +66,6 @@ sig Eavesdropper__Emit extends Op {
 	receiver in Eavesdropper
 }
 
--- fact dataFacts
-fact dataFacts {
-	creates.Packet in EndPoint
-}
-
 -- datatype declarations
 sig Packet extends Data {
 }{
@@ -71,21 +73,21 @@ sig Packet extends Data {
 }
 sig OtherData extends Data {}{ no fields }
 
+run SanityCheck {
+  some EndPoint__Deliver & SuccessOp
+  some Channel__Transmit & SuccessOp
+  some Channel__Probe & SuccessOp
+  some Eavesdropper__Emit & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op

@@ -2,9 +2,9 @@ require 'test_helper'
 
 require 'slang/model/refinement'
 
-require 'slang/case_studies/paywall/http'
+require 'slang/case_studies/http/http'
 require 'slang/case_studies/paywall/paywall'
-require 'slang/case_studies/paywall/referer_interaction'
+# require 'slang/case_studies/paywall/referer_interaction'
 
 require 'sdsl/myutils'
 

@@ -6,23 +6,26 @@ one sig User extends Module {
 	User__intents : set URI,
 }{
 	all o : this.sends[Client__Visit] | (some (User__intents & o.(Client__Visit <: Client__Visit__dest)))
+	accesses.first in NonCriticalData + User__intents
 }
 
 -- module TrustedServer
 one sig TrustedServer extends Module {
 	TrustedServer__cookies : Op set -> lone Cookie,
-	TrustedServer__addr : lone Hostname,
+	TrustedServer__addr : one Hostname,
 	TrustedServer__protectedOps : set Op,
 }{
-	all o : this.receives[TrustedServer__HttpReq] | ((some (TrustedServer__protectedOps & o)) implies arg[o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie)] = TrustedServer__cookies[o])
+	all o : this.receives[TrustedServer__HttpReq] | ((some (TrustedServer__protectedOps & o)) implies o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = TrustedServer__cookies[o])
 	all o : this.sends[Client__HttpResp] | triggeredBy[o,TrustedServer__HttpReq]
+	accesses.first in NonCriticalData + Op.TrustedServer__cookies + TrustedServer__cookies.Cookie + TrustedServer__addr + TrustedServer__protectedOps + DOM + Cookie
 }
 
 -- module MaliciousServer
 one sig MaliciousServer extends Module {
-	MaliciousServer__addr : lone Hostname,
+	MaliciousServer__addr : one Hostname,
 }{
 	all o : this.sends[Client__HttpResp] | triggeredBy[o,MaliciousServer__HttpReq]
+	accesses.first in NonCriticalData + MaliciousServer__addr + DOM
 }
 
 -- module Client
@@ -39,6 +42,7 @@ one sig Client extends Module {
 		or
 		((triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__HttpResp <: Client__HttpResp__addr))]) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr))))
 		)
+	accesses.first in NonCriticalData + URI.Client__cookies + Client__cookies.Cookie
 }
 
 
@@ -49,8 +53,8 @@ fact trustedModuleFacts {
 
 -- operation TrustedServer__HttpReq
 sig TrustedServer__HttpReq extends Op {
-	TrustedServer__HttpReq__cookie : lone Cookie,
-	TrustedServer__HttpReq__addr : lone URI,
+	TrustedServer__HttpReq__cookie : one Cookie,
+	TrustedServer__HttpReq__addr : one URI,
 }{
 	args = TrustedServer__HttpReq__cookie + TrustedServer__HttpReq__addr
 	no ret
@@ -60,8 +64,8 @@ sig TrustedServer__HttpReq extends Op {
 
 -- operation MaliciousServer__HttpReq
 sig MaliciousServer__HttpReq extends Op {
-	MaliciousServer__HttpReq__cookie : lone Cookie,
-	MaliciousServer__HttpReq__addr : lone URI,
+	MaliciousServer__HttpReq__cookie : one Cookie,
+	MaliciousServer__HttpReq__addr : one URI,
 }{
 	args = MaliciousServer__HttpReq__cookie + MaliciousServer__HttpReq__addr
 	no ret
@@ -71,7 +75,7 @@ sig MaliciousServer__HttpReq extends Op {
 
 -- operation Client__Visit
 sig Client__Visit extends Op {
-	Client__Visit__dest : lone URI,
+	Client__Visit__dest : one URI,
 }{
 	args = Client__Visit__dest
 	no ret
@@ -81,19 +85,13 @@ sig Client__Visit extends Op {
 
 -- operation Client__HttpResp
 sig Client__HttpResp extends Op {
-	Client__HttpResp__dom : lone DOM,
-	Client__HttpResp__addr : lone URI,
+	Client__HttpResp__dom : one DOM,
+	Client__HttpResp__addr : one URI,
 }{
 	args = Client__HttpResp__dom + Client__HttpResp__addr
 	no ret
 	sender in TrustedServer + MaliciousServer
 	receiver in Client
-}
-
--- fact dataFacts
-fact dataFacts {
-	creates.Cookie in TrustedServer
-	creates.DOM in TrustedServer + MaliciousServer
 }
 
 -- datatype declarations
@@ -117,7 +115,7 @@ sig Addr extends Data {
 	no fields
 }
 sig URI extends Data {
-	URI__addr : lone Addr,
+	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
 	fields = URI__addr + URI__params
@@ -126,7 +124,7 @@ abstract sig HtmlTag extends Data {
 }{
 }
 sig ImgTag extends HtmlTag {
-	ImgTag__src : lone URI,
+	ImgTag__src : one URI,
 }{
 	fields = ImgTag__src
 }
@@ -137,21 +135,21 @@ sig DOM extends Payload {
 }
 sig OtherData extends Data {}{ no fields }
 
+run SanityCheck {
+  some TrustedServer__HttpReq & SuccessOp
+  some MaliciousServer__HttpReq & SuccessOp
+  some Client__Visit & SuccessOp
+  some Client__HttpResp & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op

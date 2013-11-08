@@ -7,19 +7,24 @@ one sig User extends Module {
 }{
 	all o : this.sends[Client__Visit] | (some (User__intents & o.(Client__Visit <: Client__Visit__dest)))
 	(not (some (User__intents & MaliciousServer.MaliciousServer__addr)))
+	accesses.first in NonCriticalData + User__intents
 }
 
 -- module TrustedServer
 one sig TrustedServer extends Module {
-	TrustedServer__addr : lone URI,
+	TrustedServer__addr : one URI,
 }{
 	all o : this.sends[Client__HttpResp] | triggeredBy[o,TrustedServer__HttpReq]
+	accesses.first in NonCriticalData + TrustedServer__addr
 }
 
 -- module MaliciousServer
 one sig MaliciousServer extends Module {
-	MaliciousServer__addr : lone URI,
+	MaliciousServer__addr : one URI,
+}{
+	accesses.first in NonCriticalData + MaliciousServer__addr
 }
+
 -- module Client
 one sig Client extends Module {
 }{
@@ -33,6 +38,7 @@ one sig Client extends Module {
 		or
 		(triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__HttpResp <: Client__HttpResp__redirectTo)))
 		)
+	accesses.first in NonCriticalData
 }
 
 
@@ -43,7 +49,7 @@ fact trustedModuleFacts {
 
 -- operation TrustedServer__HttpReq
 sig TrustedServer__HttpReq extends Op {
-	TrustedServer__HttpReq__addr : lone URI,
+	TrustedServer__HttpReq__addr : one URI,
 }{
 	args = TrustedServer__HttpReq__addr
 	no ret
@@ -53,7 +59,7 @@ sig TrustedServer__HttpReq extends Op {
 
 -- operation MaliciousServer__HttpReq
 sig MaliciousServer__HttpReq extends Op {
-	MaliciousServer__HttpReq__addr : lone URI,
+	MaliciousServer__HttpReq__addr : one URI,
 }{
 	args = MaliciousServer__HttpReq__addr
 	no ret
@@ -63,7 +69,7 @@ sig MaliciousServer__HttpReq extends Op {
 
 -- operation Client__Visit
 sig Client__Visit extends Op {
-	Client__Visit__dest : lone URI,
+	Client__Visit__dest : one URI,
 }{
 	args = Client__Visit__dest
 	no ret
@@ -73,7 +79,7 @@ sig Client__Visit extends Op {
 
 -- operation Client__HttpResp
 sig Client__HttpResp extends Op {
-	Client__HttpResp__redirectTo : lone URI,
+	Client__HttpResp__redirectTo : one URI,
 }{
 	args = Client__HttpResp__redirectTo
 	no ret
@@ -88,21 +94,21 @@ sig URI extends Data {
 }
 sig OtherData extends Data {}{ no fields }
 
+run SanityCheck {
+  some TrustedServer__HttpReq & SuccessOp
+  some MaliciousServer__HttpReq & SuccessOp
+  some Client__Visit & SuccessOp
+  some Client__HttpResp & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op

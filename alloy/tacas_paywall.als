@@ -6,29 +6,30 @@ one sig NYTimes extends Module {
 	NYTimes__articles : Link set -> lone Page,
 	NYTimes__limit : one Int,
 }{
-	all o : this.receives[NYTimes__GetPage] | arg[o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter)] < NYTimes__limit
+	all o : this.receives[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter) < NYTimes__limit
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetPage]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__currCounter)), 1]
-	accesses.first in NYTimes__articles + NYTimes__limit + Page
+	accesses.first in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Page + NYTimes__limit + Page
 }
 
 -- module Client
 one sig Client extends Module {
 	Client__counter : Int one -> set Step,
 }{
-	all o : this.receives[Client__SendPage] | Client__counter.(o.post) = arg[o.(Client__SendPage <: Client__SendPage__newCounter)]
+	all o : this.receives[Client__SendPage] | Client__counter.(o.post) = o.(Client__SendPage <: Client__SendPage__newCounter)
 	all o : this.sends[Reader__Display] | triggeredBy[o,Client__SendPage]
 	all o : this.sends[Reader__Display] | o.(Reader__Display <: Reader__Display__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetPage] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter) = Client__counter.(o.pre)
-	accesses.first in Client__counter.first
+	accesses.first in NonCriticalData + (Client__counter.first)
 }
 
 -- module Reader
 one sig Reader extends Module {
 }{
+	accesses.first in NonCriticalData
 }
 
 
@@ -77,11 +78,6 @@ sig Reader__Display extends Op {
 	no ret
 	sender in Client
 	receiver in Reader
-}
-
--- fact dataFacts
-fact dataFacts {
-	creates.Page in NYTimes
 }
 
 -- datatype declarations

@@ -3,14 +3,15 @@ open models/crypto[Data]
 
 -- module EndUser
 one sig EndUser extends Module {
-	EndUser__id : lone Addr,
-	EndUser__cred : lone Credential,
+	EndUser__id : one Addr,
+	EndUser__cred : one Credential,
 }{
-	all o : this.receives[EndUser__PromptCredential] | arg[o.(EndUser__PromptCredential <: EndUser__PromptCredential__forId)] = EndUser__id
+	all o : this.receives[EndUser__PromptCredential] | o.(EndUser__PromptCredential <: EndUser__PromptCredential__forId) = EndUser__id
 	all o : this.sends[UserAgent__EnterCred] | triggeredBy[o,EndUser__PromptCredential]
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__id) = EndUser__cred
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__cred) = EndUser__id
 	all o : this.sends[RelyingParty__RequestLogIn] | o.(RelyingParty__RequestLogIn <: RelyingParty__RequestLogIn__id) = EndUser__id
+	accesses.first in NonCriticalData + EndUser__id + EndUser__cred + Credential
 }
 
 -- module UserAgent
@@ -26,6 +27,7 @@ one sig UserAgent extends Module {
 	all o : this.sends[RelyingParty__LogIn] | triggeredBy[o,UserAgent__ReceiveOpenID]
 	all o : this.sends[RelyingParty__LogIn] | o.(RelyingParty__LogIn <: RelyingParty__LogIn__id) = o.trigger.((UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__id))
 	all o : this.sends[RelyingParty__LogIn] | o.(RelyingParty__LogIn <: RelyingParty__LogIn__openId) = o.trigger.((UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__openId))
+	accesses.first in NonCriticalData
 }
 
 -- module RelyingParty
@@ -37,6 +39,7 @@ one sig RelyingParty extends Module {
 	all o : this.sends[IdentityProvider__CheckAuth] | o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id) = o.trigger.((RelyingParty__LogIn <: RelyingParty__LogIn__id))
 	all o : this.sends[IdentityProvider__CheckAuth] | o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId) = o.trigger.((RelyingParty__LogIn <: RelyingParty__LogIn__openId))
 	all o : this.sends[UserAgent__LoginSuccessful] | triggeredBy[o,RelyingParty__AuthVerified]
+	accesses.first in NonCriticalData
 }
 
 -- module IdentityProvider
@@ -44,9 +47,9 @@ one sig IdentityProvider extends Module {
 	IdentityProvider__credentials : Addr set -> lone Credential,
 	IdentityProvider__identities : Addr set -> lone OpenId,
 }{
-	all o : this.receives[IdentityProvider__RequestAuth] | (some IdentityProvider__identities[arg[o.(IdentityProvider__RequestAuth <: IdentityProvider__RequestAuth__id)]])
-	all o : this.receives[IdentityProvider__ReceiveCred] | (some (IdentityProvider__credentials & arg[o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id)] -> arg[o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__cred)]))
-	all o : this.receives[IdentityProvider__CheckAuth] | (some (IdentityProvider__identities & arg[o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id)] -> arg[o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId)]))
+	all o : this.receives[IdentityProvider__RequestAuth] | (some IdentityProvider__identities[o.(IdentityProvider__RequestAuth <: IdentityProvider__RequestAuth__id)])
+	all o : this.receives[IdentityProvider__ReceiveCred] | (some (IdentityProvider__credentials & o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__id) -> o.(IdentityProvider__ReceiveCred <: IdentityProvider__ReceiveCred__cred)))
+	all o : this.receives[IdentityProvider__CheckAuth] | (some (IdentityProvider__identities & o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id) -> o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId)))
 	all o : this.sends[UserAgent__RequestCredential] | triggeredBy[o,IdentityProvider__RequestAuth]
 	all o : this.sends[UserAgent__RequestCredential] | o.(UserAgent__RequestCredential <: UserAgent__RequestCredential__id) = o.trigger.((IdentityProvider__RequestAuth <: IdentityProvider__RequestAuth__id))
 	all o : this.sends[UserAgent__ReceiveOpenID] | triggeredBy[o,IdentityProvider__ReceiveCred]
@@ -55,6 +58,7 @@ one sig IdentityProvider extends Module {
 	all o : this.sends[RelyingParty__AuthVerified] | triggeredBy[o,IdentityProvider__CheckAuth]
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__id) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id))
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__openId) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId))
+	accesses.first in NonCriticalData + Addr.IdentityProvider__credentials + IdentityProvider__credentials.Credential + Addr.IdentityProvider__identities + IdentityProvider__identities.OpenId
 }
 
 
@@ -65,7 +69,7 @@ fact trustedModuleFacts {
 
 -- operation EndUser__PromptCredential
 sig EndUser__PromptCredential extends Op {
-	EndUser__PromptCredential__forId : lone Addr,
+	EndUser__PromptCredential__forId : one Addr,
 }{
 	args = EndUser__PromptCredential__forId
 	no ret
@@ -75,7 +79,7 @@ sig EndUser__PromptCredential extends Op {
 
 -- operation UserAgent__RedirectToProvider
 sig UserAgent__RedirectToProvider extends Op {
-	UserAgent__RedirectToProvider__addr : lone Addr,
+	UserAgent__RedirectToProvider__addr : one Addr,
 }{
 	args = UserAgent__RedirectToProvider__addr
 	no ret
@@ -85,7 +89,7 @@ sig UserAgent__RedirectToProvider extends Op {
 
 -- operation UserAgent__RequestCredential
 sig UserAgent__RequestCredential extends Op {
-	UserAgent__RequestCredential__id : lone Addr,
+	UserAgent__RequestCredential__id : one Addr,
 }{
 	args = UserAgent__RequestCredential__id
 	no ret
@@ -95,8 +99,8 @@ sig UserAgent__RequestCredential extends Op {
 
 -- operation UserAgent__EnterCred
 sig UserAgent__EnterCred extends Op {
-	UserAgent__EnterCred__id : lone Addr,
-	UserAgent__EnterCred__cred : lone Credential,
+	UserAgent__EnterCred__id : one Addr,
+	UserAgent__EnterCred__cred : one Credential,
 }{
 	args = UserAgent__EnterCred__id + UserAgent__EnterCred__cred
 	no ret
@@ -106,8 +110,8 @@ sig UserAgent__EnterCred extends Op {
 
 -- operation UserAgent__ReceiveOpenID
 sig UserAgent__ReceiveOpenID extends Op {
-	UserAgent__ReceiveOpenID__id : lone Addr,
-	UserAgent__ReceiveOpenID__openId : lone OpenId,
+	UserAgent__ReceiveOpenID__id : one Addr,
+	UserAgent__ReceiveOpenID__openId : one OpenId,
 }{
 	args = UserAgent__ReceiveOpenID__id + UserAgent__ReceiveOpenID__openId
 	no ret
@@ -126,7 +130,7 @@ sig UserAgent__LoginSuccessful extends Op {
 
 -- operation RelyingParty__RequestLogIn
 sig RelyingParty__RequestLogIn extends Op {
-	RelyingParty__RequestLogIn__id : lone Addr,
+	RelyingParty__RequestLogIn__id : one Addr,
 }{
 	args = RelyingParty__RequestLogIn__id
 	no ret
@@ -136,8 +140,8 @@ sig RelyingParty__RequestLogIn extends Op {
 
 -- operation RelyingParty__LogIn
 sig RelyingParty__LogIn extends Op {
-	RelyingParty__LogIn__id : lone Addr,
-	RelyingParty__LogIn__openId : lone OpenId,
+	RelyingParty__LogIn__id : one Addr,
+	RelyingParty__LogIn__openId : one OpenId,
 }{
 	args = RelyingParty__LogIn__id + RelyingParty__LogIn__openId
 	no ret
@@ -147,8 +151,8 @@ sig RelyingParty__LogIn extends Op {
 
 -- operation RelyingParty__AuthVerified
 sig RelyingParty__AuthVerified extends Op {
-	RelyingParty__AuthVerified__id : lone Addr,
-	RelyingParty__AuthVerified__openId : lone OpenId,
+	RelyingParty__AuthVerified__id : one Addr,
+	RelyingParty__AuthVerified__openId : one OpenId,
 }{
 	args = RelyingParty__AuthVerified__id + RelyingParty__AuthVerified__openId
 	no ret
@@ -158,7 +162,7 @@ sig RelyingParty__AuthVerified extends Op {
 
 -- operation IdentityProvider__RequestAuth
 sig IdentityProvider__RequestAuth extends Op {
-	IdentityProvider__RequestAuth__id : lone Addr,
+	IdentityProvider__RequestAuth__id : one Addr,
 }{
 	args = IdentityProvider__RequestAuth__id
 	no ret
@@ -168,8 +172,8 @@ sig IdentityProvider__RequestAuth extends Op {
 
 -- operation IdentityProvider__ReceiveCred
 sig IdentityProvider__ReceiveCred extends Op {
-	IdentityProvider__ReceiveCred__id : lone Addr,
-	IdentityProvider__ReceiveCred__cred : lone Credential,
+	IdentityProvider__ReceiveCred__id : one Addr,
+	IdentityProvider__ReceiveCred__cred : one Credential,
 }{
 	args = IdentityProvider__ReceiveCred__id + IdentityProvider__ReceiveCred__cred
 	no ret
@@ -179,19 +183,13 @@ sig IdentityProvider__ReceiveCred extends Op {
 
 -- operation IdentityProvider__CheckAuth
 sig IdentityProvider__CheckAuth extends Op {
-	IdentityProvider__CheckAuth__id : lone Addr,
-	IdentityProvider__CheckAuth__openId : lone OpenId,
+	IdentityProvider__CheckAuth__id : one Addr,
+	IdentityProvider__CheckAuth__openId : one OpenId,
 }{
 	args = IdentityProvider__CheckAuth__id + IdentityProvider__CheckAuth__openId
 	no ret
 	sender in RelyingParty
 	receiver in IdentityProvider
-}
-
--- fact dataFacts
-fact dataFacts {
-	creates.Credential in EndUser
-	no creates.OpenId
 }
 
 -- datatype declarations
@@ -215,7 +213,7 @@ sig Addr extends Data {
 	no fields
 }
 sig URI extends Data {
-	URI__addr : lone Addr,
+	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
 	fields = URI__addr + URI__params
@@ -227,21 +225,29 @@ fact criticalDataFacts {
 	CriticalData = OpenId
 }
 
+run SanityCheck {
+  some EndUser__PromptCredential & SuccessOp
+  some UserAgent__RedirectToProvider & SuccessOp
+  some UserAgent__RequestCredential & SuccessOp
+  some UserAgent__EnterCred & SuccessOp
+  some UserAgent__ReceiveOpenID & SuccessOp
+  some UserAgent__LoginSuccessful & SuccessOp
+  some RelyingParty__RequestLogIn & SuccessOp
+  some RelyingParty__LogIn & SuccessOp
+  some RelyingParty__AuthVerified & SuccessOp
+  some IdentityProvider__RequestAuth & SuccessOp
+  some IdentityProvider__ReceiveCred & SuccessOp
+  some IdentityProvider__CheckAuth & SuccessOp
+} for 1 but 7 Data, 7 Step, 6 Op
 
 fun RelevantOp : Op -> Step {
-	{o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
-
-run SanityCheck {
-	all m : Module |
-		some sender.m & SuccessOp
-} for 1 but 9 Data, 10 Step, 9 Op
-
 check Confidentiality {
-   Confidentiality
-} for 1 but 9 Data, 10 Step, 9 Op
+  Confidentiality
+} for 1 but 7 Data, 7 Step, 6 Op
 
 -- check who can create CriticalData
 check Integrity {
-   Integrity
-} for 1 but 9 Data, 10 Step, 9 Op
+  Integrity
+} for 1 but 7 Data, 7 Step, 6 Op
