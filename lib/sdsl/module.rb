@@ -10,7 +10,9 @@ Mod = Struct.new(:name, :exports, :invokes, :assumptions,
                  :stores, :creates,
                  :extends, :isAbstract, :isUniq,
                  :dynamics)
-Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract, :modifies)
+
+Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract, 
+                :modifies)
 
 NON_CRITICAL_DATA = "NonCriticalData"
 

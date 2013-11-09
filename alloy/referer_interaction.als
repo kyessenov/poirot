@@ -128,7 +128,6 @@ sig Pair extends Data {
 	Pair__n : one Name,
 	Pair__v : one Value,
 }{
-	fields = Pair__n + Pair__v
 }
 sig URL extends Data {
 	URL__addr : one Addr,
@@ -143,7 +142,7 @@ sig HTML extends Data {
 }
 sig RefererHeader extends Pair {
 }{
-	no fields
+	fields = Pair__n + Pair__v
 }
 sig OtherData extends Data {}{ no fields }
 

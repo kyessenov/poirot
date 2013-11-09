@@ -15,7 +15,7 @@ sig Script extends Module {
 	Script__original : one HTML,
 	Script__transformed : one HTML,
 }{
-	all o : this.receives[Script__Exec] | (o.(Script__Exec <: Script__Exec__resp) = Script__original and o.(Script__Exec <: Script__Exec__ret) = Script__transformed)
+	all o : this.receives[Script__Exec] | o.(Script__Exec <: Script__Exec__ret) = Script__transformed
 	accesses.first in NonCriticalData + Script__original + Script__transformed
 }
 

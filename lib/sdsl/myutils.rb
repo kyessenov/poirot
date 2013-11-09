@@ -68,6 +68,16 @@ def enclose s
   "(" + s + ")"
 end
 
+def safeUnion(l1, l2)
+  if (not l1 and not l2)
+    nil
+  elsif not l1 
+    l2
+  else 
+    l1
+  end
+end
+
 def writeComment comment
   wrap("\n-- #{comment}")
 end

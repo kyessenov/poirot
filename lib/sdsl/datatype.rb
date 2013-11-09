@@ -50,11 +50,21 @@ class Datatype
     fields.each do |f|
       alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
     end
-    alloyChunk += wrap("}{")    
-    if fields.empty?
-      if not isAbstract then alloyChunk += wrap("no fields", 1) end
+    alloyChunk += wrap("}{")
+    effectiveFields = fields
+    if ctx[:extendsMap][self]
+      effectiveFields = ctx[:extendsMap][self].fields
+    end
+
+    isParent = ctx[:extendsMap].has_value? self
+
+    if effectiveFields.empty? or isParent
+      if not isParent then
+        alloyChunk += wrap("no fields", 1) 
+      end
     else 
-      alloyChunk += wrap("fields = " + fields.map{ |f| f.name }.join(" + "), 1)
+      alloyChunk += wrap("fields = " + 
+                         effectiveFields.map{ |f| f.name }.join(" + "), 1)
     end
     alloyChunk += wrap("}")
   end

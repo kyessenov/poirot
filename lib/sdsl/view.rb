@@ -49,7 +49,7 @@ class View
       # exports
       m.exports.each do |o|
         n = o.name.to_s
-                
+        
         if o.parent
           p = o.parent.name.to_s
           if o.parent.isAbstract 
@@ -182,7 +182,14 @@ class View
     # alloyChunk += writeFacts("dataFacts", dataFacts)
     
     # write data decls
-    alloyChunk += writeComment("datatype declarations")   
+    alloyChunk += writeComment("datatype declarations") 
+    extendsMap = {}
+    data.each do |d|
+      if d.extends and "#{d.extends}" != "Data" then 
+        extendsMap[d] = findData(d.extends)
+      end      
+    end
+    ctx[:extendsMap] = extendsMap
     data.each do |d|
       alloyChunk += d.to_alloy(ctx)
     end
@@ -359,7 +366,7 @@ def abstractExports(m1, m2, exportsRel)
                             :args => myuniq(o.constraints[:args] + 
                                             o2.constraints[:args])}, 
                           nil, nil,
-                          false, o.modifies + o2.modifies)
+                          false, safeUnion(o.modifies,o2.modifies))
         m2Exports.delete(o2)
         next
       end
@@ -386,7 +393,7 @@ def abstractInvokes(m1, m2, invokesRel)
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when])},
                           nil, nil,
-                          false, o.modifies + o2.modifies)
+                          false, safeUnion(o.modifies, o2.modifies))
         m2Invokes.delete(o2)
         next
       end

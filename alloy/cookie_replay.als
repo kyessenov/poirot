@@ -17,7 +17,7 @@ one sig Browser extends Module {
 	all o : this.receives[Browser__ExtractCookie] | (some (Browser__cookies.(o.pre)[o.(Browser__ExtractCookie <: Browser__ExtractCookie__addr)] & o.(Browser__ExtractCookie <: Browser__ExtractCookie__ret)))
 	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr) -> o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie))
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
-	all o : this.sends[Server__SendReq] | (o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url)) and o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr])
+	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr]
 	accesses.first in NonCriticalData + Addr.(Browser__cookies.first) + (Browser__cookies.first).Cookie
 }
 
@@ -103,11 +103,10 @@ sig Pair extends Data {
 	Pair__n : one Name,
 	Pair__v : one Value,
 }{
-	fields = Pair__n + Pair__v
 }
 sig Cookie extends Pair {
 }{
-	no fields
+	fields = Pair__n + Pair__v
 }
 sig URL extends Data {
 	URL__addr : one Addr,
