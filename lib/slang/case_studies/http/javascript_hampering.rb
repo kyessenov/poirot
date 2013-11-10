@@ -7,7 +7,8 @@ Slang::Dsl.view :JavascriptHampering do
   data Addr
   data Name
   data Value
-  data HTML
+  data Script
+  data HTML[script: Script]
   data Pair[n: Name, v: Value]
   data URL[addr: Addr, queries: (set Pair)]
 
@@ -19,21 +20,21 @@ Slang::Dsl.view :JavascriptHampering do
     end
   end
 
-  many mod Script [
+  many mod ScriptProc [
     original: HTML,
-    transformed: HTML      
+    transformed: HTML
   ] do
-    op Exec[resp: HTML, ret: HTML] do
-      guard { resp == original and ret == transformed }
+    op Exec[ret: HTML] do
+      guard { ret == transformed }
     end
   end
-
+  
   trusted Browser [
-    transform: HTML ** HTML
+    transform: HTML * HTML
   ] do
     op SendResp[resp: HTML, headers: (set Pair)] do 
       sends { User::DisplayHTML[transform[resp]] }
-      sends { Script::Exec[resp, transform[resp]] }
+      sends { ScriptProc::Exec[transform[resp]] }
     end
     op Visit[url: URL] do
       sends { Server::SendReq[url] }

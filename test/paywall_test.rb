@@ -57,14 +57,18 @@ mv = composeViews(paywall_view, mv, {
                     :Exports => {
                       "NYTimes__GetLink" => "Server__SendReq",
                       "Client__SendPage" => "Browser__SendResp",
+                      "Client__SelectLink" => "Browser__Visit",
                       "Reader__DisplayPage" => "User__DisplayHTML"
                     },
                     :Invokes => {
                       "NYTimes__GetLink" => "Server__SendReq",
                       "Client__SendPage" => "Browser__SendResp",
+                      "Client__SelectLink" => "Browser__Visit",
                       "Reader__DisplayPage" => "User__DisplayHTML"
                     },
-                    :Data => {}
+                    :Data => {
+                      "Page" => "HTML"
+                    }
                   })
 
 dump(mv, "merged")

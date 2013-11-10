@@ -14,20 +14,32 @@ UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
 UNIVERSAL_FIELDS = ["trigger"]
-ALLOY_CMDS = "
+STEP_TYPE = :Step
+
+def mkScopeSpec scopes
+  "1 but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
+    "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
+end
+
+def mkPropertyCmds v
+"
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for #{mkScopeSpec v.calcScopes}
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for #{mkScopeSpec v.calcScopes}
 "
-STEP_TYPE = :Step
+end
+
+def keysWithVal (h, v)
+  h.keys.find_all {|k| h[k] == v }
+end
 
 class Array
   def to_alloy(ctx=nil)
@@ -253,14 +265,18 @@ def writeDot(view, dotFile, color=CHILD_COLOR)
   f.close
 end
 
-def buildSanityCheck v
+def mkAlloyCmds v
+  (mkSanityCheck v) + "\n" + (mkPropertyCmds v) 
+end
+
+def mkSanityCheck v
   sanityCheck = "run SanityCheck {\n"
   v.modules.each do |m|
     m.exports.each do |o|
       sanityCheck += "  some #{o.name} & SuccessOp\n"
     end
   end
-  sanityCheck += "} for 1 but 7 Data, 7 Step, 6 Op\n"
+  sanityCheck += "} for " + mkScopeSpec(v.calcScopes)
 end
 
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
@@ -272,8 +288,7 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.puts v.to_alloy
   # footers
   f.puts
-  f.puts buildSanityCheck(v)
-  f.puts ALLOY_CMDS
+  f.puts mkAlloyCmds(v)
   f.close
 end
 

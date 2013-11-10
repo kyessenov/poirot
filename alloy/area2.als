@@ -25,6 +25,7 @@ one sig DirectoryService extends Module {
 }{
 	all o : this.receives[DirectoryService__AddUserRecord] | DirectoryService__userRecords.(o.post) = (DirectoryService__userRecords.(o.pre) + o.(DirectoryService__AddUserRecord <: DirectoryService__AddUserRecord__newRecord))
 	all o : this.receives[DirectoryService__GetUserRecords] | o.(DirectoryService__GetUserRecords <: DirectoryService__GetUserRecords__ret) = DirectoryService__userRecords.(o.pre)
+	all t : Step - last | let t' = t.next | DirectoryService__userRecords.t' != DirectoryService__userRecords.t implies some ((DirectoryService__AddUserRecord) & SuccessOp) & pre.t
 	accesses.first in NonCriticalData + (DirectoryService__userRecords.first)
 }
 
@@ -136,16 +137,19 @@ run SanityCheck {
   some A2Site__ViewProfile & SuccessOp
   some DirectoryService__AddUserRecord & SuccessOp
   some DirectoryService__GetUserRecords & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 4 Step, 3 Op
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 4 Step, 3 Op
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 4 Step, 3 Op
+

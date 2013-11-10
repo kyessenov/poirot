@@ -127,6 +127,22 @@ class Mod
       end
     end
     
+    # frame conditions    
+    fconds = {}
+    exports.each do |e|
+      e.modifies.each do |o|
+        if not fconds.has_key? o then fconds[o] = [] end
+        fconds[o] << e
+      end
+    end    
+    fconds.each do |k, v|
+      opset = v.map {|e| e.name.to_s }.join(' + ')
+      alloyChunk += 
+        wrap("all t : Step - last | let t' = t.next |" + 
+             " #{k}.t' != #{k}.t implies " + 
+             "some ((#{opset}) & SuccessOp) & pre.t", 1)
+    end
+
     # initial data access
     if not isAbstract then
       initData = [NON_CRITICAL_DATA]

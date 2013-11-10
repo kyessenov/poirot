@@ -23,6 +23,7 @@ one sig Client extends Module {
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
+	all t : Step - last | let t' = t.next | Client__numAccessed.t' != Client__numAccessed.t implies some ((Client__SendPage) & SuccessOp) & pre.t
 	accesses.first in NonCriticalData + (Client__numAccessed.first)
 }
 
@@ -43,7 +44,7 @@ sig NYTimes__GetLink extends Op {
 	NYTimes__GetLink__link : one Link,
 	NYTimes__GetLink__numAccessed : one Int,
 }{
-	args = NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
+	args in NYTimes__GetLink__link + NYTimes__GetLink__numAccessed
 	no ret
 	sender in Client
 	receiver in NYTimes
@@ -54,7 +55,7 @@ sig Client__SendPage extends Op {
 	Client__SendPage__page : one Page,
 	Client__SendPage__newCounter : one Int,
 }{
-	args = Client__SendPage__page + Client__SendPage__newCounter
+	args in Client__SendPage__page + Client__SendPage__newCounter
 	no ret
 	sender in NYTimes
 	receiver in Client
@@ -64,7 +65,7 @@ sig Client__SendPage extends Op {
 sig Client__SelectLink extends Op {
 	Client__SelectLink__link : one Link,
 }{
-	args = Client__SelectLink__link
+	args in Client__SelectLink__link
 	no ret
 	sender in Reader
 	receiver in Client
@@ -74,7 +75,7 @@ sig Client__SelectLink extends Op {
 sig Reader__DisplayPage extends Op {
 	Reader__DisplayPage__page : one Page,
 }{
-	args = Reader__DisplayPage__page
+	args in Reader__DisplayPage__page
 	no ret
 	sender in Client
 	receiver in Reader
@@ -104,16 +105,19 @@ run SanityCheck {
   some Client__SendPage & SuccessOp
   some Client__SelectLink & SuccessOp
   some Reader__DisplayPage & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+

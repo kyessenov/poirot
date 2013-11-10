@@ -53,7 +53,7 @@ sig Server__SendReq extends Op {
 	Server__SendReq__url : one URL,
 	Server__SendReq__headers : set Pair,
 }{
-	args = Server__SendReq__url + Server__SendReq__headers
+	args in Server__SendReq__url + Server__SendReq__headers
 	no ret
 	sender in Browser
 	receiver in Server
@@ -64,7 +64,7 @@ sig Referer__SendReq extends Op {
 	Referer__SendReq__url : one URL,
 	Referer__SendReq__headers : set Pair,
 }{
-	args = Referer__SendReq__url + Referer__SendReq__headers
+	args in Referer__SendReq__url + Referer__SendReq__headers
 	no ret
 	sender in Browser
 	receiver in Referer
@@ -75,7 +75,7 @@ sig Browser__SendResp extends Op {
 	Browser__SendResp__resp : one HTML,
 	Browser__SendResp__headers : set Pair,
 }{
-	args = Browser__SendResp__resp + Browser__SendResp__headers
+	args in Browser__SendResp__resp + Browser__SendResp__headers
 	no ret
 	sender in Server + Referer
 	receiver in Browser
@@ -85,7 +85,7 @@ sig Browser__SendResp extends Op {
 sig Browser__FollowLink extends Op {
 	Browser__FollowLink__url : one URL,
 }{
-	args = Browser__FollowLink__url
+	args in Browser__FollowLink__url
 	no ret
 	sender in User
 	receiver in Browser
@@ -95,7 +95,7 @@ sig Browser__FollowLink extends Op {
 sig Browser__Visit extends Op {
 	Browser__Visit__url : one URL,
 }{
-	args = Browser__Visit__url
+	args in Browser__Visit__url
 	no ret
 	sender in User
 	receiver in Browser
@@ -105,7 +105,7 @@ sig Browser__Visit extends Op {
 sig User__DisplayHTML extends Op {
 	User__DisplayHTML__html : one HTML,
 }{
-	args = User__DisplayHTML__html
+	args in User__DisplayHTML__html
 	no ret
 	sender in Browser
 	receiver in User
@@ -128,21 +128,22 @@ sig Pair extends Data {
 	Pair__n : one Name,
 	Pair__v : one Value,
 }{
+	this not in (RefererHeader) implies fields in Pair__n + Pair__v
 }
 sig URL extends Data {
 	URL__addr : one Addr,
 	URL__queries : set Pair,
 }{
-	fields = URL__addr + URL__queries
+	fields in URL__addr + URL__queries
 }
 sig HTML extends Data {
 	HTML__links : set URL,
 }{
-	fields = HTML__links
+	fields in HTML__links
 }
 sig RefererHeader extends Pair {
 }{
-	fields = Pair__n + Pair__v
+	fields in Pair__n + Pair__v
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -153,16 +154,19 @@ run SanityCheck {
   some Browser__FollowLink & SuccessOp
   some Browser__Visit & SuccessOp
   some User__DisplayHTML & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 7 Step,6 Op, 4 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 7 Step,6 Op, 4 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 7 Step,6 Op, 4 Module
+

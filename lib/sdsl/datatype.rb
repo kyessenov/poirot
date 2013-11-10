@@ -40,6 +40,17 @@ class DatatypeBuilder
 end
 
 class Datatype
+  
+  def buildEffectiveFields extendsMap
+    effectiveFields = []
+    curr = self
+    while curr      
+      effectiveFields += curr.fields
+      curr = extendsMap[curr]     
+    end
+    effectiveFields
+  end
+
   def to_alloy(ctx=nil)
     alloyChunk = ""
     
@@ -51,20 +62,25 @@ class Datatype
       alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
     end
     alloyChunk += wrap("}{")
-    effectiveFields = fields
-    if ctx[:extendsMap][self]
-      effectiveFields = ctx[:extendsMap][self].fields
-    end
+    effectiveFields = buildEffectiveFields(ctx[:extendsMap])
 
     isParent = ctx[:extendsMap].has_value? self
 
-    if effectiveFields.empty? or isParent
-      if not isParent then
-        alloyChunk += wrap("no fields", 1) 
+    if isParent
+      if not isAbstract
+        childset = keysWithVal(ctx[:extendsMap], self).map {|c| c.name.to_s}.join(" + ")
+        alloyChunk += 
+          wrap("this not in (#{childset}) implies " + 
+               "fields in " + 
+               effectiveFields.map{ |f| f.name }.join(" + "), 1)    
       end
-    else 
-      alloyChunk += wrap("fields = " + 
-                         effectiveFields.map{ |f| f.name }.join(" + "), 1)
+    else
+      if effectiveFields.empty?
+        alloyChunk += wrap("no fields", 1) 
+      else 
+        alloyChunk += wrap("fields in " + 
+                           effectiveFields.map{ |f| f.name }.join(" + "), 1)
+      end
     end
     alloyChunk += wrap("}")
   end

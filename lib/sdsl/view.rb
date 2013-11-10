@@ -18,6 +18,20 @@ class View
     (data.select { |d| d.name == s})[0]
   end
 
+  def calcScopes
+    scopes = {}
+    scopes[:Data] = data.size - (data.find_all {|e| e.isAbstract }).size
+    scopes[:Op] = 0
+    scopes[:Module] = 0
+    modules.each do |m|
+      if not m.isAbstract then scopes[:Module] += 1 end
+      m.exports.each do |e|
+        if not e.isAbstract then scopes[:Op] += 1 end
+      end
+    end
+    return scopes
+  end
+
   def to_alloy
     # type: opname -> list(modules)
     invokers = {}
@@ -90,13 +104,20 @@ class View
           end
         end
                 
-        if not args.empty? and not o.child
-          sigfacts[n] << "args = " + args.join(" + ")
+        if not args.empty? and not o.isAbstract     
+          if not o.child
+            sigfacts[n] << "args in " + args.join(" + ")
+          else
+            childSet = o.child.map {|e| e.name}.join(" + ")
+            sigfacts[n] << 
+              "this not in (#{childSet}) implies " +
+              "args in " + args.join(" + ")
+          end
         elsif args.empty?
           sigfacts[n] << "no args"
         end
         if ret 
-          sigfacts[n] << "ret = " + ret
+          sigfacts[n] << "ret in " + ret
         else
           sigfacts[n] << "no ret"
         end        
@@ -586,7 +607,8 @@ def buildView(v1, v2, mapping, refineRel)
   modules.each do |m| 
     (m.exports + m.invokes).each do |o|
       if o.parent then 
-        o.parent.child = true
+        if not o.parent.child then o.parent.child = [] end
+        o.parent.child << o
       end
     end
 

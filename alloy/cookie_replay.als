@@ -18,6 +18,7 @@ one sig Browser extends Module {
 	all o : this.receives[Browser__OverwriteCookie] | Browser__cookies.(o.post) = (Browser__cookies.(o.pre) + o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__addr) -> o.(Browser__OverwriteCookie <: Browser__OverwriteCookie__cookie))
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__cookies) = Browser__cookies.(o.pre)[o.trigger.((Browser__Visit <: Browser__Visit__url)).URL__addr]
+	all t : Step - last | let t' = t.next | Browser__cookies.t' != Browser__cookies.t implies some ((Browser__OverwriteCookie) & SuccessOp) & pre.t
 	accesses.first in NonCriticalData + Addr.(Browser__cookies.first) + (Browser__cookies.first).Cookie
 }
 
@@ -38,7 +39,7 @@ sig Server__SendReq extends Op {
 	Server__SendReq__url : one URL,
 	Server__SendReq__cookies : set Cookie,
 }{
-	args = Server__SendReq__url + Server__SendReq__cookies
+	args in Server__SendReq__url + Server__SendReq__cookies
 	no ret
 	sender in Browser
 	receiver in Server
@@ -48,7 +49,7 @@ sig Server__SendReq extends Op {
 sig Browser__Visit extends Op {
 	Browser__Visit__url : one URL,
 }{
-	args = Browser__Visit__url
+	args in Browser__Visit__url
 	no ret
 	sender in User
 	receiver in Browser
@@ -58,7 +59,7 @@ sig Browser__Visit extends Op {
 sig Browser__SendResp extends Op {
 	Browser__SendResp__headers : set Pair,
 }{
-	args = Browser__SendResp__headers
+	args in Browser__SendResp__headers
 	no ret
 	sender in Server
 	receiver in Browser
@@ -69,8 +70,8 @@ sig Browser__ExtractCookie extends Op {
 	Browser__ExtractCookie__addr : one Addr,
 	Browser__ExtractCookie__ret : one Cookie,
 }{
-	args = Browser__ExtractCookie__addr
-	ret = Browser__ExtractCookie__ret
+	args in Browser__ExtractCookie__addr
+	ret in Browser__ExtractCookie__ret
 	sender in User
 	receiver in Browser
 }
@@ -80,7 +81,7 @@ sig Browser__OverwriteCookie extends Op {
 	Browser__OverwriteCookie__addr : one Addr,
 	Browser__OverwriteCookie__cookie : one Cookie,
 }{
-	args = Browser__OverwriteCookie__addr + Browser__OverwriteCookie__cookie
+	args in Browser__OverwriteCookie__addr + Browser__OverwriteCookie__cookie
 	no ret
 	sender in User
 	receiver in Browser
@@ -103,16 +104,17 @@ sig Pair extends Data {
 	Pair__n : one Name,
 	Pair__v : one Value,
 }{
+	this not in (Cookie) implies fields in Pair__n + Pair__v
 }
 sig Cookie extends Pair {
 }{
-	fields = Pair__n + Pair__v
+	fields in Pair__n + Pair__v
 }
 sig URL extends Data {
 	URL__addr : one Addr,
 	URL__queries : set Pair,
 }{
-	fields = URL__addr + URL__queries
+	fields in URL__addr + URL__queries
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -122,16 +124,19 @@ run SanityCheck {
   some Browser__SendResp & SuccessOp
   some Browser__ExtractCookie & SuccessOp
   some Browser__OverwriteCookie & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 6 Data, 6 Step,5 Op, 3 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 6 Data, 6 Step,5 Op, 3 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 6 Data, 6 Step,5 Op, 3 Module
+
