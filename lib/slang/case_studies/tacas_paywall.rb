@@ -2,42 +2,29 @@ require 'slang/slang_dsl'
 
 include Slang::Dsl
 
-Slang::Dsl.view :TacasPaywall do
-  critical data Page
-  data Link
+Slang::Dsl.view(:TacasPaywall) {
+  critical data Page; data Link
   
   trusted component NYTimes [
     articles: Link ** Page, 
     limit: Integer
-  ] do
+  ] {
     creates Page
   
-    operation GetPage [link: Link, currCounter: Integer] do
+    operation GetPage[link: Link, currCounter: Integer] {
       guard    { currCounter < limit }
-      response { Client::SendPage[articles[link], currCounter + 1] }
-    end
-  end
+      response { Client::SendPage[articles[link], currCounter + 1] }}}
 
   trusted component Client [
     counter: (dynamic Integer)
-  ] do
-
-    operation SendPage[page: Page, newCounter: Integer] do 
+  ] {
+    operation SendPage[page: Page, newCounter: Integer] {
       effects  { self.counter = newCounter }
-      response { Reader::Display[page] }
-      # response {
-      #   self.counter = newCounter
-      #   Reader::Display[page] 
-      # }
-    end
+      response { Reader::Display[page] }}
 
-    operation SelectLink[link: Link] do
-      response { NYTimes::GetPage[link, counter] }
-    end
-  end
+    operation SelectLink[link: Link] {
+      response { NYTimes::GetPage[link, counter] }}}
 
-  component Reader do
+  component Reader {
     operation Display[page: Page]
-    response { Client::SelectLink }
-  end
-end
+    response { Client::SelectLink }}}
