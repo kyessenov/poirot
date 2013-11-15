@@ -5,13 +5,8 @@ include Slang::Dsl
 Slang::Dsl.view :OAuth do
 
   abstract data Payload
-  data AuthCode < Payload
-  data AuthGrant < Payload
-  data Credential < Payload
-  data AccessToken < Payload 
-  data Resource < Payload
-  data ClientID < Payload
-  data Scope < Payload
+  data AuthCode, AuthGrant, Credential, AccessToken,
+       Resource, ClientID, Scope < Payload
 
   data Addr
   data URI [addr: Addr, params: (set Payload)]
