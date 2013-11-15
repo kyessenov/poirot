@@ -1,15 +1,11 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :OpenIdAttack do
   abstract data Payload
-
-  data Credential   < Payload
-  data OpenId       < Payload
-  data OtherPayload < Payload
-
+  data Credential, OpenId, OtherPayload < Payload
   data Addr
+
   data URI[addr: Addr, params: (set Payload)]
 
   critical OpenId
@@ -81,5 +77,4 @@ Slang::Dsl.view :OpenIdAttack do
       sends { RelyingParty::AuthVerified[id, openId] }
     end
   end
-
 end

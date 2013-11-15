@@ -1,12 +1,8 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :CookieReplay do
-
-  data Addr
-  data Name
-  data Value
+  data Addr, Name, Value
   data Pair[n: Name, v: Value]
   data Cookie < Pair
   data URL[addr: Addr, queries: (set Pair)]
@@ -31,25 +27,15 @@ Slang::Dsl.view :CookieReplay do
       }
     end
 
-    op SendResp[headers: (set Pair)] do end
+    op SendResp[headers: (set Pair)]
 
     op ExtractCookie[addr: Addr, ret: Cookie] do
       guard { ret.in? cookies[addr] }
     end
 
     op OverwriteCookie[addr: Addr, cookie: Cookie] do
-      # in Alloy: should produce "cookies.post == cookies.pre + addr -> cookie"
-      effects {
-        # NOTE 
-        #   `cookies = cookies + ...' 
-        # doesn't work in Ruby when `cookies' is not a local variable
-        #   `cookies' is a getter method, and 
-        #   `cookies=' is a setter method
-        # (this is not specific to our DSL, it's how it is in Ruby in general)
-        self.cookies = self.cookies + addr ** cookie
-      }
+      effects { self.cookies = self.cookies + addr ** cookie }
     end
-
   end
   
   mod User do
@@ -57,6 +43,4 @@ Slang::Dsl.view :CookieReplay do
     sends { Browser::ExtractCookie }
     sends { Browser::OverwriteCookie }
   end
-
 end
-

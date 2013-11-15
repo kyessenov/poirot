@@ -1,12 +1,8 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :RefererInteraction do
-
-  data Addr
-  data Name
-  data Value
+  data Addr, Name, Value
   data Pair[n: Name, v: Value]
   data URL[addr: Addr, queries: (set Pair)]
   data HTML[links: (set URL)]
@@ -51,5 +47,4 @@ Slang::Dsl.view :RefererInteraction do
     end
     sends { Browser::Visit }
   end
-
 end

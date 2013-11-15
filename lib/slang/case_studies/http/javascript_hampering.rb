@@ -1,13 +1,8 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :JavascriptHampering do
-
-  data Addr
-  data Name
-  data Value
-  data HTML
+  data Addr, Name, Value, HTML
   data Pair[n: Name, v: Value]
   data URL[addr: Addr, queries: (set Pair)]
 
@@ -44,5 +39,4 @@ Slang::Dsl.view :JavascriptHampering do
     op DisplayHTML[resp: HTML] do end
     sends { Browser::Visit }
   end
-
 end

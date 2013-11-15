@@ -26,10 +26,7 @@ Slang::Dsl.view :OAuth do
   trusted UserAgent, { 
     knownClients: (set ClientID)
   } do
-    assumption {
-      # knownClients.all?{ |clientId| clientId.in? ClientServer.id }
-      knownClients.in? ClientServer.id
-    }
+    assumption { knownClients.in? ClientServer.id }
 
     operation InitFlow[redirect: URI, id: ClientID, scope: Scope] do
       guard { id.in? knownClients }
