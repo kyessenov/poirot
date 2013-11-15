@@ -1,22 +1,15 @@
 require 'slang/slang_dsl'
 require 'slang/model/operation'
-
 include Slang::Dsl
 include Slang::Model
 
 Slang::Dsl.view :CSRF do
+  abstract data Payload, HtmlTag
+  data Hostname, Addr
+  data Cookie, OtherPayload < Payload
 
-  abstract data Payload
-  data Cookie       < Payload
-  data OtherPayload < Payload
-
-  data Hostname
-  data Addr
   data URI[addr: Addr, params: (set Payload)]
-
-  abstract data HtmlTag
   data ImgTag[src: URI] < HtmlTag
-
   data DOM[tags: (set HtmlTag)] < Payload
 
   trusted User, {
@@ -40,7 +33,6 @@ Slang::Dsl.view :CSRF do
       guard {
         cookie == cookies[self] if protectedOps.contains?(self)
       }
-
       sends { Client::HttpResp }
     end
   end
@@ -77,6 +69,4 @@ Slang::Dsl.view :CSRF do
       }
     end
   end
-
 end
-

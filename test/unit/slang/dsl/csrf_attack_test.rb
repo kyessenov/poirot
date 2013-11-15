@@ -18,6 +18,8 @@ class CSRFAttackTest < Test::Unit::TestCase
     assert_set_equal [Payload, Cookie, OtherPayload, Addr,
                       URI, HtmlTag, ImgTag, DOM, Hostname], view.data
     assert_set_equal [Payload, HtmlTag], view.data.select(&:abstract?)
+    assert_equal Payload, Cookie.meta.parent_sig
+    assert_equal Payload, OtherPayload.meta.parent_sig
   end
 
   def test_mod
