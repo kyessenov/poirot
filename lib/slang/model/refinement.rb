@@ -12,7 +12,7 @@ module Slang
 
       def check_view(*views)
         views.each do |view|
-          Arby::Ast::TypeChecker.check_alloy_module(view, "Not a View module!")
+          Arby::Ast::TypeChecker.check_arby_module(view, "Not a View module!")
           msg = "`#{view}' is not a view module"
           raise Arby::Ast::TypeError, msg unless Slang::Model::View === view.meta
         end
