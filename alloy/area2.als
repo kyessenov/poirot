@@ -65,8 +65,8 @@ sig A2Site__ViewProfile extends Op {
 	A2Site__ViewProfile__token : one Token,
 	A2Site__ViewProfile__ret : one Profile,
 }{
-	args = A2Site__ViewProfile__uid + A2Site__ViewProfile__token
-	ret = A2Site__ViewProfile__ret
+	args in A2Site__ViewProfile__uid + A2Site__ViewProfile__token
+	ret in A2Site__ViewProfile__ret
 	sender in Faculty + Student + Admin
 	receiver in A2Site
 }
@@ -75,7 +75,7 @@ sig A2Site__ViewProfile extends Op {
 sig DirectoryService__AddUserRecord extends Op {
 	DirectoryService__AddUserRecord__newRecord : one UserRecord,
 }{
-	args = DirectoryService__AddUserRecord__newRecord
+	args in DirectoryService__AddUserRecord__newRecord
 	no ret
 	receiver in DirectoryService
 }
@@ -85,7 +85,7 @@ sig DirectoryService__GetUserRecords extends Op {
 	DirectoryService__GetUserRecords__ret : set UserRecord,
 }{
 	no args
-	ret = DirectoryService__GetUserRecords__ret
+	ret in DirectoryService__GetUserRecords__ret
 	sender in A2Site
 	receiver in DirectoryService
 }
@@ -98,7 +98,7 @@ sig UserID extends Data {
 sig Token extends Data {
 	Token__encodes : one UserID,
 }{
-	fields = Token__encodes
+	fields in Token__encodes
 }
 abstract sig UserType extends Data {
 }{
@@ -119,12 +119,12 @@ sig UserRecord extends Data {
 	UserRecord__id : one UserID,
 	UserRecord__typ : one UserType,
 }{
-	fields = UserRecord__id + UserRecord__typ
+	fields in UserRecord__id + UserRecord__typ
 }
 sig Profile extends Data {
 	Profile__id : one UserID,
 }{
-	fields = Profile__id
+	fields in Profile__id
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -137,7 +137,7 @@ run SanityCheck {
   some A2Site__ViewProfile & SuccessOp
   some DirectoryService__AddUserRecord & SuccessOp
   some DirectoryService__GetUserRecords & SuccessOp
-} for 1 but 7 Data, 4 Step, 3 Op
+} for 1 but 7 Data, 4 Step,3 Op, 5 Module
 
 
 fun RelevantOp : Op -> Step {
@@ -145,11 +145,11 @@ fun RelevantOp : Op -> Step {
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 4 Step, 3 Op
+} for 1 but 7 Data, 4 Step,3 Op, 5 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 4 Step, 3 Op
+} for 1 but 7 Data, 4 Step,3 Op, 5 Module
 
