@@ -1,4 +1,4 @@
-require 'alloy/dsl/model_api'
+require 'arby/dsl/model_api'
 require 'slang/dsl/type_mod_helper'
 require 'slang/model/data'
 require 'slang/model/module'
@@ -9,19 +9,19 @@ module Slang
   module Dsl
 
     module ViewDslApi
-      include Alloy::Dsl::ModelDslApi
+      include Arby::Dsl::ModelDslApi
       include Slang::Dsl::TypeModHelper
       extend self
 
       def data(*args)
-        Alloy::Dsl::SigBuilder.new(
+        Arby::Dsl::SigBuilder.new(
           :superclass => Slang::Model::Data,
           :return     => :builder
         ).sig(*args)
       end
 
       def mod(*args, &block)
-        Alloy::Dsl::SigBuilder.new(
+        Arby::Dsl::SigBuilder.new(
           :superclass => Slang::Model::Module,
           :return     => :builder
         ).sig(*args, &block)
@@ -30,7 +30,7 @@ module Slang
       alias_method :component, :mod
 
       def trusted(*args, &block)
-        blder,blk = if args.size == 1 && Alloy::Dsl::SigBuilder === args.first
+        blder,blk = if args.size == 1 && Arby::Dsl::SigBuilder === args.first
                       [args.first, block]
                     else
                       [mod(*args, &block), nil]
@@ -44,7 +44,7 @@ module Slang
 
       def critical(*data_classes)
         fst = data_classes.first
-        data_klasses = if data_classes.size == 1 && Alloy::Dsl::SigBuilder === fst
+        data_klasses = if data_classes.size == 1 && Arby::Dsl::SigBuilder === fst
                          data_klasses = fst.return_result(:array)
                        else
                          data_classes

@@ -56,7 +56,7 @@ sig TrustedServer__HttpReq extends Op {
 	TrustedServer__HttpReq__cookie : one Cookie,
 	TrustedServer__HttpReq__addr : one URI,
 }{
-	args = TrustedServer__HttpReq__cookie + TrustedServer__HttpReq__addr
+	args in TrustedServer__HttpReq__cookie + TrustedServer__HttpReq__addr
 	no ret
 	sender in Client
 	receiver in TrustedServer
@@ -67,7 +67,7 @@ sig MaliciousServer__HttpReq extends Op {
 	MaliciousServer__HttpReq__cookie : one Cookie,
 	MaliciousServer__HttpReq__addr : one URI,
 }{
-	args = MaliciousServer__HttpReq__cookie + MaliciousServer__HttpReq__addr
+	args in MaliciousServer__HttpReq__cookie + MaliciousServer__HttpReq__addr
 	no ret
 	sender in Client
 	receiver in MaliciousServer
@@ -77,7 +77,7 @@ sig MaliciousServer__HttpReq extends Op {
 sig Client__Visit extends Op {
 	Client__Visit__dest : one URI,
 }{
-	args = Client__Visit__dest
+	args in Client__Visit__dest
 	no ret
 	sender in User
 	receiver in Client
@@ -88,7 +88,7 @@ sig Client__HttpResp extends Op {
 	Client__HttpResp__dom : one DOM,
 	Client__HttpResp__addr : one URI,
 }{
-	args = Client__HttpResp__dom + Client__HttpResp__addr
+	args in Client__HttpResp__dom + Client__HttpResp__addr
 	no ret
 	sender in TrustedServer + MaliciousServer
 	receiver in Client
@@ -109,7 +109,7 @@ sig Addr extends Data {
 }{
 	no fields
 }
-sig Cookie extends Data {
+sig Cookie extends Payload {
 }{
 	no fields
 }
@@ -121,17 +121,17 @@ sig URI extends Data {
 	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
-	fields = URI__addr + URI__params
+	fields in URI__addr + URI__params
 }
 sig ImgTag extends HtmlTag {
 	ImgTag__src : one URI,
 }{
-	no fields
+	fields in ImgTag__src
 }
 sig DOM extends Payload {
 	DOM__tags : set HtmlTag,
 }{
-	no fields
+	fields in DOM__tags
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -140,16 +140,19 @@ run SanityCheck {
   some MaliciousServer__HttpReq & SuccessOp
   some Client__Visit & SuccessOp
   some Client__HttpResp & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 5 Step,4 Op, 4 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 5 Step,4 Op, 4 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 7 Data, 5 Step,4 Op, 4 Module
+

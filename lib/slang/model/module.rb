@@ -1,10 +1,10 @@
-require 'alloy/ast/sig'
+require 'arby/ast/sig'
 require 'slang/dsl/module_dsl_api'
 
 module Slang
   module Model
 
-    class Module < Alloy::Ast::Sig
+    class Module < Arby::Ast::Sig
       extend Slang::Dsl::ModuleDslApi
 
       _define_meta
@@ -27,7 +27,7 @@ module Slang
     end
 
     module ParentModExpr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
       def apply_join(other)
         join_expr = super(other)
         ParentModJoinExpr.new(join_expr)
@@ -35,7 +35,7 @@ module Slang
     end
 
     class ParentModJoinExpr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
       attr_reader :join_expr
       def initialize(join_expr)
         super(join_expr.__type)

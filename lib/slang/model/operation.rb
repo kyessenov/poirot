@@ -1,5 +1,5 @@
-require 'alloy/ast/expr'
-require 'alloy/ast/sig'
+require 'arby/ast/expr'
+require 'arby/ast/sig'
 require 'slang/dsl/operation_dsl_api'
 require 'slang/model/nondet_helper'
 
@@ -10,7 +10,7 @@ module Slang
       include NondetHelper
     end
 
-    class Operation < Alloy::Ast::Sig
+    class Operation < Arby::Ast::Sig
       extend Slang::Dsl::OperationDslApi
       extend OperationStatic
 
@@ -26,7 +26,7 @@ module Slang
         #   fail "Didn't expect operation to have a parent that is not Module " +
         #        "(it's #{p}:#{p.class} instead)"
         # end
-        # Alloy::Ast::Expr.as_atom(self, name)
+        # Arby::Ast::Expr.as_atom(self, name)
         # self
         make_me_op_expr
       end
@@ -39,7 +39,7 @@ module Slang
           fail "Didn't expect operation to have a parent that is not Module " +
                "(it's #{p}:#{p.class} instead)"
         end
-        Alloy::Ast::Expr.as_atom(self, "o")
+        Arby::Ast::Expr.as_atom(self, "o")
         # make_me_sym_expr("o")
         self.singleton_class.send :include, OpExpr
         self
@@ -61,14 +61,14 @@ module Slang
     # ~~~~~~~~~~~~~~~~~~~~~~~ custom expressions ~~~~~~~~~~~~~~~~~~~~~~ #
 
     module OpExpr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
     end
 
     module TrigExpr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
     end
 
-    class ArgOfExpr < Alloy::Ast::Expr::UnaryExpr
+    class ArgOfExpr < Arby::Ast::Expr::UnaryExpr
       def initialize(sub) 
         super("arg", sub) 
         set_type(sub.__type)
@@ -76,7 +76,7 @@ module Slang
     end
 
     module ArgExpr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
       def apply_join(other)
         ArgOfExpr.new(other)
       end

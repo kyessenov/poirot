@@ -1,5 +1,5 @@
-require 'alloy/ast/type_checker'
-require 'alloy/dsl/sig_api'
+require 'arby/ast/type_checker'
+require 'arby/dsl/sig_api'
 
 require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
@@ -13,7 +13,7 @@ module Slang
   module Dsl
 
     module OperationDslApi
-      include Alloy::Dsl::SigDslApi
+      include Arby::Dsl::SigDslApi
       include Slang::Dsl::TriggerHelper
       include Slang::Dsl::GuardHelper
       include Slang::Dsl::EffectsHelper
@@ -23,7 +23,7 @@ module Slang
 
       private
 
-      # Extend the existing Alloy::Ast::SigMeta class with some extra
+      # Extend the existing Arby::Ast::SigMeta class with some extra
       # methods for fetching Slang specific stuff.
       def _define_meta
         meta = super

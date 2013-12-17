@@ -1,4 +1,4 @@
-require 'alloy/ast/types'
+require 'arby/ast/types'
 
 module Slang
   module Dsl
@@ -10,7 +10,7 @@ module Slang
     # ================================================================
     module TypeModHelper
       extend self
-      def dynamic(type)  Alloy::Ast::AType.get(type).apply_modifier(:dynamic) end
+      def dynamic(type)  Arby::Ast::AType.get(type).apply_modifier(:dynamic) end
     end
 
   end

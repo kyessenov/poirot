@@ -1,4 +1,4 @@
-require 'alloy/ast/sig'
+require 'arby/ast/sig'
 require 'slang/model/nondet_helper'
 
 module Slang
@@ -8,7 +8,7 @@ module Slang
       include NondetHelper
     end
 
-    class Data < Alloy::Ast::Sig
+    class Data < Arby::Ast::Sig
       extend DataStatic
 
       _define_meta

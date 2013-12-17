@@ -71,7 +71,7 @@ fact trustedModuleFacts {
 sig EndUser__PromptCredential extends Op {
 	EndUser__PromptCredential__forId : one Addr,
 }{
-	args = EndUser__PromptCredential__forId
+	args in EndUser__PromptCredential__forId
 	no ret
 	sender in UserAgent
 	receiver in EndUser
@@ -81,7 +81,7 @@ sig EndUser__PromptCredential extends Op {
 sig UserAgent__RedirectToProvider extends Op {
 	UserAgent__RedirectToProvider__addr : one Addr,
 }{
-	args = UserAgent__RedirectToProvider__addr
+	args in UserAgent__RedirectToProvider__addr
 	no ret
 	sender in RelyingParty
 	receiver in UserAgent
@@ -91,7 +91,7 @@ sig UserAgent__RedirectToProvider extends Op {
 sig UserAgent__RequestCredential extends Op {
 	UserAgent__RequestCredential__id : one Addr,
 }{
-	args = UserAgent__RequestCredential__id
+	args in UserAgent__RequestCredential__id
 	no ret
 	sender in IdentityProvider
 	receiver in UserAgent
@@ -102,7 +102,7 @@ sig UserAgent__EnterCred extends Op {
 	UserAgent__EnterCred__id : one Addr,
 	UserAgent__EnterCred__cred : one Credential,
 }{
-	args = UserAgent__EnterCred__id + UserAgent__EnterCred__cred
+	args in UserAgent__EnterCred__id + UserAgent__EnterCred__cred
 	no ret
 	sender in EndUser
 	receiver in UserAgent
@@ -113,7 +113,7 @@ sig UserAgent__ReceiveOpenID extends Op {
 	UserAgent__ReceiveOpenID__id : one Addr,
 	UserAgent__ReceiveOpenID__openId : one OpenId,
 }{
-	args = UserAgent__ReceiveOpenID__id + UserAgent__ReceiveOpenID__openId
+	args in UserAgent__ReceiveOpenID__id + UserAgent__ReceiveOpenID__openId
 	no ret
 	sender in IdentityProvider
 	receiver in UserAgent
@@ -132,7 +132,7 @@ sig UserAgent__LoginSuccessful extends Op {
 sig RelyingParty__RequestLogIn extends Op {
 	RelyingParty__RequestLogIn__id : one Addr,
 }{
-	args = RelyingParty__RequestLogIn__id
+	args in RelyingParty__RequestLogIn__id
 	no ret
 	sender in EndUser
 	receiver in RelyingParty
@@ -143,7 +143,7 @@ sig RelyingParty__LogIn extends Op {
 	RelyingParty__LogIn__id : one Addr,
 	RelyingParty__LogIn__openId : one OpenId,
 }{
-	args = RelyingParty__LogIn__id + RelyingParty__LogIn__openId
+	args in RelyingParty__LogIn__id + RelyingParty__LogIn__openId
 	no ret
 	sender in UserAgent
 	receiver in RelyingParty
@@ -154,7 +154,7 @@ sig RelyingParty__AuthVerified extends Op {
 	RelyingParty__AuthVerified__id : one Addr,
 	RelyingParty__AuthVerified__openId : one OpenId,
 }{
-	args = RelyingParty__AuthVerified__id + RelyingParty__AuthVerified__openId
+	args in RelyingParty__AuthVerified__id + RelyingParty__AuthVerified__openId
 	no ret
 	sender in IdentityProvider
 	receiver in RelyingParty
@@ -164,7 +164,7 @@ sig RelyingParty__AuthVerified extends Op {
 sig IdentityProvider__RequestAuth extends Op {
 	IdentityProvider__RequestAuth__id : one Addr,
 }{
-	args = IdentityProvider__RequestAuth__id
+	args in IdentityProvider__RequestAuth__id
 	no ret
 	sender in UserAgent
 	receiver in IdentityProvider
@@ -175,7 +175,7 @@ sig IdentityProvider__ReceiveCred extends Op {
 	IdentityProvider__ReceiveCred__id : one Addr,
 	IdentityProvider__ReceiveCred__cred : one Credential,
 }{
-	args = IdentityProvider__ReceiveCred__id + IdentityProvider__ReceiveCred__cred
+	args in IdentityProvider__ReceiveCred__id + IdentityProvider__ReceiveCred__cred
 	no ret
 	sender in UserAgent
 	receiver in IdentityProvider
@@ -186,7 +186,7 @@ sig IdentityProvider__CheckAuth extends Op {
 	IdentityProvider__CheckAuth__id : one Addr,
 	IdentityProvider__CheckAuth__openId : one OpenId,
 }{
-	args = IdentityProvider__CheckAuth__id + IdentityProvider__CheckAuth__openId
+	args in IdentityProvider__CheckAuth__id + IdentityProvider__CheckAuth__openId
 	no ret
 	sender in RelyingParty
 	receiver in IdentityProvider
@@ -216,7 +216,7 @@ sig URI extends Data {
 	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
-	fields = URI__addr + URI__params
+	fields in URI__addr + URI__params
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -238,16 +238,19 @@ run SanityCheck {
   some IdentityProvider__RequestAuth & SuccessOp
   some IdentityProvider__ReceiveCred & SuccessOp
   some IdentityProvider__CheckAuth & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 5 Data, 13 Step,12 Op, 4 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 5 Data, 13 Step,12 Op, 4 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 5 Data, 13 Step,12 Op, 4 Module
+

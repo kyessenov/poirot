@@ -51,7 +51,7 @@ fact trustedModuleFacts {
 sig TrustedServer__HttpReq extends Op {
 	TrustedServer__HttpReq__addr : one URI,
 }{
-	args = TrustedServer__HttpReq__addr
+	args in TrustedServer__HttpReq__addr
 	no ret
 	sender in Client
 	receiver in TrustedServer
@@ -61,7 +61,7 @@ sig TrustedServer__HttpReq extends Op {
 sig MaliciousServer__HttpReq extends Op {
 	MaliciousServer__HttpReq__addr : one URI,
 }{
-	args = MaliciousServer__HttpReq__addr
+	args in MaliciousServer__HttpReq__addr
 	no ret
 	sender in Client
 	receiver in MaliciousServer
@@ -71,7 +71,7 @@ sig MaliciousServer__HttpReq extends Op {
 sig Client__Visit extends Op {
 	Client__Visit__dest : one URI,
 }{
-	args = Client__Visit__dest
+	args in Client__Visit__dest
 	no ret
 	sender in User
 	receiver in Client
@@ -81,7 +81,7 @@ sig Client__Visit extends Op {
 sig Client__HttpResp extends Op {
 	Client__HttpResp__redirectTo : one URI,
 }{
-	args = Client__HttpResp__redirectTo
+	args in Client__HttpResp__redirectTo
 	no ret
 	sender in TrustedServer + MaliciousServer
 	receiver in Client
@@ -99,16 +99,19 @@ run SanityCheck {
   some MaliciousServer__HttpReq & SuccessOp
   some Client__Visit & SuccessOp
   some Client__HttpResp & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 4 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 4 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 4 Module
+

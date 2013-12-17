@@ -30,7 +30,7 @@ fact trustedModuleFacts {
 sig EndPoint__Deliver extends Op {
 	EndPoint__Deliver__packets : set Packet,
 }{
-	args = EndPoint__Deliver__packets
+	args in EndPoint__Deliver__packets
 	no ret
 	sender in Channel
 	receiver in EndPoint
@@ -40,7 +40,7 @@ sig EndPoint__Deliver extends Op {
 sig Channel__Transmit extends Op {
 	Channel__Transmit__packets : set Packet,
 }{
-	args = Channel__Transmit__packets
+	args in Channel__Transmit__packets
 	no ret
 	sender in EndPoint
 	receiver in Channel
@@ -50,7 +50,7 @@ sig Channel__Transmit extends Op {
 sig Channel__Probe extends Op {
 	Channel__Probe__packets : set Packet,
 }{
-	args = Channel__Probe__packets
+	args in Channel__Probe__packets
 	no ret
 	sender in Eavesdropper
 	receiver in Channel
@@ -60,7 +60,7 @@ sig Channel__Probe extends Op {
 sig Eavesdropper__Emit extends Op {
 	Eavesdropper__Emit__packets : set Packet,
 }{
-	args = Eavesdropper__Emit__packets
+	args in Eavesdropper__Emit__packets
 	no ret
 	sender in Channel
 	receiver in Eavesdropper
@@ -78,16 +78,19 @@ run SanityCheck {
   some Channel__Transmit & SuccessOp
   some Channel__Probe & SuccessOp
   some Eavesdropper__Emit & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 3 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 3 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 1 Data, 5 Step,4 Op, 3 Module
+

@@ -71,7 +71,7 @@ fact trustedModuleFacts {
 sig EndUser__PromptForCred extends Op {
 	EndUser__PromptForCred__uri : one URI,
 }{
-	args = EndUser__PromptForCred__uri
+	args in EndUser__PromptForCred__uri
 	no ret
 	sender in UserAgent
 	receiver in EndUser
@@ -83,7 +83,7 @@ sig UserAgent__InitFlow extends Op {
 	UserAgent__InitFlow__id : one ClientID,
 	UserAgent__InitFlow__scope : one Scope,
 }{
-	args = UserAgent__InitFlow__redirect + UserAgent__InitFlow__id + UserAgent__InitFlow__scope
+	args in UserAgent__InitFlow__redirect + UserAgent__InitFlow__id + UserAgent__InitFlow__scope
 	no ret
 	sender in ClientServer
 	receiver in UserAgent
@@ -94,7 +94,7 @@ sig UserAgent__EnterCred extends Op {
 	UserAgent__EnterCred__cred : one Credential,
 	UserAgent__EnterCred__uri : one URI,
 }{
-	args = UserAgent__EnterCred__cred + UserAgent__EnterCred__uri
+	args in UserAgent__EnterCred__cred + UserAgent__EnterCred__uri
 	no ret
 	sender in EndUser
 	receiver in UserAgent
@@ -104,7 +104,7 @@ sig UserAgent__EnterCred extends Op {
 sig UserAgent__Redirect extends Op {
 	UserAgent__Redirect__uri : one URI,
 }{
-	args = UserAgent__Redirect__uri
+	args in UserAgent__Redirect__uri
 	no ret
 	sender in AuthServer
 	receiver in UserAgent
@@ -114,7 +114,7 @@ sig UserAgent__Redirect extends Op {
 sig ClientServer__SendAuthResp extends Op {
 	ClientServer__SendAuthResp__uri : one URI,
 }{
-	args = ClientServer__SendAuthResp__uri
+	args in ClientServer__SendAuthResp__uri
 	no ret
 	sender in UserAgent
 	receiver in ClientServer
@@ -124,7 +124,7 @@ sig ClientServer__SendAuthResp extends Op {
 sig ClientServer__SendAccessToken extends Op {
 	ClientServer__SendAccessToken__token : one AccessToken,
 }{
-	args = ClientServer__SendAccessToken__token
+	args in ClientServer__SendAccessToken__token
 	no ret
 	sender in AuthServer
 	receiver in ClientServer
@@ -134,7 +134,7 @@ sig ClientServer__SendAccessToken extends Op {
 sig ClientServer__SendResource extends Op {
 	ClientServer__SendResource__res : one Resource,
 }{
-	args = ClientServer__SendResource__res
+	args in ClientServer__SendResource__res
 	no ret
 	sender in ResourceServer
 	receiver in ClientServer
@@ -145,7 +145,7 @@ sig AuthServer__ReqAuth extends Op {
 	AuthServer__ReqAuth__cred : one Credential,
 	AuthServer__ReqAuth__uri : one URI,
 }{
-	args = AuthServer__ReqAuth__cred + AuthServer__ReqAuth__uri
+	args in AuthServer__ReqAuth__cred + AuthServer__ReqAuth__uri
 	no ret
 	sender in UserAgent
 	receiver in AuthServer
@@ -155,7 +155,7 @@ sig AuthServer__ReqAuth extends Op {
 sig AuthServer__ReqAccessToken extends Op {
 	AuthServer__ReqAccessToken__authGrant : one AuthGrant,
 }{
-	args = AuthServer__ReqAccessToken__authGrant
+	args in AuthServer__ReqAccessToken__authGrant
 	no ret
 	sender in ClientServer
 	receiver in AuthServer
@@ -165,7 +165,7 @@ sig AuthServer__ReqAccessToken extends Op {
 sig ResourceServer__ReqResource extends Op {
 	ResourceServer__ReqResource__accessToken : one AccessToken,
 }{
-	args = ResourceServer__ReqResource__accessToken
+	args in ResourceServer__ReqResource__accessToken
 	no ret
 	sender in ClientServer
 	receiver in ResourceServer
@@ -211,7 +211,7 @@ sig URI extends Data {
 	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
-	fields = URI__addr + URI__params
+	fields in URI__addr + URI__params
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -231,16 +231,19 @@ run SanityCheck {
   some AuthServer__ReqAuth & SuccessOp
   some AuthServer__ReqAccessToken & SuccessOp
   some ResourceServer__ReqResource & SuccessOp
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 9 Data, 11 Step,10 Op, 5 Module
+
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
 }
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 9 Data, 11 Step,10 Op, 5 Module
+
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 7 Step, 6 Op
+} for 1 but 9 Data, 11 Step,10 Op, 5 Module
+

@@ -1,6 +1,6 @@
-require 'alloy/ast/type_checker'
-require 'alloy/dsl/model_api'
-require 'alloy/dsl/sig_api'
+require 'arby/ast/type_checker'
+require 'arby/dsl/model_api'
+require 'arby/dsl/sig_api'
 
 require 'sdg_utils/caching/searchable_attr'
 require 'sdg_utils/random'
@@ -16,7 +16,7 @@ module Slang
   module Dsl
 
     module ModuleDslApi
-      include Alloy::Dsl::SigDslApi
+      include Arby::Dsl::SigDslApi
       include Slang::Dsl::TriggerHelper
       include Slang::Dsl::GuardHelper
       include Slang::Dsl::TypeModHelper
@@ -37,7 +37,7 @@ module Slang
 
       def operation(*args, &body)
         # evaluate ops lazily
-        ans = Alloy::Dsl::SigBuilder.new(
+        ans = Arby::Dsl::SigBuilder.new(
           :superclass => Slang::Model::Operation,
           :scope_class => self
         ).sig(*args, &body)
@@ -53,7 +53,7 @@ module Slang
         end
       end
 
-      # Extend the existing Alloy::Ast::SigMeta class with some extra
+      # Extend the existing Arby::Ast::SigMeta class with some extra
       # methods for fetching Slang specific stuff.
       def _define_meta
         meta = super
@@ -70,7 +70,7 @@ module Slang
       def creates()             @creates ||= [] end
       def add_creates(data_cls)
         msg = "Use `add_creates' to add a *Data* instance"
-        Alloy::Ast::TypeChecker.check_sig_class(data_cls, Slang::Model::Data)
+        Arby::Ast::TypeChecker.check_sig_class(data_cls, Slang::Model::Data)
         creates << data_cls
       end
 

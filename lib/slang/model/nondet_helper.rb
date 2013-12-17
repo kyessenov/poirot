@@ -1,5 +1,5 @@
-require 'alloy/ast/expr'
-require 'alloy/ast/fun'
+require 'arby/ast/expr'
+require 'arby/ast/fun'
 
 module Slang
   module Model
@@ -22,7 +22,7 @@ module Slang
               acc
             end
           end
-        inst = Alloy::Ast::Fun.dummy_instance(self)
+        inst = Arby::Ast::Fun.dummy_instance(self)
         inst_expr = inst.make_me_sym_expr
         constrs = get_field_values_constraint(inst_expr, hash)
         constrs += get_appended_facts(inst_expr, &block)
@@ -37,7 +37,7 @@ module Slang
           fld = meta.field(fld_name)
           msg = "field #{fld_name} not found in #{self.class.name}"
           raise ArgumentError, msg unless fld
-          fld_join_expr = inst_expr.apply_join(fld.to_alloy_expr)
+          fld_join_expr = inst_expr.apply_join(fld.to_arby_expr)
           if OpConstr === fld_val
             conjs += fld_val.replace_inst(fld_join_expr)
           else
@@ -60,7 +60,7 @@ module Slang
 
     #TODO: rename
     class OpConstr
-      include Alloy::Ast::Expr::MExpr
+      include Arby::Ast::Expr::MExpr
 
       attr_reader :inst, :constr
 
@@ -75,7 +75,7 @@ module Slang
 
       def replace_inst(replacement_expr)
         constr.map { |e|
-          Alloy::Ast::Expr.replace_subexpressions(e, @inst, replacement_expr)
+          Arby::Ast::Expr.replace_subexpressions(e, @inst, replacement_expr)
         }
       end
     end

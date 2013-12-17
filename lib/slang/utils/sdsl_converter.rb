@@ -1,4 +1,4 @@
-require 'alloy/utils/alloy_printer'
+require 'arby/utils/alloy_printer'
 
 require 'sdg_utils/visitors/visitor'
 
@@ -155,37 +155,37 @@ module Slang
         }.flatten
       end
 
-      # @param guard_fun [Alloy::Ast::Fun]
+      # @param guard_fun [Arby::Ast::Fun]
       # @return [Expr]
       def convert_guard(guard_fun)
         convert_expr(guard_fun.sym_exe_export)
       end
 
       # def rebuild_dynamic_fields(e, prepost)
-      #   Alloy::Utils::ExprRebuilder.new do |expr|
-      #     if Alloy::Ast::Expr::FieldExpr === expr &&
+      #   Arby::Utils::ExprRebuilder.new do |expr|
+      #     if Arby::Ast::Expr::FieldExpr === expr &&
       #         expr.__field.type.has_modifier?(:dynamic)
       #       varname = "#{_arg_name(expr.__field)}.(o.#{prepost})"
-      #       Alloy::Ast::Expr::Var.new(varname, expr.__field.type)
+      #       Arby::Ast::Expr::Var.new(varname, expr.__field.type)
       #     else
       #       nil
       #     end
       #   end.rebuild(e)
       # end
 
-      # @param effect_fun [Alloy::Ast::Fun]
+      # @param effect_fun [Arby::Ast::Fun]
       # @return [Expr]
       def convert_effect(effect_fun)
-        Alloy.boss.clear_side_effects
+        Arby.boss.clear_side_effects
         res = effect_fun.sym_exe_export
-        seffects = Alloy.boss.clear_side_effects
+        seffects = Arby.boss.clear_side_effects
         if seffects.empty? || (seffects.last.rhs.__neq res rescue true)
           seffects << res
         end
         seffects.map(&method(:convert_expr))
       end
 
-      # @param trigger_fun [Alloy::Ast::Fun]
+      # @param trigger_fun [Arby::Ast::Fun]
       # @param op [Class(? < Slang::Model::Operation)]
       # @return [Array(Op)]
       def convert_trigger(trigger_fun, op=nil)
@@ -202,7 +202,7 @@ module Slang
         end
       end
 
-      # @param trig_constr [Alloy::Ast::MExpr]
+      # @param trig_constr [Arby::Ast::MExpr]
       # @param op [Class(? < Slang::Model::Operation)]
       # @return [Op]
       def convert_trigger_expr(trig_expr, op=nil)
@@ -221,7 +221,7 @@ module Slang
          end
       end
 
-      # @param arg [Alloy::Ast::Arg]
+      # @param arg [Arby::Ast::Arg]
       # @return [Item, Bag]
       def convert_arg(arg)
         name = _arg_name(arg)
@@ -237,7 +237,7 @@ module Slang
         end
       end
 
-      # @param expr [Alloy::Ast::Expr::MExpr]
+      # @param expr [Arby::Ast::Expr::MExpr]
       # @return [Expr]
       def convert_expr(expr)
         evis.visit(expr)
@@ -268,7 +268,7 @@ module Slang
           else
             target.contains(arg)
           end
-        when Alloy::Ast::Fun
+        when Arby::Ast::Fun
           target = convert_expr(ce.target)
           lhs = target.join(ae _fun_name ce.fun)
           FuncApp.new(lhs, *ce.args.map(&method(:convert_expr)))
@@ -280,11 +280,11 @@ module Slang
       def convert_iteexpr(ite)
         cond = convert_expr(ite.cond)
         ans = []
-        if ite.then_expr && !Alloy::Ast::Expr::BoolConst.True?(ite.then_expr)
+        if ite.then_expr && !Arby::Ast::Expr::BoolConst.True?(ite.then_expr)
           then_expr = convert_expr(ite.then_expr)
           ans << implies(cond, then_expr)
         end
-        if ite.else_expr && !Alloy::Ast::Expr::BoolConst.True?(ite.else_expr)
+        if ite.else_expr && !Arby::Ast::Expr::BoolConst.True?(ite.else_expr)
           else_expr = convert_expr(ite.else_expr)
           ans << implies(neg(cond), else_expr)
         end
@@ -295,7 +295,7 @@ module Slang
         end
       end
 
-      # @param be [Alloy::Ast::Expr::UnaryExpression]
+      # @param be [Arby::Ast::Expr::UnaryExpression]
       def convert_unaryexpr(ue)
         sub = convert_expr(ue.sub)
         meth = ue.op.name
@@ -317,9 +317,9 @@ module Slang
         convert_expr(pmje.join_expr.rhs)
       end
       
-      # @param be [Alloy::Ast::Expr::BinaryExpression]
+      # @param be [Arby::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
-        is_assign_expr = be.__op == Alloy::Ast::Ops::ASSIGN
+        is_assign_expr = be.__op == Arby::Ast::Ops::ASSIGN
         lhs = set_assignlhs_while(is_assign_expr) do
           evis.visit(be.lhs)
         end
@@ -399,7 +399,7 @@ module Slang
       end
 
       def to_als(*args)
-        ans = Alloy::Utils::AlloyPrinter.new({
+        ans = Arby::Utils::AlloyPrinter.new({
           :sig_namer => method(:_sig_name).to_proc,
           :fun_namer => method(:_fun_name).to_proc,
           :arg_namer => method(:_arg_name).to_proc
@@ -425,9 +425,9 @@ module Slang
       def _mod_name(mod_cls)   mod_cls.relative_name end
       def _arg_name(arg)
         case arg
-        when Alloy::Ast::Field
+        when Arby::Ast::Field
           "#{_sig_name arg.parent}__#{arg.name}"
-        when Alloy::Ast::Arg
+        when Arby::Ast::Arg
           arg.name
         else
           raise ArgumentError, "not an Arg: #{arg}:#{arg.class}"
@@ -439,7 +439,7 @@ module Slang
 
       def evis()
         @evis ||= SDGUtils::Visitors::TypeDelegatingVisitor.new(self,
-          :top_class        => Alloy::Ast::Expr::MExpr,
+          :top_class        => Arby::Ast::Expr::MExpr,
           :visit_meth_namer => proc{|cls, kind| "convert_#{kind}"},
           :default_return   => proc{|node| fail "no handler for #{node}:#{node.class}"}
         )

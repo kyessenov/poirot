@@ -1,4 +1,4 @@
-require 'alloy/dsl/fun_helper'
+require 'arby/dsl/fun_helper'
 require 'sdg_utils/random'
 
 module Slang
@@ -8,7 +8,7 @@ module Slang
     #              available in the target class (where this module is
     #              included)
     module TriggerHelper
-      include Alloy::Dsl::FunHelper
+      include Arby::Dsl::FunHelper
 
       def triggers(&block)
         name = "triggers_#{SDGUtils::Random.salted_timestamp}"
@@ -22,7 +22,7 @@ module Slang
                     end
         t.instance_eval <<-RUBY, __FILE__, __LINE__+1
           def sym_exe_invoke
-            op_inst = Alloy::Ast::Fun.dummy_instance(@owner)
+            op_inst = Arby::Ast::Fun.dummy_instance(@owner)
             __sym_exe op_inst.make_me_#{expr_kind}_expr
           end
         RUBY

@@ -1,4 +1,4 @@
-require 'alloy/ast/type_checker'
+require 'arby/ast/type_checker'
 require 'slang/model/module'
 require 'slang/model/view'
 require 'slang/model/operation'
@@ -12,16 +12,16 @@ module Slang
 
       def check_view(*views)
         views.each do |view|
-          Alloy::Ast::TypeChecker.check_alloy_module(view, "Not a View module!")
+          Arby::Ast::TypeChecker.check_alloy_module(view, "Not a View module!")
           msg = "`#{view}' is not a view module"
-          raise Alloy::Ast::TypeError, msg unless Slang::Model::View === view.meta
+          raise Arby::Ast::TypeError, msg unless Slang::Model::View === view.meta
         end
       end      
 
       def check_subcls(parent_cls, *klasses)
         klasses.each do |klass|
           msg = "`#{klass}' is not a Slang #{parent_cls.relative_name} class"
-          raise Alloy::Ast::TypeError, msg unless klass < parent_cls
+          raise Arby::Ast::TypeError, msg unless klass < parent_cls
         end
       end
 
