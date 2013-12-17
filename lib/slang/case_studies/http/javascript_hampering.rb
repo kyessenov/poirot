@@ -1,5 +1,4 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :JavascriptHampering do
@@ -45,5 +44,4 @@ Slang::Dsl.view :JavascriptHampering do
     op DisplayHTML[resp: HTML] do end
     sends { Browser::Visit }
   end
-
 end

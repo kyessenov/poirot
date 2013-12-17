@@ -1,5 +1,4 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :OpenRedirector do
@@ -11,9 +10,7 @@ Slang::Dsl.view :OpenRedirector do
 
     # assumption: the user doesn't intend to visit the malicious
     #             address
-    assumption {
-      not intents.contains?(MaliciousServer.addr)
-    }
+    assumption { not intents.contains?(MaliciousServer.addr) }
 
     # May invoke Client::Visit
     #
@@ -62,8 +59,5 @@ Slang::Dsl.view :OpenRedirector do
         MaliciousServer::HttpReq[redirectTo]
       }
     end
-
   end
-
 end
-

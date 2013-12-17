@@ -1,9 +1,7 @@
 require 'slang/slang_dsl'
-
 include Slang::Dsl
 
 Slang::Dsl.view :LDAP do
-  
   data Record
 
   trusted LDAPServer [
@@ -23,6 +21,4 @@ Slang::Dsl.view :LDAP do
     sends { LDAPServer::GetRecords }
     sends { LDAPServer::AddRecord }
   end
- 
 end
-

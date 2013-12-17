@@ -8,9 +8,12 @@ module Slang
     extend self
 
     def view(name, &block)
-      Alloy::Dsl::ModelBuilder.new({
-        :mods_to_include => [Slang::Dsl::ViewDslApi]
-      }).model(:view, name, &block)
+      Alloy.conf.do_with(:defer_body_eval => false, 
+                         :detect_appended_facts => false) do
+        Alloy::Dsl::ModelBuilder.new({
+          :mods_to_include => [Slang::Dsl::ViewDslApi]
+        }).model(:view, name, &block)
+      end
     end
 
   end

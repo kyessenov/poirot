@@ -98,13 +98,8 @@ sig Client__HttpResp extends Op {
 abstract sig Payload extends Data {
 }{
 }
-sig Cookie extends Payload {
+abstract sig HtmlTag extends Data {
 }{
-	no fields
-}
-sig OtherPayload extends Payload {
-}{
-	no fields
 }
 sig Hostname extends Data {
 }{
@@ -114,24 +109,29 @@ sig Addr extends Data {
 }{
 	no fields
 }
+sig Cookie extends Data {
+}{
+	no fields
+}
+sig OtherPayload extends Payload {
+}{
+	no fields
+}
 sig URI extends Data {
 	URI__addr : one Addr,
 	URI__params : set Payload,
 }{
 	fields = URI__addr + URI__params
 }
-abstract sig HtmlTag extends Data {
-}{
-}
 sig ImgTag extends HtmlTag {
 	ImgTag__src : one URI,
 }{
-	fields = ImgTag__src
+	no fields
 }
 sig DOM extends Payload {
 	DOM__tags : set HtmlTag,
 }{
-	fields = DOM__tags
+	no fields
 }
 sig OtherData extends Data {}{ no fields }
 

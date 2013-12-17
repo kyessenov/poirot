@@ -5,13 +5,8 @@ include Slang::Dsl
 Slang::Dsl.view :OAuth do
 
   abstract data Payload
-  data AuthCode < Payload
-  data AuthGrant < Payload
-  data Credential < Payload
-  data AccessToken < Payload 
-  data Resource < Payload
-  data ClientID < Payload
-  data Scope < Payload
+  data AuthCode, AuthGrant, Credential, AccessToken,
+       Resource, ClientID, Scope < Payload
 
   data Addr
   data URI [addr: Addr, params: (set Payload)]
@@ -31,10 +26,7 @@ Slang::Dsl.view :OAuth do
   trusted UserAgent, { 
     knownClients: (set ClientID)
   } do
-    assumption {
-      # knownClients.all?{ |clientId| clientId.in? ClientServer.id }
-      knownClients.in? ClientServer.id
-    }
+    assumption { knownClients.in? ClientServer.id }
 
     operation InitFlow[redirect: URI, id: ClientID, scope: Scope] do
       guard { id.in? knownClients }

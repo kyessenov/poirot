@@ -195,6 +195,8 @@ module Slang
           convert_trigger_expr(body.some(), op)
         when ::Array === body
           body.map{|e| convert_trigger_expr(e, op)}.flatten
+        when ::NilClass === body
+          []
         else
           convert_trigger_expr(body, op)
         end
