@@ -438,7 +438,7 @@ end
 def hasKey(m, i)
   if not m.is_a? Expr then m = expr(m) end
   if not i.is_a? Expr then i = expr(i) end
-  some(nav(m, i))
+  nav(m, i).some
 end
 def map(n, d, r)
   Map.new(n, d, r)
@@ -482,7 +482,7 @@ class Expr
 
   def contains otherExpr
     if not otherExpr.is_a? Expr then otherExpr = expr(otherExpr) end
-    some(intersect(self, otherExpr))#TODO: this is not equivalent to `otherExpr in self'
+    intersect(self, otherExpr).some #TODO: this is not equivalent to `otherExpr in self'
   end
 
   def eq(otherExpr)  Equals.new(self, otherExpr) end
@@ -491,6 +491,9 @@ class Expr
   def lte(otherExpr) GenericBinOp.new(" <= ", self, otherExpr) end
   def gt(otherExpr)  GenericBinOp.new(" > ", self, otherExpr) end
   def gte(otherExpr) GenericBinOp.new(" >= ", self, otherExpr) end
+
+  def some()         Exists.new(self) end
+  def no()           some.not end
 
   alias_method :equals, :eq
 
@@ -832,9 +835,9 @@ class Exists < Formula
     Exists.new(@expr.rewrite(ctx))
   end
 end
-def some(e)
-  Exists.new(e)
-end
+# def some(e)
+#   Exists.new(e)
+# end
 
 class Not < Formula
   def initialize(e)
