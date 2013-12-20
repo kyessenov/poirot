@@ -11,7 +11,8 @@ module Slang
       include Arby::Dsl::FunHelper
 
       def triggers(&block)
-        name = "triggers_#{SDGUtils::Random.salted_timestamp}"
+        name = "#{self.relative_name.downcase}__triggers_" + 
+          "#{SDGUtils::Random.salted_timestamp}"
         t = fun(name, {}, nil, &block)
         expr_kind = if t.owner < Slang::Model::Operation
                       "trig"
