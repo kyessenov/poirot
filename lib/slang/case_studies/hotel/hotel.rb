@@ -2,6 +2,9 @@ require 'slang/slang_dsl'
 
 include Slang::Dsl
 
+Arby.conf.sym_exe.convert_missing_fields_to_joins = true
+
+
 Slang::Dsl.view :HotelLocking do
 
 #  data Key[nxt: Key]
@@ -14,21 +17,22 @@ Slang::Dsl.view :HotelLocking do
     occupant: (dynamic RoomNumber ** GuestID)
   ] do
     creates Key
-    op Checkin[id: GuestID, rm: RoomNumber, ret: Key] do
+
+    op Checkin[guest: Guest, rm: RoomNumber, ret: Key] do
       guard {
         no self.occupant[rm]
         ret == self.lastKey[rm].nxt
       }
       effects {
+        guest.keys = guest.keys + ret
         self.lastKey = self.lastKey + (rm ** ret)
-        self.occupant = self.occupant + (rm ** id)
+        self.occupant = self.occupant + (rm ** guest.id)
       }
     end
+
     op Checkout[id: GuestID] do
-      guard {
-#        some occupant.id
-        occupant.some {|r, i| i == id}
-      }
+      guard { some occupant.id }
+
       effects {
         no occupant.id
       }
@@ -37,6 +41,7 @@ Slang::Dsl.view :HotelLocking do
 
   trusted Room [
     num: RoomNumber,
+    keys: (set Key),
     currentKey: (dynamic Key)
   ] do
     assumption {
@@ -52,21 +57,16 @@ Slang::Dsl.view :HotelLocking do
     end
   end
 
-  trusted GoodGuest [
-    id: GuestID
+  abstract mod Guest [
+    id: GuestID,
+    keys: (set Key)
   ] do
     sends { FrontDesk::Checkin }
     sends { FrontDesk::Checkout }
     sends { Room::Entry }
   end
 
-  mod BadGuest [
-    id: GuestID
-  ] do
-    sends { FrontDesk::Checkin }
-    sends { FrontDesk::Checkout }
-    sends { Room::Entry }
-  end
-  
+  trusted GoodGuest < Guest
+  mod BadGuest < Guest
 
 end

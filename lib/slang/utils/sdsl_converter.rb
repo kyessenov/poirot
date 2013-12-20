@@ -67,7 +67,9 @@ module Slang
           db.setSingleton if meta.one?
 
           # super
-          db.extends _data_name(meta.parent_sig)
+          unless meta.oldest_ancestor.nil?
+            db.extends _data_name(meta.parent_sig)
+          end
 
           # fields
           db.fields *meta.fields.map(&method(:convert_arg))
@@ -84,7 +86,9 @@ module Slang
           mb = ModuleBuilder.new
 
           # extends
-          mb.extends(_mod_name(meta.parent_sig)) unless meta.oldest_ancestor.nil?
+          unless meta.oldest_ancestor.nil?
+            mb.extends(convert_module(meta.parent_sig))
+          end
 
           # creates
           mb.creates *meta.creates.map(&method(:_mod_name))
@@ -316,7 +320,7 @@ module Slang
       def convert_parentmodjoinexpr(pmje)
         convert_expr(pmje.join_expr.rhs)
       end
-      
+
       # @param be [Arby::Ast::Expr::BinaryExpression]
       def convert_binaryexpr(be)
         is_assign_expr = be.__op == Arby::Ast::Ops::ASSIGN
@@ -345,7 +349,7 @@ module Slang
                        convert_expr(q.body)
                      else
                        _convert_quantexpr(q, pos+1)
-                     end   
+                     end
         mname = if q.all?
                   :forall
                 elsif q.exists?
