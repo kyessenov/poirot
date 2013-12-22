@@ -12,7 +12,7 @@ module Slang
 
       def guard(hash={}, &block)
         hash.empty? || _check_single_fld_hash(hash)
-        name = "guard"
+        name = "#{self.relative_name.downcase}__guard"
         name += "_#{SDGUtils::StringUtils.to_iden hash.values.first}" unless hash.empty?
         name += "_#{SDGUtils::Random.salted_timestamp}"
         g = pred(name, hash, nil, &block)

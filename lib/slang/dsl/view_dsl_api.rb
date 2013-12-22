@@ -55,6 +55,7 @@ module Slang
       end
 
       def __finish
+        super
       end
 
       def __create_model(scope_module)

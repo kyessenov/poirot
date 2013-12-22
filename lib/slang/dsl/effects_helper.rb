@@ -11,7 +11,8 @@ module Slang
       include Arby::Dsl::FunHelper
 
       def effects(&block)
-        name = "effect_#{SDGUtils::Random.salted_timestamp}"
+        name = "#{self.relative_name.downcase}__effect_" + 
+          "#{SDGUtils::Random.salted_timestamp}"
         p = pred(name, {}, nil, &block)
         expr_kind = if p.owner < Slang::Model::Operation
                       "arg"
