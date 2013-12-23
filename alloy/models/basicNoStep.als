@@ -7,8 +7,8 @@ abstract sig Data {
 	fields : set Data
 }
 abstract sig Module {
-	accesses : set (Data + Int),
-	creates : set (Data + Int)
+	accesses : set (Data),
+	creates : set (Data)
 }{
 	all d : Data |
 		-- can only access a data at time step t if
@@ -43,8 +43,8 @@ abstract sig Op {
 	trigger : lone Op,
 	sender : Module,
 	receiver : lone Module,
-	args : set (Data + Int),
-	ret : set (Data + Int)
+	args : set (Data),
+	ret : set (Data)
 }{
 	(args + args.^fields) in sender.accesses
 	(ret + ret.^fields) in receiver.accesses
@@ -65,7 +65,7 @@ fun sends[m : Module, es : set Op]  : set Op {
 pred triggeredBy[o : Op, t : set Op] {
 	some o.trigger & t
 }
-fun arg[d : Data+Int] : set Data+Int {
+fun arg[d : Data] : set Data {
 //	d + d.^fields
 	d
 }

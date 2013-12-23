@@ -8,30 +8,38 @@ Slang::Dsl.view :Mashup do
 
   data AdPage  
   abstract data ProfileData
-  data PrivateData < ProfileData
+  critical data PrivateData < ProfileData
   data PublicData < ProfileData
   data ProfilePage[d: (set ProfileData)]
+  data UserID
 
-  mod AdClient do
-    op DisplayAd[ad: AdPage] do
-    end
+  trusted AdClient do
+    op DisplayAd[ad: AdPage] 
 
     sends { AdServer::SendInfo }
   end
 
   mod AdServer do
-    op SendInfo[d: ProfileData] do
-    end
+    op SendInfo[d: ProfileData]
 
     sends { AdClient::DisplayAd }
   end
 
   trusted FBClient do
-    op DisplayProfile[p: ProfileData] do
+    op DisplayProfile[page: ProfilePage]
+
+    sends { FBServer::GetProfileID }
+  end
+
+  trusted FBServer [
+    profileData: UserID ** ProfileData
+  ] do
+    op GetProfileID[id: UserID] do
+      sends { FBClient::DisplayProfile.some { |o| 
+          o.page.d.in? (profileData[id])
+        }
+      }
     end
   end
 
-  trusted FBServer do
-    sends { FBClient::DisplayProfile }
-  end
 end

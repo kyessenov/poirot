@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module Script
 sig Script extends Module {
@@ -148,19 +147,15 @@ run SanityCheck {
   some BrowserStore__GetCookie & SuccessOp
   some HTTPServer__GET & SuccessOp
   some HTTPServer__POST & SuccessOp
-} for 1 but 11 Data, 6 Step,5 Op, 3 Module
+} for 1 but 11 Data, 5 Op, 3 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 11 Data, 6 Step,5 Op, 3 Module
+} for 1 but 11 Data, 5 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 11 Data, 6 Step,5 Op, 3 Module
-
+} for 1 but 11 Data, 5 Op, 3 Module

@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module AdClient
 one sig AdClient extends Module {
@@ -21,14 +20,17 @@ one sig FBClient extends Module {
 
 -- module FBServer
 one sig FBServer extends Module {
+	FBServer__profileData : UserID set -> lone ProfileData,
 }{
-	this.initAccess in NonCriticalData
+	all o : this.sends[FBClient__DisplayProfile] | triggeredBy[o,FBServer__GetProfileID]
+	all o : this.sends[FBClient__DisplayProfile] | (some (FBServer__profileData[o.trigger.((FBServer__GetProfileID <: FBServer__GetProfileID__id))] & o.(FBClient__DisplayProfile <: FBClient__DisplayProfile__page).ProfilePage__d))
+	this.initAccess in NonCriticalData + UserID.FBServer__profileData + FBServer__profileData.ProfileData
 }
 
 
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
-	TrustedModule = FBClient + FBServer
+	TrustedModule = AdClient + FBClient + FBServer
 }
 
 -- operation AdClient__DisplayAd
@@ -53,12 +55,22 @@ sig AdServer__SendInfo extends Op {
 
 -- operation FBClient__DisplayProfile
 sig FBClient__DisplayProfile extends Op {
-	FBClient__DisplayProfile__p : one ProfileData,
+	FBClient__DisplayProfile__page : one ProfilePage,
 }{
-	args in FBClient__DisplayProfile__p
+	args in FBClient__DisplayProfile__page
 	no ret
 	sender in FBServer
 	receiver in FBClient
+}
+
+-- operation FBServer__GetProfileID
+sig FBServer__GetProfileID extends Op {
+	FBServer__GetProfileID__id : one UserID,
+}{
+	args in FBServer__GetProfileID__id
+	no ret
+	sender in FBClient
+	receiver in FBServer
 }
 
 -- datatype declarations
@@ -82,25 +94,31 @@ sig ProfilePage extends Data {
 }{
 	fields in ProfilePage__d
 }
+sig UserID extends Data {
+}{
+	no fields
+}
 sig OtherData extends Data {}{ no fields }
+
+-- fact criticalDataFacts
+fact criticalDataFacts {
+	CriticalData = PrivateData
+}
 
 run SanityCheck {
   some AdClient__DisplayAd & SuccessOp
   some AdServer__SendInfo & SuccessOp
   some FBClient__DisplayProfile & SuccessOp
-} for 1 but 4 Data, 4 Step,3 Op, 4 Module
+  some FBServer__GetProfileID & SuccessOp
+} for 1 but 5 Data, 4 Op, 4 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 4 Data, 4 Step,3 Op, 4 Module
+} for 1 but 5 Data, 4 Op, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 4 Data, 4 Step,3 Op, 4 Module
-
+} for 1 but 5 Data, 4 Op, 4 Module

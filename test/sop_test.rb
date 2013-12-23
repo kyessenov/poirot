@@ -6,6 +6,7 @@ require_relative 'test_helper'
 # $LOAD_PATH.unshift File.expand_path('../../../alloy_ruby/lib', __FILE__)
 # $LOAD_PATH.unshift File.expand_path('../../../arby/lib', __FILE__)
 
+require 'sdsl/alloy_printer'
 require 'sdsl/myutils'
 
 require 'slang/case_studies/sop/sop'
@@ -46,8 +47,9 @@ mv = composeViews(mashup_view, sop_view, {
                       "FBServer" => "HTTPServer",
                     },
                     :Exports => {
+                      "FBServer__GetProfile" => "HTTPServer_GET",
                       "FBClient__DisplayProfile" => "Script__Resp",
-                      "AdClient__DisplayAd" => "Script__Resp",
+                      "AdClient__DisplayAd" => "Script__Resp",                      
                       "AdServer__SendInfo" => "HTTPServer__POST",
                     },
                     :Invokes => {

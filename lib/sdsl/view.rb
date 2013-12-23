@@ -10,14 +10,27 @@ View = Struct.new(:name, :modules, :trusted, :data, :critical, :assumptions,
 RET_VAR_SUFFIX = "__ret"
 
 class View
+  
+  # return the first module with the name s
   def findMod s
     (modules.select { |m| m.name == s })[0]
   end
  
+  # return the first datatype in this view with the name s
   def findData s
     (data.select { |d| d.name == s})[0]
   end
 
+  # true iff this view contains at least one module that has a dynamic field
+  def isDynamic
+    modules.each do |m|
+      if not m.dynamics.empty? then true end
+    end
+    false
+  end
+
+  # compute the minimum necessary scopes for commands based on
+  # the numbers of datatypes, operations, and modules
   def calcScopes
     scopes = {}
     scopes[:Data] = data.size - (data.find_all {|e| e.isAbstract }).size
@@ -334,6 +347,8 @@ def refineExports(sup, sub, exportsRel)
                           {:when => (o.constraints[:when]),
                             :args => (o.constraints[:args])}, o2, 
                           nil, false, o.modifies)
+        # if exportsRel has both o1 -> o2 and o2 -> o1 as mapping,
+        # set o2 abstract s.t. instances(o1) = instances(o2)
         if exportsRel.has_key? o2.name
           o2.isAbstract = true
         end
@@ -602,43 +617,51 @@ def buildView(v1, v2, mapping, refineRel)
   data += otherData
   data = myuniq(data)
 
+  # assumptions
   assumptions = (v1.assumptions + v2.assumptions)
     
   modules.each do |m| 
+    # establish subtyping relationships between operations
     (m.exports + m.invokes).each do |o|
       if o.parent then 
         if not o.parent.child then o.parent.child = [] end
         o.parent.child << o
       end
     end
+    
+    # m.invokes.each do |o1|
+    #   if m.extends[0]        
+    #     # m2 is a parent of m
+    #     m2 = m.extends[0]
+        
+    #     m2.invokes.each do |o2|  
+    #       # find the module that exports o1
+    #       emod1 = (findModsWithExport(modules, o1.name))[0]
+    #       eop1 = emod1.findExport o1.name
+          
+    #       if eop1.parent && eop1.parent.name == o2.name
+    #         if eop1.parent.isAbstract
+    #           next
+    #         end
 
-    m.invokes.each do |o1|
-      if m.extends[0]
-        m.extends[0].invokes.each do |o2|        
-          emod1 = (findModsWithExport(modules, o1.name))[0]
-          eop1 = emod1.findExport o1.name
-          if eop1.parent and eop1.parent.name == o2.name
-            if eop1.parent.isAbstract
-              next
-            end
+    #         if o1.parent && o1.parent.name == eop1.parent.name
+    #           next
+    #         end
 
-            if o1.parent and o1.parent.name == eop1.parent.name
-              next
-            end
+    #         if o1.constraints[:when].empty? or o2.constraints[:when].empty?
+    #           newConstraints = []
+    #         else               
+    #           newConstraints =  union(o1.constraints[:when], 
+    #                                   o2.constraints[:when])
+    #         end
+    #         o1.constraints = 
+    #           {:args => o1.constraints[:args],
+    #           :when => newConstraints}
+    #       end
+    #     end
+    #   end
+    # end
 
-            if o1.constraints[:when].empty? or o2.constraints[:when].empty?
-              newConstraints = []
-            else               
-              newConstraints =  union(o1.constraints[:when], 
-                                      o2.constraints[:when])
-            end
-            o1.constraints = 
-              {:args => o1.constraints[:args],
-              :when => newConstraints}
-          end
-        end
-      end
-    end
   end
 
   View.new(:MergedView, modules, trusted, data, v1.critical, 
