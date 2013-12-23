@@ -8,7 +8,7 @@ sig Script extends Module {
 }{
 	all o : this.receives[Script__Resp] | (some (Script__doms & o.(Script__Resp <: Script__Resp__html).HTML__dom))
 	all o : this.receives[Script__AccessDOM] | (some (Script__doms & o.(Script__AccessDOM <: Script__AccessDOM__ret)))
-	accesses.first in NonCriticalData + Script__origin + Script__doms
+	this.initAccess in NonCriticalData + Script__origin + Script__doms
 }
 
 -- module BrowserStore
@@ -16,7 +16,7 @@ one sig BrowserStore extends Module {
 	BrowserStore__cookies : CookieScope set -> lone Cookie,
 }{
 	all o : this.receives[BrowserStore__GetCookie] | o.(BrowserStore__GetCookie <: BrowserStore__GetCookie__ret) = BrowserStore__cookies[o.(BrowserStore__GetCookie <: BrowserStore__GetCookie__cs)]
-	accesses.first in NonCriticalData + CookieScope.BrowserStore__cookies + BrowserStore__cookies.Cookie
+	this.initAccess in NonCriticalData + CookieScope.BrowserStore__cookies + BrowserStore__cookies.Cookie
 }
 
 -- module HTTPServer
@@ -27,7 +27,7 @@ sig HTTPServer extends Module {
 		or
 		triggeredBy[o,HTTPServer__POST]
 		)
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 

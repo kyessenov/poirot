@@ -4,25 +4,25 @@ open models/crypto[Data]
 -- module AdClient
 one sig AdClient extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module AdServer
 one sig AdServer extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module FBClient
 one sig FBClient extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module FBServer
 one sig FBServer extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 

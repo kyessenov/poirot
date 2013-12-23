@@ -152,7 +152,7 @@ class Mod
           initData += e.initDataAccess
         end
       end
-      alloyChunk += wrap("accesses.first in " + initData.join(" + "), 1)
+      alloyChunk += wrap("this.initAccess in " + initData.join(" + "), 1)
     end
 
     alloyChunk += wrap("}")
