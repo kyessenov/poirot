@@ -22,8 +22,8 @@ one sig FBClient extends Module {
 one sig FBServer extends Module {
 	FBServer__profileData : UserID set -> lone ProfileData,
 }{
-	all o : this.sends[FBClient__DisplayProfile] | triggeredBy[o,FBServer__GetProfileID]
-	all o : this.sends[FBClient__DisplayProfile] | (some (FBServer__profileData[o.trigger.((FBServer__GetProfileID <: FBServer__GetProfileID__id))] & o.(FBClient__DisplayProfile <: FBClient__DisplayProfile__page).ProfilePage__d))
+	all o : this.sends[FBClient__DisplayProfile] | triggeredBy[o,FBServer__GetProfile]
+	all o : this.sends[FBClient__DisplayProfile] | (some (FBServer__profileData[o.trigger.((FBServer__GetProfile <: FBServer__GetProfile__id))] & o.(FBClient__DisplayProfile <: FBClient__DisplayProfile__page).ProfilePage__d))
 	this.initAccess in NonCriticalData + UserID.FBServer__profileData + FBServer__profileData.ProfileData
 }
 
@@ -63,11 +63,11 @@ sig FBClient__DisplayProfile extends Op {
 	receiver in FBClient
 }
 
--- operation FBServer__GetProfileID
-sig FBServer__GetProfileID extends Op {
-	FBServer__GetProfileID__id : one UserID,
+-- operation FBServer__GetProfile
+sig FBServer__GetProfile extends Op {
+	FBServer__GetProfile__id : one UserID,
 }{
-	args in FBServer__GetProfileID__id
+	args in FBServer__GetProfile__id
 	no ret
 	sender in FBClient
 	receiver in FBServer
@@ -109,7 +109,7 @@ run SanityCheck {
   some AdClient__DisplayAd & SuccessOp
   some AdServer__SendInfo & SuccessOp
   some FBClient__DisplayProfile & SuccessOp
-  some FBServer__GetProfileID & SuccessOp
+  some FBServer__GetProfile & SuccessOp
 } for 1 but 5 Data, 4 Op, 4 Module
 
 

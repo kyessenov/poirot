@@ -28,13 +28,13 @@ Slang::Dsl.view :Mashup do
   trusted FBClient do
     op DisplayProfile[page: ProfilePage]
 
-    sends { FBServer::GetProfileID }
+    sends { FBServer::GetProfile }
   end
 
   trusted FBServer [
     profileData: UserID ** ProfileData
   ] do
-    op GetProfileID[id: UserID] do
+    op GetProfile[id: UserID] do
       sends { FBClient::DisplayProfile.some { |o| 
           o.page.d.in? (profileData[id])
         }
