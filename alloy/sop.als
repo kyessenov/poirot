@@ -38,7 +38,7 @@ fact trustedModuleFacts {
 -- operation Script__Resp
 sig Script__Resp extends Op {
 	Script__Resp__html : one HTML,
-	Script__Resp__headers : set RespHeader,
+	Script__Resp__headers : set Text,
 }{
 	args in Script__Resp__html + Script__Resp__headers
 	no ret
@@ -71,7 +71,7 @@ sig BrowserStore__GetCookie extends Op {
 -- operation HTTPServer__GET
 sig HTTPServer__GET extends Op {
 	HTTPServer__GET__url : one URL,
-	HTTPServer__GET__headers : set ReqHeader,
+	HTTPServer__GET__headers : set Text,
 }{
 	args in HTTPServer__GET__url + HTTPServer__GET__headers
 	no ret
@@ -82,8 +82,8 @@ sig HTTPServer__GET extends Op {
 -- operation HTTPServer__POST
 sig HTTPServer__POST extends Op {
 	HTTPServer__POST__url : one URL,
-	HTTPServer__POST__headers : set ReqHeader,
-	HTTPServer__POST__params : set Param,
+	HTTPServer__POST__headers : set Text,
+	HTTPServer__POST__params : set Text,
 }{
 	args in HTTPServer__POST__url + HTTPServer__POST__headers + HTTPServer__POST__params
 	no ret
@@ -92,50 +92,31 @@ sig HTTPServer__POST extends Op {
 }
 
 -- datatype declarations
-sig DOM extends Data {
+abstract sig Text extends Data {
+}{
+}
+sig DOM extends Text {
 }{
 	no fields
 }
-sig HTML extends Data {
+sig HTML extends Text {
 	HTML__dom : one DOM,
 }{
 	fields in HTML__dom
 }
-sig Origin extends Data {
-}{
-	no fields
+sig Origin {
 }
-sig Domain extends Data {
-}{
-	no fields
+sig Domain {
 }
-sig Path extends Data {
-}{
-	no fields
+sig Path {
 }
-sig URL extends Data {
-}{
-	no fields
+sig URL {
 }
-sig ReqHeader extends Data {
-}{
-	no fields
-}
-sig RespHeader extends Data {
-}{
-	no fields
-}
-sig Param extends Data {
-}{
-	no fields
-}
-sig CookieScope extends Data {
+sig CookieScope {
 	CookieScope__domain : one Domain,
 	CookieScope__path : one Path,
-}{
-	fields in CookieScope__domain + CookieScope__path
 }
-sig Cookie extends Data {
+sig Cookie extends Text {
 }{
 	no fields
 }
@@ -147,15 +128,15 @@ run SanityCheck {
   some BrowserStore__GetCookie & SuccessOp
   some HTTPServer__GET & SuccessOp
   some HTTPServer__POST & SuccessOp
-} for 1 but 11 Data, 5 Op, 3 Module
+} for 2 but 4 Data, 5 Op, 3 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 1 but 11 Data, 5 Op, 3 Module
+} for 2 but 4 Data, 5 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 11 Data, 5 Op, 3 Module
+} for 2 but 4 Data, 5 Op, 3 Module

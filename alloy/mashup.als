@@ -94,9 +94,7 @@ sig ProfilePage extends Data {
 }{
 	fields in ProfilePage__d
 }
-sig UserID extends Data {
-}{
-	no fields
+sig UserID {
 }
 sig OtherData extends Data {}{ no fields }
 
@@ -110,15 +108,15 @@ run SanityCheck {
   some AdServer__SendInfo & SuccessOp
   some FBClient__DisplayProfile & SuccessOp
   some FBServer__GetProfile & SuccessOp
-} for 1 but 5 Data, 4 Op, 4 Module
+} for 2 but 5 Data, 4 Op, 4 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 1 but 5 Data, 4 Op, 4 Module
+} for 2 but 5 Data, 4 Op, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 5 Data, 4 Op, 4 Module
+} for 2 but 5 Data, 4 Op, 4 Module

@@ -49,7 +49,7 @@ mv = composeViews(mashup_view, sop_view, {
                     :Exports => {
                       "FBServer__GetProfile" => "HTTPServer__GET",
                       "FBClient__DisplayProfile" => "Script__Resp",
-                      "AdClient__DisplayAd" => "Script__Resp",                      
+                      "AdClient__DisplayAd" => "Script__Resp", 
                       "AdServer__SendInfo" => "HTTPServer__POST",
                     },
                     :Invokes => {
@@ -58,6 +58,7 @@ mv = composeViews(mashup_view, sop_view, {
                       # "SendInfo" => "POST",
                     },
                     :Data => {
+                      "ProfileData" => "DOM"
                     }
                   })
 

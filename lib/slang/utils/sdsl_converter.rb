@@ -37,9 +37,11 @@ module Slang
         # set critical datatypes
         vb.critical *view.critical.map(&method(:convert_data))
 
+        # set global datatypes
+        vb.global *view.global.map(&method(:convert_data))
+        
         # set trusted modules
         vb.trusted *view.modules.select(&:trusted?).map(&method(:convert_module))
-
         # build
         ans = vb.build(view.name)
 

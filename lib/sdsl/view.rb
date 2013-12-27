@@ -3,8 +3,9 @@
 
 require 'sdsl/module.rb'
 
-View = Struct.new(:name, :modules, :trusted, :data, :critical, :assumptions,
-                  :protected, :ctx, :appendix)
+View = Struct.new(:name, :modules, :trusted, :data, :critical,
+                  :global, :assumptions, :protected, :ctx,
+                  :appendix)
 
 # HACK!
 RET_VAR_SUFFIX = "__ret"
@@ -33,7 +34,7 @@ class View
   # the numbers of datatypes, operations, and modules
   def calcScopes
     scopes = {}
-    scopes[:Data] = data.size - (data.find_all {|e| e.isAbstract }).size
+    scopes[SYM_BASE_DATATYPE] = data.size - global.size
     scopes[:Op] = 0
     scopes[:Module] = 0
     modules.each do |m|
@@ -96,7 +97,7 @@ class View
         ret = nil
         o.constraints[:args].each do |arg|
           if not arg.is_a? Rel
-            arg = Item.new(arg, :Data)
+            arg = Item.new(arg, SYM_BASE_DATATYPE)
           end
           if arg.name.end_with? RET_VAR_SUFFIX
             ret = arg.to_s
@@ -224,8 +225,8 @@ class View
       end      
     end
     ctx[:extendsMap] = extendsMap
-    data.each do |d|
-      alloyChunk += d.to_alloy(ctx)
+    data.each do |d|     
+      alloyChunk += d.to_alloy(ctx, (global.include? d))
     end
     alloyChunk += wrap("sig OtherData extends Data {}{ no fields }")
     
@@ -263,6 +264,7 @@ class ViewBuilder
     @trusted = []
     @data = []
     @critical = []
+    @global = []
     @assumptions = []
     @protected = []
     @ctx = {}
@@ -274,7 +276,7 @@ class ViewBuilder
       if d.is_a? Datatype
         d
       else 
-        Datatype.new(d, [], :Data, false) 
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false) 
       end
     }
   end
@@ -284,7 +286,17 @@ class ViewBuilder
       if d.is_a? Datatype
         d
       else
-        Datatype.new(d, [], :Data, false)
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false)
+      end
+    }
+  end
+
+  def global(*data)
+    @global += data.map { |d| 
+      if d.is_a? Datatype
+        d
+      else
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false)
       end
     }
   end
@@ -316,8 +328,9 @@ class ViewBuilder
 
   def build name
     checkWellformedness
-    View.new(name, @modules, @trusted, @data, @critical, @assumptions, 
-             @protected, @ctx, @appendix)
+    View.new(name, @modules, @trusted,
+             @data, @critical, @global, 
+             @assumptions, @protected, @ctx, @appendix)
   end
 end
 
@@ -494,27 +507,34 @@ def mergeParts(v1, v2, refineRel)
   dataRel.each do |from, to|
     sub = v1.findData(from)
     sup = v2.findData(to)    
-    dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, false)
-    dataMap[to] = Datatype.new(sup.name, sup.fields, :Data, true)
+#    dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, false)
+#    dataMap[to] = Datatype.new(sup.name, sup.fields, SYM_BASE_DATATYPE, true)
+    dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, 
+                                 sub.isAbstract, sub.isSingleton)
+    if sup.isSingleton then
+      raise "The datatype named #{to} being extended can't be singleton!"
+    end
+    dataMap[to] = Datatype.new(sup.name, sup.fields, sup.extends, 
+                               sup.isAbstract, sup.isSingleton)
   end
 
   v1.data.each do |d1| 
     v2.data.each do |d2|
       if d1.name == d2.name
-        extends = :Data
-        if not (d1.extends == :Data or d2.extends == :Data) and
+        extends = SYM_BASE_DATATYPE
+        if not (d1.extends == SYM_BASE_DATATYPE or d2.extends == SYM_BASE_DATATYPE) and
             not (d1.extends == d2.extends) then
           raise "Conflicting data types: Same name with different supertype"
         else
-          if not d1.extends == :Data then 
+          if not d1.extends == SYM_BASE_DATATYPE then 
             extends = d1.extends 
           else
             extends = d2.extends
           end
         end
 
-        if d1.extends != :Data then extends = d1.extends end
-        if d2.extends != :Data then extends = d2.extends end
+        if d1.extends != SYM_BASE_DATATYPE then extends = d1.extends end
+        if d2.extends != SYM_BASE_DATATYPE then extends = d2.extends end
         newData = Datatype.new(d1.name, myuniq(d1.fields + d2.fields),
                                extends, false)        
         dataMap[d1.name] = newData
@@ -664,7 +684,8 @@ def buildView(v1, v2, mapping, refineRel)
 
   end
 
-  View.new(:MergedView, modules, trusted, data, v1.critical, 
+  View.new(:MergedView, modules, trusted,
+           data, v1.critical, v1.global + v2.global, 
            assumptions, v1.protected, ctx, v1.appendix + v2.appendix)
 end
 
@@ -709,7 +730,7 @@ end
 def composeViews(v1, v2, refineRel = {})
   puts "*** Attempting to merge #{v1.name} and #{v2.name} ***:"
   # Given refinement relations, derive a mapping between elements of two views
-  refineRel = inferMapping(v1, v2, refineRel)  
+  refineRel = inferMapping(v1, v2, refineRel)
   mapping = mergeParts(v1, v2, refineRel)
 
 #  pp "*** Intermediate Mapping:"

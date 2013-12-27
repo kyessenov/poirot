@@ -6,23 +6,21 @@ include Slang::Dsl
 
 Slang::Dsl.view :SOP do
   
-  data DOM
-  data HTML[dom: DOM]
-  data Origin
-  data Domain
-  data Path
-  data URL
-  data ReqHeader
-  data RespHeader
-  data Param
-  data CookieScope[domain: Domain, path: Path]
-  data Cookie
+  abstract data Text
+  data DOM < Text
+  data HTML[dom: DOM] < Text
+  global data Origin
+  global data Domain
+  global data Path
+  global data URL
+  global data CookieScope[domain: Domain, path: Path]
+  data Cookie < Text
   
   many mod Script [
     origin: Origin,
     doms: (set DOM)
   ] do
-    op Resp[html: HTML, headers: (set RespHeader)] do
+    op Resp[html: HTML, headers: (set Text)] do
       guard { doms.contains? (html.dom) }
     end
     
@@ -49,11 +47,11 @@ Slang::Dsl.view :SOP do
   end
 
   many mod HTTPServer do
-    op GET[url: URL, headers: (set ReqHeader)] do
+    op GET[url: URL, headers: (set Text)] do
       sends { Script::Resp }
     end
 
-    op POST[url: URL, headers: (set ReqHeader), params: (set Param)] do
+    op POST[url: URL, headers: (set Text), params: (set Text)] do
       sends { Script::Resp }
     end 
   end

@@ -12,14 +12,15 @@ UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
 STEP_TYPE = :Step
+DEFAULT_SCOPE = 2
 
 def mkScopeSpec v
   scopes = v.calcScopes
   if v.isDynamic then
-    "1 but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
+    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   else 
-    "1 but #{scopes[:Data]} Data, " + 
+    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, " + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   end
 end

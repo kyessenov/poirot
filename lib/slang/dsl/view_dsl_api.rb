@@ -42,18 +42,29 @@ module Slang
         blder.apply_modifier("many", Slang::Model::Module, &block)
       end
 
-      def critical(*data_classes)
+      def get_data_klasses(data_classes) 
         fst = data_classes.first
-        data_klasses = if data_classes.size == 1 && Arby::Dsl::SigBuilder === fst
-                         data_klasses = fst.return_result(:array)
-                       else
-                         data_classes
-                       end
+        if data_classes.size == 1 && Arby::Dsl::SigBuilder === fst
+          fst.return_result(:array)
+        else
+          data_classes
+        end
+      end
+
+      def critical(*data_classes)
+        data_klasses = get_data_klasses(data_classes)
         data_klasses.each do |data_cls|
           meta.add_critical(data_cls)
         end
       end
-
+      
+      def global(*data_classes)
+        data_klasses = get_data_klasses(data_classes)
+        data_klasses.each do |data_cls|
+          meta.add_global(data_cls)
+        end
+      end
+      
       def __finish
         super
       end

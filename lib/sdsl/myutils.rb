@@ -38,6 +38,11 @@ def wrap(s, t=0)
   ("\t"*t) + s + "\n"
 end
 
+# coerce both s1 and s2 to string and then compare
+def scmp (s1, s2)
+  s1.to_s == s2.to_s
+end
+
 def tab(s, t=0)
   ("\t"*t) + s
 end

@@ -11,7 +11,7 @@ Slang::Dsl.view :Mashup do
   critical data PrivateData < ProfileData
   data PublicData < ProfileData
   data ProfilePage[d: (set ProfileData)]
-  data UserID
+  global data UserID
 
   trusted AdClient do
     op DisplayAd[ad: AdPage] 
