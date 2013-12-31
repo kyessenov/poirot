@@ -2,6 +2,7 @@
 # generic definition of a view
 
 require 'sdsl/module.rb'
+require 'sdsl/optimizer.rb'
 
 View = Struct.new(:name, :modules, :trusted, :data, :critical,
                   :global, :assumptions, :protected, :ctx,
@@ -34,7 +35,7 @@ class View
   # the numbers of datatypes, operations, and modules
   def calcScopes
     scopes = {}
-    scopes[SYM_BASE_DATATYPE] = data.size - global.size
+    scopes[SYM_BASE_DATATYPE] = data.size - (Optimizer.isOptOn(:GLOBAL) ? global.size : 0)
     scopes[:Op] = 0
     scopes[:Module] = 0
     modules.each do |m|
@@ -226,7 +227,7 @@ class View
     end
     ctx[:extendsMap] = extendsMap
     data.each do |d|     
-      alloyChunk += d.to_alloy(ctx, (global.include? d))
+      alloyChunk += d.to_alloy(ctx,Optimizer.isOptOn(:GLOBAL_DATA) && (global.include? d))
     end
     alloyChunk += wrap("sig OtherData extends Data {}{ no fields }")
     

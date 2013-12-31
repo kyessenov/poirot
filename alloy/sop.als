@@ -1,4 +1,4 @@
-open models/basicNoStep
+open models/basic
 
 -- module Script
 sig Script extends Module {
@@ -104,17 +104,27 @@ sig HTML extends Text {
 }{
 	fields in HTML__dom
 }
-sig Origin {
+sig Origin extends Data {
+}{
+	no fields
 }
-sig Domain {
+sig Domain extends Data {
+}{
+	no fields
 }
-sig Path {
+sig Path extends Data {
+}{
+	no fields
 }
-sig URL {
+sig URL extends Data {
+}{
+	no fields
 }
-sig CookieScope {
+sig CookieScope extends Data {
 	CookieScope__domain : one Domain,
 	CookieScope__path : one Path,
+}{
+	fields in CookieScope__domain + CookieScope__path
 }
 sig Cookie extends Text {
 }{
@@ -128,15 +138,18 @@ run SanityCheck {
   some BrowserStore__GetCookie & SuccessOp
   some HTTPServer__GET & SuccessOp
   some HTTPServer__POST & SuccessOp
-} for 2 but 4 Data, 5 Op, 3 Module
+} for 2 but 9 Data, 6 Step,5 Op, 3 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 4 Data, 5 Op, 3 Module
+} for 2 but 9 Data, 6 Step,5 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 4 Data, 5 Op, 3 Module
+} for 2 but 9 Data, 6 Step,5 Op, 3 Module
+fun RelevantOp : Op -> Step {
+  {o : Op, t : Step | o.post = t and o in SuccessOp}
+}

@@ -8,6 +8,7 @@ require_relative 'test_helper'
 
 require 'sdsl/alloy_printer'
 require 'sdsl/myutils'
+require 'sdsl/optimizer.rb'
 
 require 'slang/case_studies/sop/sop'
 require 'slang/case_studies/sop/fb_ad_mashup'
@@ -20,6 +21,9 @@ def dump(view, name, color="beige")
   dumpAlloy(view, "../alloy/#{name}.als")
   drawView(view, "../alloy/#{name}.dot", color)
 end
+
+Optimizer.setOpt(:TIMELESS, false)
+Optimizer.setOpt(:GLOBAL_DATA, false)
 
 sop_view = eval("SOP").meta.to_sdsl
 mashup_view = eval("Mashup").meta.to_sdsl

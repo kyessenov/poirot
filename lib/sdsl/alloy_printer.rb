@@ -5,6 +5,7 @@
 
 require 'pp'
 
+# helpful constants
 DOT_FILE = "out.dot"
 ALLOY_FILE = "out.als"
 FONTNAME = "helvetica"
@@ -16,11 +17,11 @@ DEFAULT_SCOPE = 2
 
 def mkScopeSpec v
   scopes = v.calcScopes
-  if v.isDynamic then
-    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
+  if (not v.isDynamic) && Optimizer.isOptOn(:TIMELESS) then
+    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, " + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   else 
-    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, " + 
+    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   end
 end
@@ -37,7 +38,7 @@ check Integrity {
   Integrity
 } for #{mkScopeSpec v}"
 
-  if v.isDynamic then
+  if v.isDynamic || (not Optimizer.isOptOn(:TIMELESS)) then
     cmdStr += 
 "fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.post = t and o in SuccessOp}
@@ -239,10 +240,10 @@ end
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
-  if v.isDynamic then 
-    f.puts "open models/basic"
-  else 
+  if (not v.isDynamic) && Optimizer.isOptOn(:TIMELESS) then 
     f.puts "open models/basicNoStep"
+  else 
+    f.puts "open models/basic"
   end
   # f.puts "open models/crypto[Data]"
   f.puts
