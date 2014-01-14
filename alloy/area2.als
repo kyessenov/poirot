@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module A2Site
 one sig A2Site extends Module {
@@ -16,17 +15,16 @@ one sig A2Site extends Module {
 		A2Site__userType[o.(A2Site__ViewProfile <: A2Site__ViewProfile__token).Token__encodes] = TypeAdmin
 		) and o.(A2Site__ViewProfile <: A2Site__ViewProfile__ret) = A2Site__profiles[o.(A2Site__ViewProfile <: A2Site__ViewProfile__uid)])
 	(all uid : UserID | (all p : Profile | ((some (A2Site__profiles & uid -> p)) implies p.Profile__id = uid)))
-	accesses.first in NonCriticalData + UserID.A2Site__profiles + A2Site__profiles.Profile + UserID.A2Site__userType + A2Site__userType.UserType + Token + Profile
+	this.initAccess in NonCriticalData + UserID.A2Site__profiles + A2Site__profiles.Profile + UserID.A2Site__userType + A2Site__userType.UserType + Token + Profile
 }
 
 -- module DirectoryService
 one sig DirectoryService extends Module {
 	DirectoryService__userRecords : UserRecord set -> set Step,
 }{
-	all o : this.receives[DirectoryService__AddUserRecord] | DirectoryService__userRecords.(o.post) = (DirectoryService__userRecords.(o.pre) + o.(DirectoryService__AddUserRecord <: DirectoryService__AddUserRecord__newRecord))
+	all o : this.receives[DirectoryService__AddUserRecord] | (DirectoryService__userRecords.(o.pre) + o.(DirectoryService__AddUserRecord <: DirectoryService__AddUserRecord__newRecord))
 	all o : this.receives[DirectoryService__GetUserRecords] | o.(DirectoryService__GetUserRecords <: DirectoryService__GetUserRecords__ret) = DirectoryService__userRecords.(o.pre)
-	all t : Step - last | let t' = t.next | DirectoryService__userRecords.t' != DirectoryService__userRecords.t implies some ((DirectoryService__AddUserRecord) & SuccessOp) & pre.t
-	accesses.first in NonCriticalData + (DirectoryService__userRecords.first)
+	this.initAccess in NonCriticalData + (DirectoryService__userRecords.first)
 }
 
 -- module Faculty
@@ -34,7 +32,7 @@ one sig Faculty extends Module {
 	Faculty__id : one UserID,
 	Faculty__token : one Token,
 }{
-	accesses.first in NonCriticalData + Faculty__id + Faculty__token
+	this.initAccess in NonCriticalData + Faculty__id + Faculty__token
 }
 
 -- module Student
@@ -42,7 +40,7 @@ one sig Student extends Module {
 	Student__id : one UserID,
 	Student__token : one Token,
 }{
-	accesses.first in NonCriticalData + Student__id + Student__token
+	this.initAccess in NonCriticalData + Student__id + Student__token
 }
 
 -- module Admin
@@ -50,7 +48,7 @@ one sig Admin extends Module {
 	Admin__id : one UserID,
 	Admin__token : one Token,
 }{
-	accesses.first in NonCriticalData + Admin__id + Admin__token
+	this.initAccess in NonCriticalData + Admin__id + Admin__token
 }
 
 
@@ -137,19 +135,15 @@ run SanityCheck {
   some A2Site__ViewProfile & SuccessOp
   some DirectoryService__AddUserRecord & SuccessOp
   some DirectoryService__GetUserRecords & SuccessOp
-} for 1 but 7 Data, 4 Step,3 Op, 5 Module
+} for 2 but 8 Data, 3 Op, 5 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 4 Step,3 Op, 5 Module
+} for 2 but 8 Data, 3 Op, 5 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 4 Step,3 Op, 5 Module
-
+} for 2 but 8 Data, 3 Op, 5 Module

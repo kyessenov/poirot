@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module NYTimes
 one sig NYTimes extends Module {
@@ -10,27 +9,26 @@ one sig NYTimes extends Module {
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetLink]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetLink <: NYTimes__GetLink__numAccessed)), 1]
-	accesses.first in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Article + NYTimes__limit + Article
+	this.initAccess in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Article + NYTimes__limit + Article
 }
 
 -- module Client
 one sig Client extends Module {
 	Client__numAccessed : Int one -> set Step,
 }{
-	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = o.(Client__SendPage <: Client__SendPage__newCounter)
+	all o : this.receives[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter)
 	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
 	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
-	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = Client__numAccessed.(o.pre)
-	all t : Step - last | let t' = t.next | Client__numAccessed.t' != Client__numAccessed.t implies some ((Client__SendPage) & SuccessOp) & pre.t
-	accesses.first in NonCriticalData + (Client__numAccessed.first)
+	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = NYTimes__GetLink__numAccessed
+	this.initAccess in NonCriticalData + (Client__numAccessed.first)
 }
 
 -- module Reader
 one sig Reader extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 
@@ -105,19 +103,15 @@ run SanityCheck {
   some Client__SendPage & SuccessOp
   some Client__SelectLink & SuccessOp
   some Reader__DisplayPage & SuccessOp
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+} for 2 but 3 Data, 4 Op, 3 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+} for 2 but 3 Data, 4 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
-
+} for 2 but 3 Data, 4 Op, 3 Module

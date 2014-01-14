@@ -1,12 +1,11 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module User
 one sig User extends Module {
 	User__intents : set URI,
 }{
 	all o : this.sends[Client__Visit] | (some (User__intents & o.(Client__Visit <: Client__Visit__dest)))
-	accesses.first in NonCriticalData + User__intents
+	this.initAccess in NonCriticalData + User__intents
 }
 
 -- module TrustedServer
@@ -17,7 +16,7 @@ one sig TrustedServer extends Module {
 }{
 	all o : this.receives[TrustedServer__HttpReq] | ((some (TrustedServer__protectedOps & o)) implies o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = TrustedServer__cookies[o])
 	all o : this.sends[Client__HttpResp] | triggeredBy[o,TrustedServer__HttpReq]
-	accesses.first in NonCriticalData + Op.TrustedServer__cookies + TrustedServer__cookies.Cookie + TrustedServer__addr + TrustedServer__protectedOps + DOM + Cookie
+	this.initAccess in NonCriticalData + Op.TrustedServer__cookies + TrustedServer__cookies.Cookie + TrustedServer__addr + TrustedServer__protectedOps + DOM + Cookie
 }
 
 -- module MaliciousServer
@@ -25,7 +24,7 @@ one sig MaliciousServer extends Module {
 	MaliciousServer__addr : one Hostname,
 }{
 	all o : this.sends[Client__HttpResp] | triggeredBy[o,MaliciousServer__HttpReq]
-	accesses.first in NonCriticalData + MaliciousServer__addr + DOM
+	this.initAccess in NonCriticalData + MaliciousServer__addr + DOM
 }
 
 -- module Client
@@ -33,16 +32,16 @@ one sig Client extends Module {
 	Client__cookies : URI set -> lone Cookie,
 }{
 	all o : this.sends[TrustedServer__HttpReq] | 
-		(((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__Visit <: Client__Visit__dest))]) and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
+		(((triggeredBy[o,Client__Visit] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = TrustedServer__cookies[o.trigger.((Client__Visit <: Client__Visit__dest))]) and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
-		((triggeredBy[o,Client__HttpResp] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__HttpResp <: Client__HttpResp__addr))]) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr))))
+		((triggeredBy[o,Client__HttpResp] and o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__cookie) = TrustedServer__cookies[o.trigger.((Client__HttpResp <: Client__HttpResp__addr))]) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(TrustedServer__HttpReq <: TrustedServer__HttpReq__addr))))
 		)
 	all o : this.sends[MaliciousServer__HttpReq] | 
-		(((triggeredBy[o,Client__Visit] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__Visit <: Client__Visit__dest))]) and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
+		(((triggeredBy[o,Client__Visit] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = TrustedServer__cookies[o.trigger.((Client__Visit <: Client__Visit__dest))]) and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr) = o.trigger.((Client__Visit <: Client__Visit__dest)))
 		or
-		((triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = Client__cookies[o.trigger.((Client__HttpResp <: Client__HttpResp__addr))]) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr))))
+		((triggeredBy[o,Client__HttpResp] and o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__cookie) = TrustedServer__cookies[o.trigger.((Client__HttpResp <: Client__HttpResp__addr))]) and (some (o.trigger.((Client__HttpResp <: Client__HttpResp__dom)).DOM__tags.ImgTag__src & o.(MaliciousServer__HttpReq <: MaliciousServer__HttpReq__addr))))
 		)
-	accesses.first in NonCriticalData + URI.Client__cookies + Client__cookies.Cookie
+	this.initAccess in NonCriticalData + URI.Client__cookies + Client__cookies.Cookie
 }
 
 
@@ -140,19 +139,15 @@ run SanityCheck {
   some MaliciousServer__HttpReq & SuccessOp
   some Client__Visit & SuccessOp
   some Client__HttpResp & SuccessOp
-} for 1 but 7 Data, 5 Step,4 Op, 4 Module
+} for 2 but 9 Data, 4 Op, 4 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 7 Data, 5 Step,4 Op, 4 Module
+} for 2 but 9 Data, 4 Op, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 7 Data, 5 Step,4 Op, 4 Module
-
+} for 2 but 9 Data, 4 Op, 4 Module
