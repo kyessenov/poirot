@@ -6,7 +6,7 @@ sig Script extends Module {
 	Script__doms : set DOM,
 }{
 	all o : this.receives[Script__Resp] | (some (Script__doms & o.(Script__Resp <: Script__Resp__html).HTML__dom))
-	all o : this.receives[Script__AccessDOM] | (some (Script__doms & o.(Script__AccessDOM <: Script__AccessDOM__ret)))
+	all o : this.receives[Script__AccessDOM] | (Script__origin = o.(Script__AccessDOM <: Script__AccessDOM__reqOrigin) and (some (Script__doms & o.(Script__AccessDOM <: Script__AccessDOM__ret))))
 	this.initAccess in NonCriticalData + Script__origin + Script__doms
 }
 
@@ -104,27 +104,17 @@ sig HTML extends Text {
 }{
 	fields in HTML__dom
 }
-sig Origin extends Data {
-}{
-	no fields
+sig Origin {
 }
-sig Domain extends Data {
-}{
-	no fields
+sig Domain {
 }
-sig Path extends Data {
-}{
-	no fields
+sig Path {
 }
-sig URL extends Data {
-}{
-	no fields
+sig URL {
 }
-sig CookieScope extends Data {
+sig CookieScope {
 	CookieScope__domain : one Domain,
 	CookieScope__path : one Path,
-}{
-	fields in CookieScope__domain + CookieScope__path
 }
 sig Cookie extends Text {
 }{
@@ -138,18 +128,19 @@ run SanityCheck {
   some BrowserStore__GetCookie & SuccessOp
   some HTTPServer__GET & SuccessOp
   some HTTPServer__POST & SuccessOp
-} for 2 but 9 Data, 6 Step,5 Op, 3 Module
+} for 2 but 4 Data, 6 Step,5 Op, 3 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 9 Data, 6 Step,5 Op, 3 Module
+} for 2 but 4 Data, 6 Step,5 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 9 Data, 6 Step,5 Op, 3 Module
+} for 2 but 4 Data, 6 Step,5 Op, 3 Module
+
 fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
+  {o : Op, t : Step | o.pre = t and o in SuccessOp}
 }

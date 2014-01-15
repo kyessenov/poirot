@@ -27,7 +27,7 @@ Slang::Dsl.view :SOP do
     op AccessDOM[reqOrigin: Origin, ret: DOM] do
       guard { 
         # can only access DOM if same origin
-        origin == reqOrigin 
+        origin == reqOrigin and
         doms.contains? (ret) 
       }
     end   

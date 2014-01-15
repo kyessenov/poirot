@@ -36,6 +36,7 @@ Slang::Dsl.view :Mashup do
   ] do
     op GetProfile[id: UserID] do
       sends { FBClient::DisplayProfile.some { |o| 
+          # only sends profile data that "id" maps to
           o.page.d.in? (profileData[id])
         }
       }

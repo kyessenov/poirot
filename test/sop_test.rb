@@ -23,7 +23,7 @@ def dump(view, name, color="beige")
 end
 
 Optimizer.setOpt(:TIMELESS, false)
-Optimizer.setOpt(:GLOBAL_DATA, false)
+Optimizer.setOpt(:GLOBAL_DATA, true)
 
 sop_view = eval("SOP").meta.to_sdsl
 mashup_view = eval("Mashup").meta.to_sdsl

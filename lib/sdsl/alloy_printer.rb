@@ -40,8 +40,9 @@ check Integrity {
 
   if v.isDynamic || (not Optimizer.isOptOn(:TIMELESS)) then
     cmdStr += 
-"fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
+"
+fun RelevantOp : Op -> Step {
+  {o : Op, t : Step | o.pre = t and o in SuccessOp}
 }"
   end
 

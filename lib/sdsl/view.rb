@@ -35,7 +35,7 @@ class View
   # the numbers of datatypes, operations, and modules
   def calcScopes
     scopes = {}
-    scopes[SYM_BASE_DATATYPE] = data.size - (Optimizer.isOptOn(:GLOBAL) ? global.size : 0)
+    scopes[SYM_BASE_DATATYPE] = data.size - (Optimizer.isOptOn(:GLOBAL_DATA) ? global.size : 0)
     scopes[:Op] = 0
     scopes[:Module] = 0
     modules.each do |m|

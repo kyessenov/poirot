@@ -10,42 +10,49 @@
 <defaultedge/>
 
 <node>
-   <type name="AccessToken"/>
-   <type name="AuthGrant"/>
-   <type name="AuthorizationServer_TrustedServer"/>
-   <type name="ClientApp_Client"/>
+   <type name="AdClient"/>
+   <type name="AdClient__DisplayAd"/>
+   <type name="AdPage"/>
+   <type name="AdServer"/>
+   <type name="AdServer__SendInfo"/>
+   <type name="BrowserStore"/>
+   <type name="BrowserStore__GetCookie"/>
    <type name="Cookie"/>
-   <type name="Credential"/>
+   <type name="CookieScope"/>
    <type name="DOM"/>
-   <type name="Hostname"/>
-   <type name="HTMLTag"/>
-   <type name="httpReq"/>
-   <type name="ImgTag"/>
+   <type name="Domain"/>
+   <type name="FBClient"/>
+   <type name="FBClient__DisplayProfile"/>
+   <type name="FBServer"/>
+   <type name="FBServer__GetProfile"/>
+   <type name="HTML"/>
+   <type name="HTTPServer"/>
+   <type name="HTTPServer__GET"/>
+   <type name="HTTPServer__POST"/>
    <type name="Int"/>
-   <type name="MaliciousServer"/>
+   <type name="Origin"/>
    <type name="OtherData"/>
-   <type name="OtherHTMLTag"/>
-   <type name="OtherPayload"/>
-   <type name="Payload"/>
-   <type name="reqAccessToken_httpReq"/>
-   <type name="reqAuth_httpReq"/>
-   <type name="reqRes_httpReq"/>
-   <type name="Resource"/>
-   <type name="ResourceOwner_TrustedServer"/>
-   <type name="ResourceServer_TrustedServer"/>
-   <type name="sendResp_httpResp"/>
+   <type name="OtherDOM"/>
+   <type name="OtherProfileData"/>
+   <type name="OtherText"/>
+   <type name="Path"/>
+   <type name="PrivateData"/>
+   <type name="ProfileData"/>
+   <type name="ProfilePage"/>
+   <type name="PublicData"/>
+   <type name="Script"/>
+   <type name="Script__AccessDOM"/>
+   <type name="Script__Resp"/>
    <type name="String"/>
+   <type name="Text"/>
    <type name="univ"/>
    <type name="URL"/>
-   <type name="User"/>
-   <type name="visit"/>
+   <type name="UserID"/>
    <type name="basic/Step"/>
-   <type name="crypto/Crypto"/>
-   <type name="crypto/Key"/>
    <type name="seq/Int"/>
    <type name="basic/SO/Ord"/>
-   <set name="$Integrity_m" type="basic/Module"/>
-   <set name="$Integrity_t" type="basic/Step"/>
+   <set name="$Confidentiality_m" type="basic/Module"/>
+   <set name="$Confidentiality_t" type="basic/Step"/>
    <set name="First" type="basic/SO/Ord"/>
    <set name="Next" type="basic/SO/Ord"/>
    <set name="pre" type="basic/Op"/>
@@ -57,16 +64,16 @@
    <set name="basic/CriticalData" type="basic/Data"/>
 </node>
 
-<node color="Green">
-   <type name="basic/Module"/>
-</node>
-
 <node color="Red">
    <set name="basic/BadData" type="basic/Data"/>
 </node>
 
 <node hideunconnected="yes">
    <type name="basic/Data"/>
+</node>
+
+<node hideunconnected="yes" shape="Ellipse" color="Green">
+   <type name="basic/Module"/>
 </node>
 
 <node showlabel="no">
@@ -90,32 +97,19 @@
 </node>
 
 <edge visible="no">
-   <relation name="enc"> <type name="crypto/Crypto"/> <type name="basic/Data"/> <type name="crypto/Key"/> <type name="basic/Data"/> </relation>
-   <relation name="protected"> <type name="AuthorizationServer_TrustedServer"/> <type name="basic/Op"/> </relation>
-   <relation name="protected"> <type name="ResourceOwner_TrustedServer"/> <type name="basic/Op"/> </relation>
+   <relation name="Script__AccessDOM__ret"> <type name="Script__AccessDOM"/> <type name="DOM"/> </relation>
 </edge>
 
 <edge visible="no" attribute="no">
    <relation name="fields"> <type name="basic/Data"/> <type name="basic/Data"/> </relation>
-   <relation name="protected"> <type name="ResourceServer_TrustedServer"/> <type name="basic/Op"/> </relation>
 </edge>
 
 <edge visible="no" attribute="yes">
-   <relation name="addr"> <type name="AuthorizationServer_TrustedServer"/> <type name="Hostname"/> </relation>
-   <relation name="addr"> <type name="httpReq"/> <type name="URL"/> </relation>
-   <relation name="addr"> <type name="MaliciousServer"/> <type name="Hostname"/> </relation>
-   <relation name="addr"> <type name="reqAccessToken_httpReq"/> <type name="URL"/> </relation>
-   <relation name="addr"> <type name="reqAuth_httpReq"/> <type name="URL"/> </relation>
-   <relation name="addr"> <type name="reqRes_httpReq"/> <type name="URL"/> </relation>
-   <relation name="addr"> <type name="ResourceOwner_TrustedServer"/> <type name="Hostname"/> </relation>
-   <relation name="addr"> <type name="ResourceServer_TrustedServer"/> <type name="Hostname"/> </relation>
-   <relation name="addr"> <type name="sendResp_httpResp"/> <type name="URL"/> </relation>
-   <relation name="args"> <type name="URL"/> <type name="Payload"/> </relation>
    <relation name="args"> <type name="basic/Op"/> <type name="basic/Data"/> </relation>
-   <relation name="creates"> <type name="basic/Module"/> <type name="basic/Data"/> </relation>
-   <relation name="cred"> <type name="ClientApp_Client"/> <type name="Credential"/> </relation>
-   <relation name="cred"> <type name="reqAuth_httpReq"/> <type name="Credential"/> </relation>
-   <relation name="src"> <type name="ImgTag"/> <type name="URL"/> </relation>
+   <relation name="HTTPServer__POST__url"> <type name="HTTPServer__POST"/> <type name="URL"/> </relation>
+   <relation name="ret"> <type name="basic/Op"/> <type name="basic/Data"/> </relation>
+   <relation name="Script__AccessDOM__reqOrigin"> <type name="Script__AccessDOM"/> <type name="Origin"/> </relation>
+   <relation name="Script__origin"> <type name="Script"/> <type name="Origin"/> </relation>
    <relation name="trigger"> <type name="basic/Op"/> <type name="basic/Op"/> </relation>
 </edge>
 
