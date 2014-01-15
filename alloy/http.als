@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module Server
 one sig Server extends Module {
@@ -7,7 +6,7 @@ one sig Server extends Module {
 }{
 	all o : this.sends[Browser__SendResp] | triggeredBy[o,Server__SendReq]
 	all o : this.sends[Browser__SendResp] | o.(Browser__SendResp <: Browser__SendResp__resp) = Server__responses[o.trigger.((Server__SendReq <: Server__SendReq__url))]
-	accesses.first in NonCriticalData + URL.Server__responses + Server__responses.HTML
+	this.initAccess in NonCriticalData + URL.Server__responses + Server__responses.HTML
 }
 
 -- module Browser
@@ -17,13 +16,13 @@ one sig Browser extends Module {
 	all o : this.sends[User__DisplayHTML] | o.(User__DisplayHTML <: User__DisplayHTML__html) = o.trigger.((Browser__SendResp <: Browser__SendResp__resp))
 	all o : this.sends[Server__SendReq] | triggeredBy[o,Browser__Visit]
 	all o : this.sends[Server__SendReq] | o.(Server__SendReq <: Server__SendReq__url) = o.trigger.((Browser__Visit <: Browser__Visit__url))
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module User
 one sig User extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 
@@ -110,19 +109,15 @@ run SanityCheck {
   some Browser__SendResp & SuccessOp
   some Browser__Visit & SuccessOp
   some User__DisplayHTML & SuccessOp
-} for 1 but 6 Data, 5 Step,4 Op, 3 Module
+} for 2 but 6 Data, 4 Op, 3 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 6 Data, 5 Step,4 Op, 3 Module
+} for 2 but 6 Data, 4 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 6 Data, 5 Step,4 Op, 3 Module
-
+} for 2 but 6 Data, 4 Op, 3 Module

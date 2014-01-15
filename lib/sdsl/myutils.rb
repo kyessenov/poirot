@@ -5,6 +5,8 @@
 # - just use symbols for data?
 #
 
+require_relative 'alloy_printer'
+
 UNIVERSAL_FIELDS = ["trigger"]
 
 def keysWithVal (h, v)

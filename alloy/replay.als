@@ -1,23 +1,22 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module EndPoint
 sig EndPoint extends Module {
 }{
-	accesses.first in NonCriticalData + Packet
+	this.initAccess in NonCriticalData + Packet
 }
 
 -- module Channel
 one sig Channel extends Module {
 }{
 	all o : this.sends[Eavesdropper__Emit] | triggeredBy[o,Channel__Probe]
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module Eavesdropper
 one sig Eavesdropper extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 
@@ -78,19 +77,15 @@ run SanityCheck {
   some Channel__Transmit & SuccessOp
   some Channel__Probe & SuccessOp
   some Eavesdropper__Emit & SuccessOp
-} for 1 but 1 Data, 5 Step,4 Op, 3 Module
+} for 2 but 1 Data, 4 Op, 3 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 1 Data, 5 Step,4 Op, 3 Module
+} for 2 but 1 Data, 4 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 1 Data, 5 Step,4 Op, 3 Module
-
+} for 2 but 1 Data, 4 Op, 3 Module

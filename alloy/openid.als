@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module EndUser
 one sig EndUser extends Module {
@@ -11,7 +10,7 @@ one sig EndUser extends Module {
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__id) = EndUser__cred
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__cred) = EndUser__id
 	all o : this.sends[RelyingParty__RequestLogIn] | o.(RelyingParty__RequestLogIn <: RelyingParty__RequestLogIn__id) = EndUser__id
-	accesses.first in NonCriticalData + EndUser__id + EndUser__cred + Credential
+	this.initAccess in NonCriticalData + EndUser__id + EndUser__cred + Credential
 }
 
 -- module UserAgent
@@ -27,7 +26,7 @@ one sig UserAgent extends Module {
 	all o : this.sends[RelyingParty__LogIn] | triggeredBy[o,UserAgent__ReceiveOpenID]
 	all o : this.sends[RelyingParty__LogIn] | o.(RelyingParty__LogIn <: RelyingParty__LogIn__id) = o.trigger.((UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__id))
 	all o : this.sends[RelyingParty__LogIn] | o.(RelyingParty__LogIn <: RelyingParty__LogIn__openId) = o.trigger.((UserAgent__ReceiveOpenID <: UserAgent__ReceiveOpenID__openId))
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module RelyingParty
@@ -39,7 +38,7 @@ one sig RelyingParty extends Module {
 	all o : this.sends[IdentityProvider__CheckAuth] | o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id) = o.trigger.((RelyingParty__LogIn <: RelyingParty__LogIn__id))
 	all o : this.sends[IdentityProvider__CheckAuth] | o.(IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId) = o.trigger.((RelyingParty__LogIn <: RelyingParty__LogIn__openId))
 	all o : this.sends[UserAgent__LoginSuccessful] | triggeredBy[o,RelyingParty__AuthVerified]
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module IdentityProvider
@@ -58,7 +57,7 @@ one sig IdentityProvider extends Module {
 	all o : this.sends[RelyingParty__AuthVerified] | triggeredBy[o,IdentityProvider__CheckAuth]
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__id) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__id))
 	all o : this.sends[RelyingParty__AuthVerified] | o.(RelyingParty__AuthVerified <: RelyingParty__AuthVerified__openId) = o.trigger.((IdentityProvider__CheckAuth <: IdentityProvider__CheckAuth__openId))
-	accesses.first in NonCriticalData + Addr.IdentityProvider__credentials + IdentityProvider__credentials.Credential + Addr.IdentityProvider__identities + IdentityProvider__identities.OpenId
+	this.initAccess in NonCriticalData + Addr.IdentityProvider__credentials + IdentityProvider__credentials.Credential + Addr.IdentityProvider__identities + IdentityProvider__identities.OpenId
 }
 
 
@@ -238,19 +237,15 @@ run SanityCheck {
   some IdentityProvider__RequestAuth & SuccessOp
   some IdentityProvider__ReceiveCred & SuccessOp
   some IdentityProvider__CheckAuth & SuccessOp
-} for 1 but 5 Data, 13 Step,12 Op, 4 Module
+} for 2 but 6 Data, 12 Op, 4 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 5 Data, 13 Step,12 Op, 4 Module
+} for 2 but 6 Data, 12 Op, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 5 Data, 13 Step,12 Op, 4 Module
-
+} for 2 but 6 Data, 12 Op, 4 Module

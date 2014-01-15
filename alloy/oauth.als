@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module EndUser
 one sig EndUser extends Module {
@@ -8,7 +7,7 @@ one sig EndUser extends Module {
 	all o : this.sends[UserAgent__EnterCred] | triggeredBy[o,EndUser__PromptForCred]
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__cred) = EndUser__cred
 	all o : this.sends[UserAgent__EnterCred] | o.(UserAgent__EnterCred <: UserAgent__EnterCred__uri) = o.trigger.((EndUser__PromptForCred <: EndUser__PromptForCred__uri))
-	accesses.first in NonCriticalData + EndUser__cred + Credential
+	this.initAccess in NonCriticalData + EndUser__cred + Credential
 }
 
 -- module UserAgent
@@ -23,8 +22,8 @@ one sig UserAgent extends Module {
 	all o : this.sends[AuthServer__ReqAuth] | o.(AuthServer__ReqAuth <: AuthServer__ReqAuth__uri) = o.trigger.((UserAgent__EnterCred <: UserAgent__EnterCred__uri))
 	all o : this.sends[ClientServer__SendAuthResp] | triggeredBy[o,UserAgent__Redirect]
 	all o : this.sends[ClientServer__SendAuthResp] | o.(ClientServer__SendAuthResp <: ClientServer__SendAuthResp__uri) = o.trigger.((UserAgent__Redirect <: UserAgent__Redirect__uri))
-	(some (ClientServer.ClientServer__id & UserAgent__knownClients))
-	accesses.first in NonCriticalData + UserAgent__knownClients
+	(some (ClientServer__id & UserAgent__knownClients))
+	this.initAccess in NonCriticalData + UserAgent__knownClients
 }
 
 -- module ClientServer
@@ -34,7 +33,7 @@ one sig ClientServer extends Module {
 	ClientServer__scope : one Scope,
 }{
 	all o : this.sends[UserAgent__InitFlow] | o.(UserAgent__InitFlow <: UserAgent__InitFlow__redirect) = ClientServer__addr
-	accesses.first in NonCriticalData + ClientServer__addr + ClientServer__id + ClientServer__scope
+	this.initAccess in NonCriticalData + ClientServer__addr + ClientServer__id + ClientServer__scope
 }
 
 -- module AuthServer
@@ -48,7 +47,7 @@ one sig AuthServer extends Module {
 	all o : this.sends[UserAgent__Redirect] | (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__addr = o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__uri)).URI__addr and (some (o.(UserAgent__Redirect <: UserAgent__Redirect__uri).URI__params & AuthServer__authGrants[o.trigger.((AuthServer__ReqAuth <: AuthServer__ReqAuth__cred))])))
 	all o : this.sends[ClientServer__SendAccessToken] | triggeredBy[o,AuthServer__ReqAccessToken]
 	all o : this.sends[ClientServer__SendAccessToken] | o.(ClientServer__SendAccessToken <: ClientServer__SendAccessToken__token) = AuthServer__accessTokens[o.trigger.((AuthServer__ReqAccessToken <: AuthServer__ReqAccessToken__authGrant))]
-	accesses.first in NonCriticalData + Credential.AuthServer__authGrants + AuthServer__authGrants.AuthGrant + AuthGrant.AuthServer__accessTokens + AuthServer__accessTokens.AccessToken + AuthGrant + AccessToken
+	this.initAccess in NonCriticalData + Credential.AuthServer__authGrants + AuthServer__authGrants.AuthGrant + AuthGrant.AuthServer__accessTokens + AuthServer__accessTokens.AccessToken + AuthGrant + AccessToken
 }
 
 -- module ResourceServer
@@ -58,7 +57,7 @@ one sig ResourceServer extends Module {
 	all o : this.receives[ResourceServer__ReqResource] | (some ResourceServer__resources[o.(ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken)])
 	all o : this.sends[ClientServer__SendResource] | triggeredBy[o,ResourceServer__ReqResource]
 	all o : this.sends[ClientServer__SendResource] | o.(ClientServer__SendResource <: ClientServer__SendResource__res) = ResourceServer__resources[o.trigger.((ResourceServer__ReqResource <: ResourceServer__ReqResource__accessToken))]
-	accesses.first in NonCriticalData + AccessToken.ResourceServer__resources + ResourceServer__resources.Resource + Resource
+	this.initAccess in NonCriticalData + AccessToken.ResourceServer__resources + ResourceServer__resources.Resource + Resource
 }
 
 
@@ -231,19 +230,15 @@ run SanityCheck {
   some AuthServer__ReqAuth & SuccessOp
   some AuthServer__ReqAccessToken & SuccessOp
   some ResourceServer__ReqResource & SuccessOp
-} for 1 but 9 Data, 11 Step,10 Op, 5 Module
+} for 2 but 10 Data, 10 Op, 5 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 9 Data, 11 Step,10 Op, 5 Module
+} for 2 but 10 Data, 10 Op, 5 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 9 Data, 11 Step,10 Op, 5 Module
-
+} for 2 but 10 Data, 10 Op, 5 Module
