@@ -10,8 +10,9 @@ require 'sdsl/alloy_printer'
 require 'sdsl/myutils'
 require 'sdsl/optimizer.rb'
 
-require 'slang/case_studies/sop/sop'
 require 'slang/case_studies/sop/fb_ad_mashup'
+require 'slang/case_studies/sop/sop'
+require 'slang/case_studies/sop/postMessage'
 # require "slang/case_studies/http/http"
 # require "slang/case_studies/paywall/referer_interaction"
 # require "slang/case_studies/paywall/cookie_replay"
@@ -27,6 +28,7 @@ Optimizer.setOpt(:GLOBAL_DATA, true)
 
 sop_view = eval("SOP").meta.to_sdsl
 mashup_view = eval("Mashup").meta.to_sdsl
+postmessage_view = eval("PostMessageComm").meta.to_sdsl
 
 # http_view = eval("HTTP").meta.to_sdsl
 # cookie_replay_view = eval("CookieReplay").meta.to_sdsl
@@ -35,6 +37,7 @@ mashup_view = eval("Mashup").meta.to_sdsl
 
 dump(sop_view, "sop")
 dump(mashup_view, "mashup")
+dump(postmessage_view, "postmessage")
 # dump(http_view, "http")
 # dump(cookie_replay_view, "cookie_replay")
 # dump(javascript_hampering_view, "javascript_hampering")
@@ -43,7 +46,8 @@ dump(mashup_view, "mashup")
 # mv = composeViews(http_view, cookie_replay_view)
 # mv = composeViews(mv, javascript_hampering_view)
 # mv = composeViews(mv, referer_interaction_view)
-mv = composeViews(mashup_view, sop_view, {
+mv = composeViews(sop_view, postmessage_view)
+mv = composeViews(mashup_view, mv, {
                     :Module => {
                       "AdClient" => "Script",
                       "AdServer" => "HTTPServer",

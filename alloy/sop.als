@@ -38,7 +38,7 @@ fact trustedModuleFacts {
 -- operation Script__Resp
 sig Script__Resp extends Op {
 	Script__Resp__html : one HTML,
-	Script__Resp__headers : set Text,
+	Script__Resp__headers : set Str,
 }{
 	args in Script__Resp__html + Script__Resp__headers
 	no ret
@@ -71,7 +71,7 @@ sig BrowserStore__GetCookie extends Op {
 -- operation HTTPServer__GET
 sig HTTPServer__GET extends Op {
 	HTTPServer__GET__url : one URL,
-	HTTPServer__GET__headers : set Text,
+	HTTPServer__GET__headers : set Str,
 }{
 	args in HTTPServer__GET__url + HTTPServer__GET__headers
 	no ret
@@ -82,8 +82,8 @@ sig HTTPServer__GET extends Op {
 -- operation HTTPServer__POST
 sig HTTPServer__POST extends Op {
 	HTTPServer__POST__url : one URL,
-	HTTPServer__POST__headers : set Text,
-	HTTPServer__POST__params : set Text,
+	HTTPServer__POST__headers : set Str,
+	HTTPServer__POST__params : set Str,
 }{
 	args in HTTPServer__POST__url + HTTPServer__POST__headers + HTTPServer__POST__params
 	no ret
@@ -92,14 +92,14 @@ sig HTTPServer__POST extends Op {
 }
 
 -- datatype declarations
-abstract sig Text extends Data {
+abstract sig Str extends Data {
 }{
 }
-sig DOM extends Text {
+sig DOM extends Str {
 }{
 	no fields
 }
-sig HTML extends Text {
+sig HTML extends Str {
 	HTML__dom : one DOM,
 }{
 	fields in HTML__dom
@@ -116,7 +116,7 @@ sig CookieScope {
 	CookieScope__domain : one Domain,
 	CookieScope__path : one Path,
 }
-sig Cookie extends Text {
+sig Cookie extends Str {
 }{
 	no fields
 }
