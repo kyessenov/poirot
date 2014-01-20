@@ -4,6 +4,7 @@ open models/basic
 sig Script extends Module {
 	Script__origin : one Origin,
 }{
+	all o : this.receives[Script__PostMessage] | o.(Script__PostMessage <: Script__PostMessage__dest) = Script__origin
 	all o : this.sends[Script__PostMessage] | o.(Script__PostMessage <: Script__PostMessage__src) = Script__origin
 	this.initAccess in NonCriticalData + Script__origin
 }

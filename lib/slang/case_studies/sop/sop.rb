@@ -9,33 +9,37 @@ Slang::Dsl.view :SOP do
   abstract data Str
   data DOM < Str
   data HTML[dom: DOM] < Str
-  global data Origin
+  data HTTPReq[headers: (set Str)]
+  data HTTPResp[html: HTML, headers: (set Str)]
+  global data Origin[domain: Domain]
   global data Domain
   global data Path
-  global data URL
+  global data URL[domain: Domain, path: Path]
   global data CookieScope[domain: Domain, path: Path]
   data Cookie < Str
   
   many mod Script [
-    origin: Origin,
-    doms: (set DOM)
-  ] do
-    op Resp[html: HTML, headers: (set Str)] do
-      guard { doms.contains? (html.dom) }
-    end
-    
+    origin: Origin
+  ] do    
     op AccessDOM[reqOrigin: Origin, ret: DOM] do
       guard { 
-        # can only access DOM if same origin
-        origin == reqOrigin and
-        doms.contains? (ret) 
+        # can only access DOM if the same origin
+        origin == reqOrigin
       }
     end   
-
+    
     sends { BrowserStore::GetCookie }
     sends { Script::AccessDOM }
-    sends { HTTPServer::GET }
-    sends { HTTPServer::POST }
+    sends { HTTPServer::GET.some { |o| 
+        # can only make req to the server with the same origin
+        origin.domain == o.url.domain
+      }
+    }
+    sends { HTTPServer::POST.some { |o| 
+        # can only make req to the server with the same origin
+        origin.domain == o.url.domain        
+      }
+    }
   end
   
   trusted BrowserStore [
@@ -47,13 +51,8 @@ Slang::Dsl.view :SOP do
   end
 
   many mod HTTPServer do
-    op GET[url: URL, headers: (set Str)] do
-      sends { Script::Resp }
-    end
-
-    op POST[url: URL, headers: (set Str), params: (set Str)] do
-      sends { Script::Resp }
-    end 
+    op GET[url: URL, req: HTTPReq, ret: HTTPResp] 
+    op POST[url: URL, req: HTTPReq, ret: HTTPResp]
   end
 
 end

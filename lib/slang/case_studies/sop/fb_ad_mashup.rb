@@ -14,31 +14,26 @@ Slang::Dsl.view :Mashup do
   global data UserID
 
   trusted AdClient do
-    op DisplayAd[ad: AdPage] 
-
+    sends { AdServer::GetAd }
     sends { AdServer::SendInfo }
   end
 
   mod AdServer do
     op SendInfo[d: ProfileData]
-
-    sends { AdClient::DisplayAd }
+    op GetAd[ret: AdPage]
   end
 
   trusted FBClient do
-    op DisplayProfile[page: ProfilePage]
-
     sends { FBServer::GetProfile }
   end
 
   trusted FBServer [
     profileData: UserID ** ProfileData
   ] do
-    op GetProfile[id: UserID] do
-      sends { FBClient::DisplayProfile.some { |o| 
-          # only sends profile data that "id" maps to
-          o.page.d.in? (profileData[id])
-        }
+    op GetProfile[id: UserID, ret: ProfilePage] do
+      guards {         
+        # only sends back profile data that "id" maps to
+        ret.d.in? (profileData[id])
       }
     end
   end

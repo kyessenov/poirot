@@ -13,15 +13,15 @@ UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
 STEP_TYPE = :Step
-DEFAULT_SCOPE = 2
 
 def mkScopeSpec v
   scopes = v.calcScopes
-  if (not v.isDynamic) && Optimizer.isOptOn(:TIMELESS) then
-    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, " + 
+  default_scope = Options.optVal(:DEFAULT_SCOPE)
+  if (not v.isDynamic) && Options.isOptOn(:OPT_TIMELESS) then
+    "#{default_scope} but #{scopes[:Data]} Data, " + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   else 
-    "#{DEFAULT_SCOPE} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
+    "#{default_scope} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
       "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
   end
 end
@@ -38,7 +38,7 @@ check Integrity {
   Integrity
 } for #{mkScopeSpec v}"
 
-  if v.isDynamic || (not Optimizer.isOptOn(:TIMELESS)) then
+  if v.isDynamic || (not Options.isOptOn(:OPT_TIMELESS)) then
     cmdStr += 
 "
 fun RelevantOp : Op -> Step {
@@ -216,8 +216,10 @@ def writeDot(view, dotFile, color=CHILD_COLOR)
   end
   
   # draw data elements
-  view.data.each do |d|
-    f.puts("#{d.name}[shape=ellipse,style=\"filled\",color=\"greenyellow\"];")
+  if Options.isOptOn(:DRAW_DATATYPES)
+    view.data.each do |d|
+      f.puts("#{d.name}[shape=ellipse,style=\"filled\",color=\"greenyellow\"];")
+    end
   end
 
   f.puts "}"
@@ -241,7 +243,7 @@ end
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
-  if (not v.isDynamic) && Optimizer.isOptOn(:TIMELESS) then 
+  if (not v.isDynamic) && Options.isOptOn(:OPT_TIMELESS) then 
     f.puts "open models/basicNoStep"
   else 
     f.puts "open models/basic"

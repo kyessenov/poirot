@@ -2,7 +2,7 @@
 # generic definition of a view
 
 require 'sdsl/module.rb'
-require 'sdsl/optimizer.rb'
+require 'sdsl/options.rb'
 
 View = Struct.new(:name, :modules, :trusted, :data, :critical,
                   :global, :assumptions, :protected, :ctx,
@@ -35,7 +35,7 @@ class View
   # the numbers of datatypes, operations, and modules
   def calcScopes
     scopes = {}
-    scopes[SYM_BASE_DATATYPE] = data.size - (Optimizer.isOptOn(:GLOBAL_DATA) ? global.size : 0)
+    scopes[SYM_BASE_DATATYPE] = data.size - (Options.isOptOn(:OPT_GLOBAL_DATA) ? global.size : 0)
     scopes[:Op] = 0
     scopes[:Module] = 0
     modules.each do |m|
@@ -111,8 +111,12 @@ class View
         if o.parent 
           o.parent.constraints[:args].each do |arg|
             if arg.name.end_with? RET_VAR_SUFFIX
-              if ret then raise "#{o.name} has multiple return values!" end
-              ret = arg.to_s
+              if ret then 
+                # multiple return values
+                sigfacts[n] << "#{arg.to_s} in ret"
+              else 
+                ret = arg.to_s
+              end
             else
               args << arg.to_s
             end
@@ -227,7 +231,7 @@ class View
     end
     ctx[:extendsMap] = extendsMap
     data.each do |d|     
-      alloyChunk += d.to_alloy(ctx,Optimizer.isOptOn(:GLOBAL_DATA) && (global.include? d))
+      alloyChunk += d.to_alloy(ctx,Options.isOptOn(:OPT_GLOBAL_DATA) && (global.include? d))
     end
     alloyChunk += wrap("sig OtherData extends Data {}{ no fields }")
     

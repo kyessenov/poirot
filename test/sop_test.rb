@@ -8,7 +8,7 @@ require_relative 'test_helper'
 
 require 'sdsl/alloy_printer'
 require 'sdsl/myutils'
-require 'sdsl/optimizer.rb'
+require 'sdsl/options.rb'
 
 require 'slang/case_studies/sop/fb_ad_mashup'
 require 'slang/case_studies/sop/sop'
@@ -23,8 +23,9 @@ def dump(view, name, color="beige")
   drawView(view, "../alloy/#{name}.dot", color)
 end
 
-Optimizer.setOpt(:TIMELESS, false)
-Optimizer.setOpt(:GLOBAL_DATA, true)
+Options.setOpt(:OPT_TIMELESS, false)
+Options.setOpt(:OPT_GLOBAL_DATA, true)
+Options.setOpt(:DRAW_DATATYPES, false)
 
 sop_view = eval("SOP").meta.to_sdsl
 mashup_view = eval("Mashup").meta.to_sdsl
@@ -56,8 +57,7 @@ mv = composeViews(mashup_view, mv, {
                     },
                     :Exports => {
                       "FBServer__GetProfile" => "HTTPServer__GET",
-                      "FBClient__DisplayProfile" => "Script__Resp",
-                      "AdClient__DisplayAd" => "Script__Resp", 
+                      "AdClient__GetAd" => "HTTPServer__GET", 
                       "AdServer__SendInfo" => "HTTPServer__POST",
                     },
                     :Invokes => {
@@ -66,6 +66,7 @@ mv = composeViews(mashup_view, mv, {
                       # "SendInfo" => "POST",
                     },
                     :Data => {
+                      "ProfilePage" => "HTTPResp",
                       "ProfileData" => "DOM"
                     }
                   })

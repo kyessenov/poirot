@@ -3,11 +3,11 @@ open models/basic
 -- module Script
 sig Script extends Module {
 	Script__origin : one Origin,
-	Script__doms : set DOM,
 }{
-	all o : this.receives[Script__Resp] | (some (Script__doms & o.(Script__Resp <: Script__Resp__html).HTML__dom))
-	all o : this.receives[Script__AccessDOM] | (Script__origin = o.(Script__AccessDOM <: Script__AccessDOM__reqOrigin) and (some (Script__doms & o.(Script__AccessDOM <: Script__AccessDOM__ret))))
-	this.initAccess in NonCriticalData + Script__origin + Script__doms
+	all o : this.receives[Script__AccessDOM] | Script__origin = o.(Script__AccessDOM <: Script__AccessDOM__reqOrigin)
+	all o : this.sends[HTTPServer__GET] | Script__origin.Origin__domain = o.(HTTPServer__GET <: HTTPServer__GET__url).URL__domain
+	all o : this.sends[HTTPServer__POST] | Script__origin.Origin__domain = o.(HTTPServer__POST <: HTTPServer__POST__url).URL__domain
+	this.initAccess in NonCriticalData + Script__origin
 }
 
 -- module BrowserStore
@@ -21,11 +21,6 @@ one sig BrowserStore extends Module {
 -- module HTTPServer
 sig HTTPServer extends Module {
 }{
-	all o : this.sends[Script__Resp] | 
-		(triggeredBy[o,HTTPServer__GET]
-		or
-		triggeredBy[o,HTTPServer__POST]
-		)
 	this.initAccess in NonCriticalData
 }
 
@@ -33,17 +28,6 @@ sig HTTPServer extends Module {
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
 	TrustedModule = BrowserStore
-}
-
--- operation Script__Resp
-sig Script__Resp extends Op {
-	Script__Resp__html : one HTML,
-	Script__Resp__headers : set Str,
-}{
-	args in Script__Resp__html + Script__Resp__headers
-	no ret
-	sender in HTTPServer
-	receiver in Script
 }
 
 -- operation Script__AccessDOM
@@ -71,10 +55,11 @@ sig BrowserStore__GetCookie extends Op {
 -- operation HTTPServer__GET
 sig HTTPServer__GET extends Op {
 	HTTPServer__GET__url : one URL,
-	HTTPServer__GET__headers : set Str,
+	HTTPServer__GET__req : one HTTPReq,
+	HTTPServer__GET__ret : one HTTPResp,
 }{
-	args in HTTPServer__GET__url + HTTPServer__GET__headers
-	no ret
+	args in HTTPServer__GET__url + HTTPServer__GET__req
+	ret in HTTPServer__GET__ret
 	sender in Script
 	receiver in HTTPServer
 }
@@ -82,11 +67,11 @@ sig HTTPServer__GET extends Op {
 -- operation HTTPServer__POST
 sig HTTPServer__POST extends Op {
 	HTTPServer__POST__url : one URL,
-	HTTPServer__POST__headers : set Str,
-	HTTPServer__POST__params : set Str,
+	HTTPServer__POST__req : one HTTPReq,
+	HTTPServer__POST__ret : one HTTPResp,
 }{
-	args in HTTPServer__POST__url + HTTPServer__POST__headers + HTTPServer__POST__params
-	no ret
+	args in HTTPServer__POST__url + HTTPServer__POST__req
+	ret in HTTPServer__POST__ret
 	sender in Script
 	receiver in HTTPServer
 }
@@ -104,13 +89,27 @@ sig HTML extends Str {
 }{
 	fields in HTML__dom
 }
+sig HTTPReq extends Data {
+	HTTPReq__headers : set Str,
+}{
+	fields in HTTPReq__headers
+}
+sig HTTPResp extends Data {
+	HTTPResp__html : one HTML,
+	HTTPResp__headers : set Str,
+}{
+	fields in HTTPResp__html + HTTPResp__headers
+}
 sig Origin {
+	Origin__domain : one Domain,
 }
 sig Domain {
 }
 sig Path {
 }
 sig URL {
+	URL__domain : one Domain,
+	URL__path : one Path,
 }
 sig CookieScope {
 	CookieScope__domain : one Domain,
@@ -123,23 +122,22 @@ sig Cookie extends Str {
 sig OtherData extends Data {}{ no fields }
 
 run SanityCheck {
-  some Script__Resp & SuccessOp
   some Script__AccessDOM & SuccessOp
   some BrowserStore__GetCookie & SuccessOp
   some HTTPServer__GET & SuccessOp
   some HTTPServer__POST & SuccessOp
-} for 2 but 4 Data, 6 Step,5 Op, 3 Module
+} for 2 but 6 Data, 5 Step,4 Op, 3 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 4 Data, 6 Step,5 Op, 3 Module
+} for 2 but 6 Data, 5 Step,4 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 4 Data, 6 Step,5 Op, 3 Module
+} for 2 but 6 Data, 5 Step,4 Op, 3 Module
 
 fun RelevantOp : Op -> Step {
   {o : Op, t : Step | o.pre = t and o in SuccessOp}
