@@ -16,12 +16,13 @@ one sig NYTimes extends Module {
 one sig Client extends Module {
 	Client__numAccessed : Int one -> set Step,
 }{
-	all o : this.receives[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter)
+	all o : this.receives[Client__SendPage] | Client__numAccessed.(o.post) = o.(Client__SendPage <: Client__SendPage__newCounter)
 	all o : this.sends[Reader__DisplayPage] | triggeredBy[o,Client__SendPage]
 	all o : this.sends[Reader__DisplayPage] | o.(Reader__DisplayPage <: Reader__DisplayPage__page) = o.trigger.((Client__SendPage <: Client__SendPage__page))
 	all o : this.sends[NYTimes__GetLink] | triggeredBy[o,Client__SelectLink]
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetLink] | o.(NYTimes__GetLink <: NYTimes__GetLink__numAccessed) = NYTimes__GetLink__numAccessed
+	all t : Step - last | let t' = t.next | Client__numAccessed.t' != Client__numAccessed.t implies some ((Client__SendPage) & SuccessOp) & pre.t
 	this.initAccess in NonCriticalData + (Client__numAccessed.first)
 }
 
