@@ -76,6 +76,9 @@ module Slang
           # fields
           db.fields *meta.fields.map(&method(:convert_arg))
 
+          # superset types
+          db.types *meta.belongs_to
+
           db.build(_data_name(data))
         end
       end
@@ -119,6 +122,9 @@ module Slang
             fld.type.has_modifier?(:dynamic)
           }.map(&:name)
 
+          # superset types
+          mb.types *meta.belongs_to
+
           mb.build _mod_name(mod)
         end
       end
@@ -150,6 +156,7 @@ module Slang
                     op.meta.effects.map(&method(:convert_effect)))
         }
         ans.modifies = @mod_field_names.to_a
+        ans.types = op.meta.belongs_to
         ans
       end
 
@@ -217,7 +224,9 @@ module Slang
           when_constr = []
           when_constr << triggeredBy(_op_name(op).to_sym) if op
           when_constr += trig_expr.constr.map(&method(:convert_expr))
-          op = Op.new _op_name(trig_expr.target_op), :when => when_constr
+          op = Op.new _op_name(trig_expr.target_op), 
+                      :when => when_constr
+          op.types = trig_expr.target_op.meta.belongs_to
           [op]
         when trig_expr.is_disjunction
           trig_expr.children.reduce([]){|acc, e| acc += convert_trigger_expr(e, op)}

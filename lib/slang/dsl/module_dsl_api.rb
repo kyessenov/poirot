@@ -8,9 +8,11 @@ require 'sdg_utils/random'
 require 'slang/dsl/guard_helper'
 require 'slang/dsl/trigger_helper'
 require 'slang/dsl/type_mod_helper'
+require 'slang/dsl/belongs_to_helper'
 require 'slang/model/data'
 require 'slang/model/operation'
 require 'slang/model/invocation'
+require 'slang/model/belongs_to_meta_ext'
 
 module Slang
   module Dsl
@@ -20,6 +22,7 @@ module Slang
       include Slang::Dsl::TriggerHelper
       include Slang::Dsl::GuardHelper
       include Slang::Dsl::TypeModHelper
+      include Slang::Dsl::BelongsToHelper
 
       alias_method :assumption, :guard
       alias_method :invokes, :sends
@@ -58,6 +61,7 @@ module Slang
       def _define_meta
         meta = super
         meta.singleton_class.send :include, AlloySigMetaModuleExt
+        meta.singleton_class.send :include, Slang::Model::BelongsToMetaExt
         meta
       end
     end

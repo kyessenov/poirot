@@ -13,11 +13,11 @@ module Slang
       include Slang::Dsl::TypeModHelper
       extend self
 
-      def data(*args)
+      def data(*args, &block)
         Arby::Dsl::SigBuilder.new(
           :superclass => Slang::Model::Data,
           :return     => :builder
-        ).sig(*args)
+        ).sig(*args, &block)
       end
 
       def mod(*args, &block)
@@ -42,24 +42,28 @@ module Slang
         blder.apply_modifier("many", Slang::Model::Module, &block)
       end
 
-      def get_data_klasses(data_classes) 
+      def get_data_klasses(data_classes, &block) 
         fst = data_classes.first
         if data_classes.size == 1 && Arby::Dsl::SigBuilder === fst
-          fst.return_result(:array)
-        else
-          data_classes
+          data_classes = fst.return_result(:array)
         end
+        if block
+          data_classes.each do |dc|
+            dc.send :class_eval, &block
+          end
+        end
+        data_classes
       end
 
-      def critical(*data_classes)
-        data_klasses = get_data_klasses(data_classes)
+      def critical(*data_classes, &block)
+        data_klasses = get_data_klasses(data_classes, &block)
         data_klasses.each do |data_cls|
           meta.add_critical(data_cls)
         end
       end
       
-      def global(*data_classes)
-        data_klasses = get_data_klasses(data_classes)
+      def global(*data_classes, &block)
+        data_klasses = get_data_klasses(data_classes, &block)
         data_klasses.each do |data_cls|
           meta.add_global(data_cls)
         end

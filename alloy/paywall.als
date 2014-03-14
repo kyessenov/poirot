@@ -83,8 +83,9 @@ sig Reader__DisplayPage extends Op {
 -- datatype declarations
 abstract sig Page extends Data {
 }{
+	no fields
 }
-sig Article extends Page {
+sig Article extends Data {
 }{
 	no fields
 }

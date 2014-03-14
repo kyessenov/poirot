@@ -8,6 +8,9 @@ require 'sdg_utils/string_utils'
 require 'slang/dsl/effects_helper'
 require 'slang/dsl/guard_helper'
 require 'slang/dsl/trigger_helper'
+require 'slang/dsl/belongs_to_helper'
+
+require 'slang/model/belongs_to_meta_ext'
 
 module Slang
   module Dsl
@@ -17,6 +20,7 @@ module Slang
       include Slang::Dsl::TriggerHelper
       include Slang::Dsl::GuardHelper
       include Slang::Dsl::EffectsHelper
+      include Slang::Dsl::BelongsToHelper
 
       alias_method :response, :sends
 
@@ -28,6 +32,7 @@ module Slang
       def _define_meta
         meta = super
         meta.singleton_class.send :include, AlloySigMetaOperationExt
+        meta.singleton_class.send :include, Slang::Model::BelongsToMetaExt
         meta
       end
     end
