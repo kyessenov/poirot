@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module NYTimes
 one sig NYTimes extends Module {
@@ -10,7 +9,7 @@ one sig NYTimes extends Module {
 	all o : this.sends[Client__SendPage] | triggeredBy[o,NYTimes__GetPage]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__page) = NYTimes__articles[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__link))]
 	all o : this.sends[Client__SendPage] | o.(Client__SendPage <: Client__SendPage__newCounter) = plus[o.trigger.((NYTimes__GetPage <: NYTimes__GetPage__currCounter)), 1]
-	accesses.first in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Page + NYTimes__limit + Page
+	this.initAccess in NonCriticalData + Link.NYTimes__articles + NYTimes__articles.Page + NYTimes__limit + Page
 }
 
 -- module Client
@@ -24,13 +23,13 @@ one sig Client extends Module {
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__link) = o.trigger.((Client__SelectLink <: Client__SelectLink__link))
 	all o : this.sends[NYTimes__GetPage] | o.(NYTimes__GetPage <: NYTimes__GetPage__currCounter) = Client__counter.(o.pre)
 	all t : Step - last | let t' = t.next | Client__counter.t' != Client__counter.t implies some ((Client__SendPage) & SuccessOp) & pre.t
-	accesses.first in NonCriticalData + (Client__counter.first)
+	this.initAccess in NonCriticalData + (Client__counter.first)
 }
 
 -- module Reader
 one sig Reader extends Module {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 
@@ -102,19 +101,15 @@ run SanityCheck {
   some Client__SendPage & SuccessOp
   some Client__SelectLink & SuccessOp
   some Reader__Display & SuccessOp
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+} for 2 but 2 Data, 4 Op, 3 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
+} for 2 but 2 Data, 4 Op, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 2 Data, 5 Step,4 Op, 3 Module
-
+} for 2 but 2 Data, 4 Op, 3 Module

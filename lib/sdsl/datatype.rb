@@ -6,7 +6,8 @@ require 'sdsl/myutils'
 
 SYM_BASE_DATATYPE = :Data
 
-Datatype = Struct.new(:name, :fields, :extends, :isAbstract, :isSingleton)
+Datatype = Struct.new(:name, :fields, :extends, :isAbstract, :isSingleton, 
+                      :types)
 
 class DatatypeBuilder
   def initialize 
@@ -14,6 +15,7 @@ class DatatypeBuilder
     @extends = SYM_BASE_DATATYPE
     @isAbstract = false
     @isSingleton = false
+    @types = []
   end
 
   def field f 
@@ -28,6 +30,10 @@ class DatatypeBuilder
     @extends = parent
   end
 
+  def types *typs
+    @types += typs
+  end
+
   def setAbstract 
     @isAbstract = true
   end
@@ -37,7 +43,7 @@ class DatatypeBuilder
   end
 
   def build name
-    Datatype.new(name, @fields, @extends, @isAbstract, @isSingleton)
+    Datatype.new(name, @fields, @extends, @isAbstract, @isSingleton, @types)
   end
 end
 

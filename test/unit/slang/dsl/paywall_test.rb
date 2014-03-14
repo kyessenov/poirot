@@ -31,17 +31,15 @@ class PaywallTest < Test::Unit::TestCase
              Browser => Client
            },
            :exports => {
-             NYTimes::GetArticle => Server::SendReq,
-             Browser::SendArticle => Client::SendResp
+             NYTimes::GetLink => Server::SendReq,
+             Client::SendPage => Browser::SendResp
            }, 
            :invokes => {
-             NYTimes::GetArticle => Server::SendReq,
-             Browser::SendArticle => Client::SendResp
+             NYTimes::GetLink => Server::SendReq,
+             Client::SendPage => Browser::SendResp
            },
            :data => {
-             Article => Str,
-             ArticleID => Str,
-             Number => Str
+             Page => HTML
            }
           ]
   end
@@ -49,16 +47,14 @@ class PaywallTest < Test::Unit::TestCase
   def test_xxx
     r = Refinement.define(Paywall, HTTP) do
       mod_map NYTimes => Server do
-        op_map GetArticle => SendReq
+        op_map GetLink => SendReq
       end
 
-      mod_map Browser => Client do
-        op_map SendArticle => SendResp
+      mod_map Client => Browser do
+        op_map SendPage => SendResp
       end
 
-      data_map Article   => Str,
-               ArticleID => Str,
-               Number    => Str
+      data_map Page => HTML
     end
   end
 

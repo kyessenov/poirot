@@ -1,5 +1,4 @@
-open models/basic
-open models/crypto[Data]
+open models/basicNoStep
 
 -- module FrontDesk
 one sig FrontDesk extends Module {
@@ -12,7 +11,7 @@ one sig FrontDesk extends Module {
 	all o : this.receives[FrontDesk__Checkout] | (not (some FrontDesk__occupant.(o.pre).id))
 	all t : Step - last | let t' = t.next | FrontDesk__lastKey.t' != FrontDesk__lastKey.t implies some ((FrontDesk__Checkin) & SuccessOp) & pre.t
 	all t : Step - last | let t' = t.next | FrontDesk__occupant.t' != FrontDesk__occupant.t implies some ((FrontDesk__Checkin) & SuccessOp) & pre.t
-	accesses.first in NonCriticalData + RoomNumber.(FrontDesk__lastKey.first) + (FrontDesk__lastKey.first).Key + RoomNumber.(FrontDesk__occupant.first) + (FrontDesk__occupant.first).GuestID + Key
+	this.initAccess in NonCriticalData + RoomNumber.(FrontDesk__lastKey.first) + (FrontDesk__lastKey.first).Key + RoomNumber.(FrontDesk__occupant.first) + (FrontDesk__occupant.first).GuestID + Key
 }
 
 -- module Room
@@ -21,7 +20,7 @@ one sig Room extends Module {
 	Room__keys : set Key,
 	Room__currentKey : Key one -> set Step,
 }{
-	all o : this.receives[Room__Entry] |
+	all o : this.receives[Room__Entry] | 
 		(o.(Room__Entry <: Room__Entry__k) = Room__currentKey.(o.pre)
 		or
 		o.(Room__Entry <: Room__Entry__k) = Room__currentKey.(o.pre).Key__nxt
@@ -29,7 +28,7 @@ one sig Room extends Module {
 	all o : this.receives[Room__Entry] | Room__currentKey.(o.post) = Room__currentKey.(o.pre).Key__nxt
 	(some (Room__keys & Room__currentKey.(o.pre)))
 	all t : Step - last | let t' = t.next | Room__currentKey.t' != Room__currentKey.t implies some ((Room__Entry) & SuccessOp) & pre.t
-	accesses.first in NonCriticalData + Room__num + Room__keys + (Room__currentKey.first)
+	this.initAccess in NonCriticalData + Room__num + Room__keys + (Room__currentKey.first)
 }
 
 -- module Guest
@@ -37,19 +36,19 @@ one sig Guest extends Module {
 	Guest__id : one GuestID,
 	Guest__keys : set Key,
 }{
-	accesses.first in NonCriticalData + Guest__id + Guest__keys
+	this.initAccess in NonCriticalData + Guest__id + Guest__keys
 }
 
 -- module GoodGuest
 one sig GoodGuest extends Guest {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 -- module BadGuest
 one sig BadGuest extends Guest {
 }{
-	accesses.first in NonCriticalData
+	this.initAccess in NonCriticalData
 }
 
 
@@ -110,19 +109,15 @@ run SanityCheck {
   some FrontDesk__Checkin & SuccessOp
   some FrontDesk__Checkout & SuccessOp
   some Room__Entry & SuccessOp
-} for 1 but 3 Data, 4 Step,3 Op, 5 Module
+} for 2 but 3 Data, 3 Op, 5 Module
 
 
-fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.post = t and o in SuccessOp}
-}
 check Confidentiality {
   Confidentiality
-} for 1 but 3 Data, 4 Step,3 Op, 5 Module
+} for 2 but 3 Data, 3 Op, 5 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 1 but 3 Data, 4 Step,3 Op, 5 Module
-
+} for 2 but 3 Data, 3 Op, 5 Module

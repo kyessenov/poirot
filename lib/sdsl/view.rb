@@ -281,7 +281,7 @@ class ViewBuilder
       if d.is_a? Datatype
         d
       else 
-        Datatype.new(d, [], SYM_BASE_DATATYPE, false) 
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false, []) 
       end
     }
   end
@@ -291,7 +291,7 @@ class ViewBuilder
       if d.is_a? Datatype
         d
       else
-        Datatype.new(d, [], SYM_BASE_DATATYPE, false)
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false, [])
       end
     }
   end
@@ -301,7 +301,7 @@ class ViewBuilder
       if d.is_a? Datatype
         d
       else
-        Datatype.new(d, [], SYM_BASE_DATATYPE, false)
+        Datatype.new(d, [], SYM_BASE_DATATYPE, false, [])
       end
     }
   end
@@ -364,7 +364,7 @@ def refineExports(sup, sub, exportsRel)
         exports << Op.new(n, 
                           {:when => (o.constraints[:when]),
                             :args => (o.constraints[:args])}, o2, 
-                          nil, false, o.modifies)
+                          nil, false, o.modifies, o.types)
         # if exportsRel has both o1 -> o2 and o2 -> o1 as mapping,
         # set o2 abstract s.t. instances(o1) = instances(o2)
         if exportsRel.has_key? o2.name
@@ -393,7 +393,7 @@ def refineInvokes(sup, sub, invokesRel)
         o2 = matches[0]    
         invokes << Op.new(n, 
                           {:when => (o.constraints[:when])},
-                          o2, nil, false, o.modifies)  
+                          o2, nil, false, o.modifies, o.types)  
 # TODO: Is this right? Too weak?        
 #        subInvokes.delete(o2)
         next
@@ -420,7 +420,9 @@ def abstractExports(m1, m2, exportsRel)
                             :args => myuniq(o.constraints[:args] + 
                                             o2.constraints[:args])}, 
                           nil, nil,
-                          false, safeUnion(o.modifies,o2.modifies))
+                          false, 
+                          safeUnion(o.modifies,o2.modifies),
+                          safeUnion(o.types, o2.types))
         m2Exports.delete(o2)
         next
       end
@@ -447,7 +449,9 @@ def abstractInvokes(m1, m2, invokesRel)
                           {:when => union(o.constraints[:when],
                                           o2.constraints[:when])},
                           nil, nil,
-                          false, safeUnion(o.modifies, o2.modifies))
+                          false, 
+                          safeUnion(o.modifies, o2.modifies),
+                          safeUnion(o.types, o2.types))
         m2Invokes.delete(o2)
         next
       end
@@ -480,7 +484,7 @@ def refineMod(sup, sub, exportsRel, invokesRel)
   dynamics = sup.dynamics
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
-          extends, isAbstract, isUniq, dynamics)
+          extends, isAbstract, isUniq, dynamics, [sup])
 end
 
 def mergeMod(m1, m2, exportsRel, invokesRel)
@@ -495,9 +499,10 @@ def mergeMod(m1, m2, exportsRel, invokesRel)
   isAbstract = false
   isUniq = m1.isUniq #TODO: Fix it later
   dynamics = myuniq(m2.dynamics + m1.dynamics)
+  types = myuiq(m2.types + m1.types)
 
   Mod.new(name, exports, invokes, assumptions, stores, creates, 
-          [], isAbstract, isUniq, dynamics)
+          [], isAbstract, isUniq, dynamics, types)
 end
 
 def mergeParts(v1, v2, refineRel)
@@ -515,12 +520,14 @@ def mergeParts(v1, v2, refineRel)
 #    dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, false)
 #    dataMap[to] = Datatype.new(sup.name, sup.fields, SYM_BASE_DATATYPE, true)
     dataMap[from] = Datatype.new(sub.name, sub.fields, sup.name, 
-                                 sub.isAbstract, sub.isSingleton)
+                                 sub.isAbstract, sub.isSingleton,
+                                 (sub.types << sup.name))
     if sup.isSingleton then
       raise "The datatype named #{to} being extended can't be singleton!"
     end
     dataMap[to] = Datatype.new(sup.name, sup.fields, sup.extends, 
-                               sup.isAbstract, sup.isSingleton)
+                               sup.isAbstract, sup.isSingleton,
+                               sup.types)
   end
 
   v1.data.each do |d1| 
@@ -541,7 +548,7 @@ def mergeParts(v1, v2, refineRel)
         if d1.extends != SYM_BASE_DATATYPE then extends = d1.extends end
         if d2.extends != SYM_BASE_DATATYPE then extends = d2.extends end
         newData = Datatype.new(d1.name, myuniq(d1.fields + d2.fields),
-                               extends, false)        
+                               extends, false, myuniq(d1.types + d2.types))   
         dataMap[d1.name] = newData
         dataMap[d2.name] = newData
       end
@@ -636,7 +643,7 @@ def buildView(v1, v2, mapping, refineRel)
     dn = d.name
     i = data.find_index { |d2| d2.extends == dn }
     if i then
-      otherData << Datatype.new(("Other#{dn}").to_sym, [], dn, false) 
+      otherData << Datatype.new(("Other#{dn}").to_sym, [], dn, false, []) 
     end
   end
   data += otherData

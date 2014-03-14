@@ -9,10 +9,10 @@ require 'sdsl/datatype'
 Mod = Struct.new(:name, :exports, :invokes, :assumptions, 
                  :stores, :creates,
                  :extends, :isAbstract, :isUniq,
-                 :dynamics)
+                 :dynamics, :types)
 
 Op = Struct.new(:name, :constraints, :parent, :child, :isAbstract, 
-                :modifies)
+                :modifies, :types)
 
 NON_CRITICAL_DATA = "NonCriticalData"
 
@@ -29,7 +29,8 @@ class Mod
     Mod.new(self.name, self.exports.deepclone, self.invokes.deepclone,
             self.assumptions.clone, self.stores.clone, 
             self.creates.clone, self.extends.clone, 
-            self.isAbstract, self.isUniq, self.dynamics.clone)
+            self.isAbstract, self.isUniq, self.dynamics.clone,
+            self.types.clone)
   end
 
   def setAbstract
@@ -173,12 +174,13 @@ class ModuleBuilder
     @isAbstract = false
     @isUniq = true
     @dynamics = []
+    @types = []
   end
 
-  def exports(op, constraints = {}, modifies = [])   
+  def exports(op, constraints = {}, modifies = [], types = [])   
     if constraints.empty?
       @exports << Op.new(op, {:when => [], :args => []}, nil, nil, false, 
-                         modifies)
+                         modifies, types)
     else
       if not constraints.has_key? :args
         constraints[:args] = []
@@ -186,11 +188,11 @@ class ModuleBuilder
       if not constraints.has_key? :when
         constraints[:when] = []
       end
-      @exports << Op.new(op, constraints, nil, nil, false, modifies)
+      @exports << Op.new(op, constraints, nil, nil, false, modifies, types)
     end
   end
 
-  def invokes(op, constraints = {}, modifies = [])
+  def invokes(op, constraints = {}, modifies = [], types = [])
     opnames = []
     if op.is_a? Array
       opnames = op 
@@ -200,12 +202,12 @@ class ModuleBuilder
 
     opnames.each do |o|    
       if constraints.empty?
-        @invokes << Op.new(o, {:when => []}, nil, nil, false, modifies)
+        @invokes << Op.new(o, {:when => []}, nil, nil, false, modifies, types)
       else 
         if not constraints.has_key? :when
           constraints[:when] = []
         end
-        @invokes << Op.new(o, constraints, nil, nil, false, modifies)
+        @invokes << Op.new(o, constraints, nil, nil, false, modifies, types)
       end
     end
   end
@@ -239,6 +241,10 @@ class ModuleBuilder
     @extends << parent
   end
   
+  def types *typs
+    @types += typs
+  end
+
   def setUniq b
     @isUniq = b
   end
@@ -249,7 +255,7 @@ class ModuleBuilder
 
   def build name
     Mod.new(name, @exports, @invokes, @assumptions, @stores, 
-            @creates, @extends, @isAbstract, @isUniq, @dynamics)
+            @creates, @extends, @isAbstract, @isUniq, @dynamics, @types)
   end
 end
 
