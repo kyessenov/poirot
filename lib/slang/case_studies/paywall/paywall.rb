@@ -4,6 +4,7 @@ require 'slang/case_studies/http/http.rb'
 include Slang::Dsl
 
 Slang::Dsl.view :Paywall do
+  include HTTP
 
   abstract data Page
   critical data Article do
@@ -16,10 +17,10 @@ Slang::Dsl.view :Paywall do
     limit: Int
   ] do
     creates Article
-    belongs_to HTTP::Server, Browser
+    belongs_to Server, Browser
 
     op GetLink [link: Link, numAccessed: Int] do
-      belongs_to HTTP::Server::SendReq
+      belongs_to Server::SendReq
       guard { numAccessed < limit }
       sends { Client::SendPage[articles[link], numAccessed + 1] }
     end
