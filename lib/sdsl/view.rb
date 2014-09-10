@@ -233,7 +233,7 @@ class View
     data.each do |d|     
       alloyChunk += d.to_alloy(ctx,Options.isOptOn(:OPT_GLOBAL_DATA) && (global.include? d))
     end
-    alloyChunk += wrap("sig OtherData extends Data {}{ no fields }")
+    alloyChunk += wrap("sig OtherData extends Data {}")
     
     # write critical data fact
     if not critical.empty?

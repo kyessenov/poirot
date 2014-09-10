@@ -243,12 +243,7 @@ end
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
-  if (not v.isDynamic) && Options.isOptOn(:OPT_TIMELESS) then 
-    f.puts "open models/basicNoStep"
-  else 
-    f.puts "open models/basic"
-  end
-  # f.puts "open models/crypto[Data]"
+  f.puts "open generic/basic"
   f.puts
   f.puts v.to_alloy
   # footers

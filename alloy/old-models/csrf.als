@@ -1,4 +1,4 @@
-open models/basicNoStep
+open models/basic
 
 -- module User
 one sig User extends Module {

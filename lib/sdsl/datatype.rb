@@ -81,24 +81,28 @@ class Datatype
     # done if it's a global datatype
     if global then return alloyChunk += wrap("") end
 
-    alloyChunk += wrap("{")
-    effectiveFields = buildEffectiveFields(ctx[:extendsMap])
+    # No more field needed?
+    # alloyChunk += wrap("{")
+    # effectiveFields = buildEffectiveFields(ctx[:extendsMap])
 
-    isParent = ctx[:extendsMap].has_value? self
+    # isParent = ctx[:extendsMap].has_value? self
     
-    field_expr = 
-      (effectiveFields.empty? ? "no fields" : "fields in " + effectiveFields.map{ |f| f.name }.join(" + "))
+    # field_expr = 
+    #   (effectiveFields.empty? ? "no fields" : "fields in " + effectiveFields.map{ |f| f.name }.join(" + "))
     
-    if isParent
-      if not isAbstract
-        childset = keysWithVal(ctx[:extendsMap], self).map {|c| c.name.to_s}.join(" + ")       
-        alloyChunk += 
-          wrap("this not in (#{childset}) implies " + field_expr, 1)    
-      end
-    else
-      alloyChunk += wrap(field_expr, 1)
-    end
-    alloyChunk += wrap("}")
+    # if isParent
+    #   if not isAbstract
+    #     childset = keysWithVal(ctx[:extendsMap], self).map {|c| c.name.to_s}.join(" + ")       
+    #     alloyChunk += 
+    #       wrap("this not in (#{childset}) implies " + field_expr, 1)    
+    #   end
+    # else
+    #   alloyChunk += wrap(field_expr, 1)
+    # end
+    # alloyChunk += wrap("}")
+
+    alloyChunk += wrap("")
+
   end
   
 end

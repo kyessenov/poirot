@@ -1,4 +1,4 @@
-open models/basicNoStep
+open models/basic
 
 -- module EndpointA
 one sig EndpointA extends Module {
