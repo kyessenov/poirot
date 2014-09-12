@@ -12,17 +12,17 @@ FONTNAME = "helvetica"
 UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
-STEP_TYPE = :Step
+STEP_TYPE = :Op
 
 def mkScopeSpec v
   scopes = v.calcScopes
   default_scope = Options.optVal(:DEFAULT_SCOPE)
   if (not v.isDynamic) && Options.isOptOn(:OPT_TIMELESS) then
     "#{default_scope} but #{scopes[:Data]} Data, " + 
-      "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
+      "#{scopes[:Op]} Op, #{scopes[:Op]} Step, #{scopes[:Module]} Module\n"
   else 
     "#{default_scope} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
-      "#{scopes[:Op]} Op, #{scopes[:Module]} Module\n"
+      "#{scopes[:Op]} Op, #{scopes[:Op]} Step, #{scopes[:Module]} Module\n"
   end
 end
 
@@ -243,7 +243,8 @@ end
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
-  f.puts "open generic/basic"
+  f.puts "open libraryWeb/WebBasic"
+  f.puts "open libraryWeb/Redirect"
   f.puts
   f.puts v.to_alloy
   # footers

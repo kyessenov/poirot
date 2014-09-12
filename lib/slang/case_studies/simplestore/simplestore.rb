@@ -4,24 +4,45 @@ include Slang::Dsl
 
 Slang::Dsl.view :SimpleStore do
 
-  data UID
-  data PID # product ID
-  data Cred # credentials
+  data UserID
+  data ProductID # product ID
+  data ProductInfo # product info
+  data Password # password
 
   component MyStore [
-     userCreds: UID ** Cred,
-     orders: (dynamic UID ** PID)
-  ] do
-    op Login[uid: UID, cred: Cred] do
-      guard { cred == userCreds[uid] }
-    end
-  end
+     passwords: UserID ** Password,
+     products: ProductID ** ProductInfo,
+     orders: (dynamic UserID ** ProductID)
+  ]{
+    
+    typeOf HttpServer
+
+    op Login[uid: UserID, pass: Password] {
+      allows { pass == passwords[uid] }
+    }
+
+    op GetProduct[pid: ProductID, ret: ProductInfo] {
+      allows { ret == products[pid] }
+    }
+  
+    op OrderProduct[uid: UserID, pid: ProductID] {
+      updates { orders.insert(uid**pid)
+#self.orders = orders + uid ** pid 
+}
+    }
+
+  }
 
   component Customer [
-    id: UID,
-    cred: Cred
-  ] do
-    sends { MyStore::Login }
-  end
+    id: UserID,
+    pass: Password
+  ]{
+
+    typeOf Browser
+
+    calls { MyStore::Login }
+    calls { MyStore::GetProduct }
+    calls { MyStore::OrderProduct }
+  }
 
 end

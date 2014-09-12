@@ -23,7 +23,8 @@ module Slang
       include Slang::Dsl::BelongsToHelper
 
       alias_method :response, :sends
-
+      alias_method :allows, :guard
+      alias_method :updates, :effects
 
       private
 

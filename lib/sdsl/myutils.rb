@@ -8,6 +8,7 @@
 require_relative 'alloy_printer'
 
 UNIVERSAL_FIELDS = ["trigger"]
+$OPTIMIZE_POIROT = true
 
 def keysWithVal (h, v)
   h.keys.find_all {|k| h[k] == v }
@@ -485,7 +486,8 @@ class BinOp < Expr
     e2 = @col.to_alloy(ctx)
     if not UNIVERSAL_FIELDS.include? e2
       if e1 == "o"
-        e2 = "(#{ctx[:op]} <: " + e2 + ")"
+#        e2 = "(#{ctx[:op]} <: " + e2 + ")"
+        e2 = e2
       elsif e1 == "o.trigger"
         e2 = enclose(ctx[:trigger].map { |t| enclose "#{t} <: #{e2}" }.join(" + "))
       end

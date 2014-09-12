@@ -155,6 +155,7 @@ module Slang
           :when => (op.meta.guards.map(&method(:convert_guard)) +
                     op.meta.effects.map(&method(:convert_effect)))
         }
+        puts ans
         ans.modifies = @mod_field_names.to_a
         ans.types = op.meta.belongs_to
         ans
@@ -376,7 +377,7 @@ module Slang
         if f.__field.type.has_modifier?(:dynamic)
           prepost = @assignlhs ? "post" : "pre"
           @mod_field_names << fldname if @assignlhs
-          fldname = "#{fldname}.(o.#{prepost})"
+          fldname = @assignlhs ? "#{fldname}.(o.next)" : "#{fldname}.o"
         end
         e(fldname)
       end

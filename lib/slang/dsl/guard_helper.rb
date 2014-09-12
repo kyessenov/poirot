@@ -29,6 +29,7 @@ module Slang
             __sym_exe op_inst.make_me_#{expr_kind}_expr
           end
         RUBY
+
         meta.add_guard g
       end
 

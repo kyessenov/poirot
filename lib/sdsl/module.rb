@@ -105,10 +105,15 @@ class Mod
     if isAbstract then alloyChunk += "abstract " end
 
     alloyChunk += "sig " + modn + " extends "
-    if not extends.empty?
-      alloyChunk += wrap("#{extends[0].name} {")
-    else
-      alloyChunk += wrap("Module {")
+
+    if $OPTIMIZE_POIROT && (not types.empty?) then
+      alloyChunk += wrap("#{types[0]} {")
+    else 
+      if not extends.empty?
+        alloyChunk += wrap("#{extends[0].name} {")
+      else
+        alloyChunk += wrap("Module {")
+      end
     end
 
     # fields      
@@ -119,9 +124,9 @@ class Mod
         alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
       end
     end
-    alloyChunk += "}"
+   
     # signature facts
-    alloyChunk += wrap("{")
+    alloyChunk += wrap("}{")
     if not sigfacts.empty? 
       sigfacts.each do |f|
         alloyChunk += wrap(f, 1)
@@ -135,13 +140,14 @@ class Mod
         if not fconds.has_key? o then fconds[o] = [] end
         fconds[o] << e
       end
-    end    
+    end
+
     fconds.each do |k, v|
       opset = v.map {|e| e.name.to_s }.join(' + ')
       alloyChunk += 
-        wrap("all t : Step - last | let t' = t.next |" + 
-             " #{k}.t' != #{k}.t implies " + 
-             "some ((#{opset}) & SuccessOp) & pre.t", 1)
+        wrap("all o : Op - last | let o' = o.next |" + 
+             " #{k}.o' != #{k}.o implies " + 
+             "o in #{opset} & SuccessOp", 1)
     end
 
     # initial data access
@@ -159,6 +165,7 @@ class Mod
     alloyChunk += wrap("}")
     # facts
     alloyChunk += writeFacts(name.to_s + "Facts", facts)
+
   end
 
 end
