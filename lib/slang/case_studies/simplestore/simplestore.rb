@@ -26,9 +26,8 @@ Slang::Dsl.view :SimpleStore do
     }
   
     op OrderProduct[uid: UserID, pid: ProductID] {
-      updates { orders.insert(uid**pid)
-#self.orders = orders + uid ** pid 
-}
+      # updates { self.orders = orders + uid ** pid }
+      updates { orders.insert uid**pid }
     }
 
   }
