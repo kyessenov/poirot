@@ -8,7 +8,7 @@ module Slang
       def [](*args)
         some(*args)
       end
-
+      
       def some(*args, &block)
         hash =
           if args.size == 1 && Hash === args.first

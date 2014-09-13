@@ -7,32 +7,34 @@ one sig MyStore extends HttpServer {
 	MyStore__sessions : UserID set -> lone SessionID,
 	MyStore__price : OrderID set -> lone Amount,
 	MyStore__orders : (UserID set -> lone OrderID) -> set Op,
-	MyStore__paid : (UserID set -> lone OrderID) -> set Op,
+	MyStore__paid : OrderID set -> set Op,
 }{
 	all o : this.receives[MyStore__Login] | (o.MyStore__Login__pwd = MyStore__passwords[o.MyStore__Login__uid] and o.MyStore__Login__ret = MyStore__sessions[o.MyStore__Login__uid])
 	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + o.MyStore__PlaceOrder__uid -> o.MyStore__PlaceOrder__oid)
+	all o : this.receives[MyStore__Checkout] | (o.MyStore__Checkout__ret.PaymentInfo__order = MyStore__orders.o[MyStore__sessions.o.MyStore__Checkout__sid] and o.MyStore__Checkout__ret.PaymentInfo__amtCharged = MyStore__price[o.MyStore__Checkout__ret.PaymentInfo__order])
+	all o : this.receives[MyStore__NotifyPayment] | MyStore__paid.(o.next) = (MyStore__paid.o + o.MyStore__NotifyPayment__oid)
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies o in MyStore__PlaceOrder & SuccessOp
-	this.initAccess in NonCriticalData + UserID.MyStore__passwords + MyStore__passwords.Password + UserID.MyStore__sessions + MyStore__sessions.SessionID + OrderID.MyStore__price + MyStore__price.Amount + UserID.(MyStore__orders.first) + (MyStore__orders.first).OrderID + UserID.(MyStore__paid.first) + (MyStore__paid.first).OrderID
+	all o : Op - last | let o' = o.next | MyStore__paid.o' != MyStore__paid.o implies o in MyStore__NotifyPayment & SuccessOp
+	this.initAccess in NonCriticalData + UserID.MyStore__passwords + MyStore__passwords.Password + UserID.MyStore__sessions + MyStore__sessions.SessionID + OrderID.MyStore__price + MyStore__price.Amount + UserID.(MyStore__orders.first) + (MyStore__orders.first).OrderID + (MyStore__paid.first)
 }
 
 -- module PaymentService
 one sig PaymentService extends HttpServer {
 	PaymentService__transactions : (TxID set -> lone TxInfo) -> set Op,
 }{
-	all o : this.receives[PaymentService__MakePayment] | (some t : TxID | (some i : TxInfo | PaymentService__transactions.(o.next) = (PaymentService__transactions.o + t -> i)))
+	all o : this.receives[PaymentService__MakePayment] | (some t : TxID | (some i : TxInfo | ((i.TxInfo__order = o.PaymentService__MakePayment__oid and i.TxInfo__amtPaid = o.PaymentService__MakePayment__amt) and PaymentService__transactions.(o.next) = (PaymentService__transactions.o + t -> i))))
 	all o : this.sends[MyStore__NotifyPayment] | triggeredBy[o,PaymentService__MakePayment]
 	all o : this.sends[MyStore__NotifyPayment] | o.MyStore__NotifyPayment__oid = o.trigger.((PaymentService__MakePayment <: PaymentService__MakePayment__oid))
-	all o : this.sends[MyStore__NotifyPayment] | o.MyStore__NotifyPayment__amt = o.trigger.((PaymentService__MakePayment <: PaymentService__MakePayment__amt))
 	all o : Op - last | let o' = o.next | PaymentService__transactions.o' != PaymentService__transactions.o implies o in PaymentService__MakePayment & SuccessOp
 	this.initAccess in NonCriticalData + TxID.(PaymentService__transactions.first) + (PaymentService__transactions.first).TxInfo
 }
 
 -- module Customer
 one sig Customer extends Browser {
-	Customer__id : one UserID,
-	Customer__pass : one Password,
+	Customer__myId : one UserID,
+	Customer__myPwd : one Password,
 }{
-	this.initAccess in NonCriticalData + Customer__id + Customer__pass
+	this.initAccess in NonCriticalData + Customer__myId + Customer__myPwd
 }
 
 
@@ -62,9 +64,10 @@ sig MyStore__PlaceOrder extends Op {
 -- operation MyStore__Checkout
 sig MyStore__Checkout extends Op {
 	MyStore__Checkout__sid : one SessionID,
+	MyStore__Checkout__ret : one PaymentInfo,
 }{
 	args in MyStore__Checkout__sid
-	no ret
+	ret in MyStore__Checkout__ret
 	sender in Customer
 	receiver in MyStore
 }
@@ -72,9 +75,8 @@ sig MyStore__Checkout extends Op {
 -- operation MyStore__NotifyPayment
 sig MyStore__NotifyPayment extends Op {
 	MyStore__NotifyPayment__oid : one OrderID,
-	MyStore__NotifyPayment__amt : one Amount,
 }{
-	args in MyStore__NotifyPayment__oid + MyStore__NotifyPayment__amt
+	args in MyStore__NotifyPayment__oid
 	no ret
 	sender in PaymentService
 	receiver in MyStore
@@ -92,10 +94,6 @@ sig PaymentService__MakePayment extends Op {
 }
 
 -- datatype declarations
-sig Token extends Data {
-}
-sig Resource extends Data {
-}
 sig UserID extends Data {
 }
 sig SessionID extends Data {
@@ -104,13 +102,17 @@ sig Password extends Data {
 }
 sig Amount extends Data {
 }
+sig OrderID extends Data {
+}
+sig PaymentInfo extends Data {
+	PaymentInfo__order : one OrderID,
+	PaymentInfo__amtCharged : one Amount,
+}
 sig TxID extends Data {
 }
 sig TxInfo extends Data {
 	TxInfo__order : one OrderID,
-	TxInfo__amt : one Amount,
-}
-sig OrderID extends Data {
+	TxInfo__amtPaid : one Amount,
 }
 sig OtherData extends Data {}
 
@@ -120,15 +122,15 @@ run SanityCheck {
   some MyStore__Checkout & SuccessOp
   some MyStore__NotifyPayment & SuccessOp
   some PaymentService__MakePayment & SuccessOp
-} for 2 but 9 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 9 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 9 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
