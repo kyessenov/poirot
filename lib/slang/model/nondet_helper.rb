@@ -29,14 +29,13 @@ module Slang
         OpConstr.new inst_expr, constrs
       end
 
-      def after(op, &block) op.then(self, &block) end
-
       def then(op, &block)
+        cause_op = Arby::Ast::Fun.dummy_instance(self)
         trig_op = Arby::Ast::Fun.dummy_instance(op)
         trig_op_expr = trig_op.make_me_sym_expr()
         constr = TrigByExpr.new(self, op)
         if block
-          body = get_appended_facts(trig_op.make_me_trig_expr, trig_op_expr, &block).first
+          body = get_appended_facts(cause_op.make_me_trig_expr, trig_op_expr, &block).first
           constr = constr.and(body)
         end
         OpConstr.new trig_op_expr, [constr]

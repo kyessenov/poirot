@@ -34,7 +34,11 @@ one sig Customer extends Browser {
 	Customer__myId : one UserID,
 	Customer__myPwd : one Password,
 }{
+<<<<<<< HEAD
 	all o : this.sends[PaymentService__MakePayment] | (triggeredBy[o,MyStore__PlaceOrder] and ((o.trigger).PaymentService__MakePayment__oid) = ((o.trigger).PaymentService__MakePayment__oid))
+=======
+	all o : this.sends[PaymentService__MakePayment] | (triggeredBy[o,MyStore__PlaceOrder] and o.trigger.((MyStore__PlaceOrder <: MyStore__PlaceOrder__oid)) = o.PaymentService__MakePayment__oid)
+>>>>>>> d4c6220200c38e825afa85deb9bc0df6bccb1376
 	this.initAccess in NonCriticalData + Customer__myId + Customer__myPwd
 }
 
