@@ -68,8 +68,11 @@ Slang::Dsl.view :ComplexStore do
     calls { MyStore::Login }
     calls { MyStore::PlaceOrder }
     calls { MyStore::Checkout }
-#    calls { PaymentService::MakePayment.after MyStore::PlaceOrder}
-    calls { PaymentService::MakePayment }
+    calls { 
+      MyStore::PlaceOrder.then PaymentService::MakePayment do |order, payment|
+        order.oid == payment.oid
+      end
+    }
   }
 
 end

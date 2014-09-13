@@ -393,6 +393,11 @@ module Slang
         trig()
       end
 
+      def convert_trigbyexpr(te)
+        triggeredBy(_op_name(te.causeOp).to_sym)
+      end
+
+
       def convert_argofexpr(ar)
         arg(evis.visit(ar.sub()))
       end

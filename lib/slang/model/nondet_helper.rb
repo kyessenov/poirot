@@ -29,6 +29,19 @@ module Slang
         OpConstr.new inst_expr, constrs
       end
 
+      def after(op, &block) op.then(self, &block) end
+
+      def then(op, &block)
+        trig_op = Arby::Ast::Fun.dummy_instance(op)
+        trig_op_expr = trig_op.make_me_sym_expr()
+        constr = TrigByExpr.new(self, op)
+        if block
+          body = get_appended_facts(trig_op.make_me_trig_expr, trig_op_expr, &block).first
+          constr = constr.and(body)
+        end
+        OpConstr.new trig_op_expr, [constr]
+      end
+
       protected
 
       def get_field_values_constraint(inst_expr, hash)
@@ -47,11 +60,11 @@ module Slang
         conjs
       end
 
-      def get_appended_facts(inst_expr, &blk)
+      def get_appended_facts(*args, &blk)
         return [] if blk.nil?
-        msg = "appended block arity must be 1"
-        raise ArgumentError, msg unless blk.arity == 1
-        ans = blk.call inst_expr
+        msg = "appended block arity must be the same as the number of args ({args.size})"
+        raise ArgumentError, msg unless blk.arity == args.size
+        ans = blk.call *args
         [ans]
       end
     end
@@ -77,6 +90,16 @@ module Slang
         constr.map { |e|
           Arby::Ast::Expr.replace_subexpressions(e, @inst, replacement_expr)
         }
+      end
+    end
+
+    class TrigByExpr
+      include Arby::Ast::Expr::MExpr
+
+      attr_reader :causeOp, :triggeredOp
+
+      def initialize(causeOp, triggeredOp)
+        @causeOp, @triggeredOp = causeOp, triggeredOp
       end
     end
 
