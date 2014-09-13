@@ -363,7 +363,7 @@ module Slang
                      end
         mname = if q.all?
                   :forall
-                elsif q.exists?
+                elsif q.exist?
                   :exists
                 else
                   fail "unsupported quantifier kind: #{q.kind}"

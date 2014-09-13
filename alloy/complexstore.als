@@ -19,9 +19,11 @@ one sig MyStore extends HttpServer {
 one sig PaymentService extends HttpServer {
 	PaymentService__transactions : (TxID set -> lone TxInfo) -> set Op,
 }{
+	all o : this.receives[PaymentService__MakePayment] | (some t : TxID | (some i : TxInfo | PaymentService__transactions.(o.next) = (PaymentService__transactions.o + t -> i)))
 	all o : this.sends[MyStore__NotifyPayment] | triggeredBy[o,PaymentService__MakePayment]
 	all o : this.sends[MyStore__NotifyPayment] | o.MyStore__NotifyPayment__oid = o.trigger.((PaymentService__MakePayment <: PaymentService__MakePayment__oid))
 	all o : this.sends[MyStore__NotifyPayment] | o.MyStore__NotifyPayment__amt = o.trigger.((PaymentService__MakePayment <: PaymentService__MakePayment__amt))
+	all o : Op - last | let o' = o.next | PaymentService__transactions.o' != PaymentService__transactions.o implies o in PaymentService__MakePayment & SuccessOp
 	this.initAccess in NonCriticalData + TxID.(PaymentService__transactions.first) + (PaymentService__transactions.first).TxInfo
 }
 

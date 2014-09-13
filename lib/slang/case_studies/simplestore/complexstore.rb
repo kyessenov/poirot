@@ -53,9 +53,9 @@ Slang::Dsl.view :ComplexStore do
       calls { MyStore::NotifyPayment[oid, amt] }
     
       updates { 
-        some(t: TxID) { 
-          some(i: TxInfo) { transactions.insert(t**i) }
-        }
+        some(t: TxID) | 
+          some(i: TxInfo) | 
+            transactions.insert(t**i) 
       }
       
     }
