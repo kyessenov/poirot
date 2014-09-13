@@ -87,11 +87,13 @@ fun hasSent[m : Module, o : Op, typ : set Op] : Op {
 	m.sends[typ] & prevs[o] & SuccessOp
 }
 
-sig NonCriticalData in Data {}
-
+sig CriticalData, NonCriticalData in Data {}
 sig GoodData, BadData in Data {}
-fact DataFacts {
-	no GoodData & BadData
+fact DataFacts {     
+     no CriticalData & NonCriticalData 
+     Data = CriticalData + NonCriticalData
+
+     	no GoodData & BadData
 	creates.GoodData in TrustedModule
 	creates.BadData in UntrustedModule
 }

@@ -55,6 +55,10 @@ module Slang
         data_classes
       end
 
+      def secret(*data_classes, &block)
+        critical(*data_classes, &block)
+      end
+
       def critical(*data_classes, &block)
         data_klasses = get_data_klasses(data_classes, &block)
         data_klasses.each do |data_cls|

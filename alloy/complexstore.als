@@ -9,10 +9,10 @@ one sig MyStore extends HttpServer {
 	MyStore__orders : (UserID set -> lone OrderID) -> set Op,
 	MyStore__paid : OrderID set -> set Op,
 }{
-	all o : this.receives[MyStore__Login] | (o.MyStore__Login__pwd = MyStore__passwords[o.MyStore__Login__uid] and o.MyStore__Login__ret = MyStore__sessions[o.MyStore__Login__uid])
-	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + o.MyStore__PlaceOrder__uid -> o.MyStore__PlaceOrder__oid)
-	all o : this.receives[MyStore__Checkout] | (o.MyStore__Checkout__ret.PaymentInfo__order = MyStore__orders.o[MyStore__sessions.o.MyStore__Checkout__sid] and o.MyStore__Checkout__ret.PaymentInfo__amtCharged = MyStore__price[o.MyStore__Checkout__ret.PaymentInfo__order])
-	all o : this.receives[MyStore__NotifyPayment] | MyStore__paid.(o.next) = (MyStore__paid.o + o.MyStore__NotifyPayment__oid)
+	all o : this.receives[MyStore__Login] | ((o.MyStore__Login__pwd) = MyStore__passwords[(o.MyStore__Login__uid)] and (o.MyStore__Login__ret) = MyStore__sessions[(o.MyStore__Login__uid)])
+	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + ((o.MyStore__PlaceOrder__uid) -> (o.MyStore__PlaceOrder__oid)))
+	all o : this.receives[MyStore__Checkout] | (((o.MyStore__Checkout__ret).PaymentInfo__order) = MyStore__orders.o[(MyStore__sessions.(o.MyStore__Checkout__sid))] and ((o.MyStore__Checkout__ret).PaymentInfo__amtCharged) = MyStore__price[((o.MyStore__Checkout__ret).PaymentInfo__order)])
+	all o : this.receives[MyStore__NotifyPayment] | MyStore__paid.(o.next) = (MyStore__paid.o + (o.MyStore__NotifyPayment__oid))
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies o in MyStore__PlaceOrder & SuccessOp
 	all o : Op - last | let o' = o.next | MyStore__paid.o' != MyStore__paid.o implies o in MyStore__NotifyPayment & SuccessOp
 	this.initAccess in NonCriticalData + UserID.MyStore__passwords + MyStore__passwords.Password + UserID.MyStore__sessions + MyStore__sessions.SessionID + OrderID.MyStore__price + MyStore__price.Amount + UserID.(MyStore__orders.first) + (MyStore__orders.first).OrderID + (MyStore__paid.first)
@@ -22,9 +22,9 @@ one sig MyStore extends HttpServer {
 one sig PaymentService extends HttpServer {
 	PaymentService__transactions : (TxID set -> lone TxInfo) -> set Op,
 }{
-	all o : this.receives[PaymentService__MakePayment] | (some t : TxID | (some i : TxInfo | ((i.TxInfo__order = o.PaymentService__MakePayment__oid and i.TxInfo__amtPaid = o.PaymentService__MakePayment__amt) and PaymentService__transactions.(o.next) = (PaymentService__transactions.o + t -> i))))
+	all o : this.receives[PaymentService__MakePayment] | (some t : TxID | (some i : TxInfo | (((i.TxInfo__order) = (o.PaymentService__MakePayment__oid) and (i.TxInfo__amtPaid) = (o.PaymentService__MakePayment__amt)) and PaymentService__transactions.(o.next) = (PaymentService__transactions.o + (t -> i)))))
 	all o : this.sends[MyStore__NotifyPayment] | triggeredBy[o,PaymentService__MakePayment]
-	all o : this.sends[MyStore__NotifyPayment] | o.MyStore__NotifyPayment__oid = o.trigger.((PaymentService__MakePayment <: PaymentService__MakePayment__oid))
+	all o : this.sends[MyStore__NotifyPayment] | (o.MyStore__NotifyPayment__oid) = ((o.trigger).PaymentService__MakePayment__oid)
 	all o : Op - last | let o' = o.next | PaymentService__transactions.o' != PaymentService__transactions.o implies o in PaymentService__MakePayment & SuccessOp
 	this.initAccess in NonCriticalData + TxID.(PaymentService__transactions.first) + (PaymentService__transactions.first).TxInfo
 }
@@ -115,6 +115,11 @@ sig TxInfo extends Data {
 	TxInfo__amtPaid : one Amount,
 }
 sig OtherData extends Data {}
+
+-- fact criticalDataFacts
+fact criticalDataFacts {
+	CriticalData = SessionID + Password
+}
 
 run SanityCheck {
   some MyStore__Login & SuccessOp

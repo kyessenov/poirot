@@ -5,8 +5,8 @@ include Slang::Dsl
 Slang::Dsl.view :ComplexStore do
  
   data UserID 
-  data SessionID 
-  data Password # password
+  secret data SessionID 
+  secret data Password # password
 
   data Amount
   data OrderID # order ID
