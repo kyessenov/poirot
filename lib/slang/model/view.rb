@@ -30,7 +30,11 @@ module Slang
         global << data_cls        
       end
 
-      def to_sdsl
+      def to_sdsl        
+        Slang::Utils::SdslConverter.new.convert_view(self)
+      end
+
+      def to_poirot_sdsl        
         Slang::Utils::SdslConverter.new.convert_view(self)
       end
     end

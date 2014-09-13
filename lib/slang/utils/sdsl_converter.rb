@@ -155,7 +155,6 @@ module Slang
           :when => (op.meta.guards.map(&method(:convert_guard)) +
                     op.meta.effects.map(&method(:convert_effect)))
         }
-        puts ans
         ans.modifies = @mod_field_names.to_a
         ans.types = op.meta.belongs_to
         ans

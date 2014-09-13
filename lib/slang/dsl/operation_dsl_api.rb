@@ -22,6 +22,7 @@ module Slang
       include Slang::Dsl::EffectsHelper
       include Slang::Dsl::BelongsToHelper
 
+      alias_method :calls, :sends
       alias_method :response, :sends
       alias_method :allows, :guard
       alias_method :updates, :effects

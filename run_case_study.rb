@@ -51,7 +51,8 @@ def translate_case_study(case_study_name, out_file=nil)
   out_file ||= "alloy/#{case_study_name.downcase}.als"
   dot_out_file ||= "alloy/#{case_study_name.downcase}.dot"
 
-  sdsl_view = view.meta.to_sdsl
+ #  sdsl_view = view.meta.to_sdsl
+  sdsl_view = view.meta.to_poirot_sdsl
   drawView(sdsl_view, dot_out_file)
   dumpAlloy(sdsl_view, out_file)
 
@@ -60,7 +61,7 @@ end
 
 #ALL_STUDIES = %w(OAuth OpenId Replay Eavesdropper OpenRedirector CSRF Paywall SimpleStore)
 
-ALL_STUDIES = %w(SimpleStore)
+ALL_STUDIES = %w(SimpleStore ComplexStore)
 
 if ARGV.empty? || (ARGV.size == 1 && ARGV[0] == "all")
   ALL_STUDIES.each &method(:translate_case_study)

@@ -13,7 +13,7 @@ sig RedirectedReq in HTTPReq {
 }{
 	sender in Browser
 	from.@sender = sender
-	args in from.@ret
+	args in from.@ret + from.@ret.encodes
 	from in prevs
 	url = from.dest
 }

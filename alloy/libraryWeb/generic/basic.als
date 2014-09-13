@@ -53,11 +53,18 @@ abstract sig Op {
 	sender : Module,
 	receiver : lone Module,
 	args : set Data,
-	ret : set Data
+	ret : set Data,
+ 	trigger : lone Op
 }{
 	receiver != sender
 	(args) in sender.accesses.this
 	(ret) in receiver.accesses.this + args
+	trigger in this.prevs
+	trigger.@receiver in sender
+}
+
+pred triggeredBy[o : Op, trigType : set Op] {
+	o.trigger in trigType
 }
 
 fun receives[m : Module, es : set Op] : set Op {
