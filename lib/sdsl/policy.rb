@@ -16,13 +16,13 @@ class PolicyBuilder
   end
 
   def build name
-    Datatype.new(name, @constr)
+    Policy.new(name, @constr)
   end
 end
 
 class Policy  
   def to_alloy(ctx=nil, global=false)
-    alloyChunk = "assert #{name} {"
+    alloyChunk = wrap("assert #{name} {")
     alloyChunk += wrap(constr.to_alloy(ctx))
     alloyChunk += wrap("}")
   end

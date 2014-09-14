@@ -29,11 +29,6 @@ fun CustomerInitData[m : Module] : set Data {
 }
 
 
--- fact trustedModuleFacts
-fact trustedModuleFacts {
-	TrustedModule = MyStore + Customer
-}
-
 -- operation MyStore__Login
 sig MyStore__Login extends Op {
 	MyStore__Login__uid : one UserID,
@@ -82,6 +77,9 @@ sig OtherData extends Data {}
 -- fact criticalDataFacts
 fact criticalDataFacts {
 	CriticalData = SessionID + Password
+}
+assert myPolicy {
+(all o : OrderID | (all m : Module | (trusted[m] implies mayAccess[m, o])))
 }
 
 

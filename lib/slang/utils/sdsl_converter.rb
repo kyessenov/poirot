@@ -4,6 +4,7 @@ require 'sdg_utils/visitors/visitor'
 
 require 'sdsl/datatype'
 require 'sdsl/view'
+require 'sdsl/policy'
 require 'sdsl/myutils'
 
 require 'slang/model/operation'
@@ -35,7 +36,7 @@ module Slang
         vb.modules *view.modules.map(&method(:convert_module))
         
         # add all policies
-        #vb.policies *view.assertions.map(&method(:convert_policy))
+        vb.policies *view.assertions.map(&method(:convert_policy))
 
         @must_find_in_cache = 1
 
@@ -89,6 +90,10 @@ module Slang
       end
 
       def convert_policy(policy)
+        pb = PolicyBuilder.new
+        e = policy.sym_exe()
+        pb.constraint convert_expr(e)
+        pb.build(policy.name)
       end
 
       # @param mod [Class(? < Slang::Model::Module)]
@@ -292,8 +297,12 @@ module Slang
             target.contains(arg)
           end
         when Arby::Ast::Fun
-          target = convert_expr(ce.target)
-          lhs = target.join(ae _fun_name ce.fun)
+          lhs = if ce.target
+                  target = convert_expr(ce.target)
+                  target.join(ae _fun_name ce.fun)
+                else
+                  ae _fun_name ce.fun
+                end
           FuncApp.new(lhs, *ce.args.map(&method(:convert_expr)))
         else
           fail "unknown method call: #{ce.fun}"
@@ -462,7 +471,11 @@ module Slang
         end
       end
       def _fun_name(fun)
-        "#{_sig_name(fun.owner)}___#{fun.name}"
+        if (fun.owner)
+          "#{_sig_name(fun.owner)}___#{fun.name}"
+        else
+          fun.name
+        end
       end
 
       def evis()

@@ -107,6 +107,10 @@ fact {
 	ProtectedModule in TrustedModule
 }
 
+pred trusted[m: Module] {
+	m in TrustedModule
+}
+
 /**
 	* generic security properties
 	*/

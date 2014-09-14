@@ -232,6 +232,34 @@ def myuniq(a)
   a2
 end
 
+# MFormula
+module MFormula
+  def and other
+    And.new(self, other)
+  end
+
+  def or other
+    Or.new(self, other)
+  end
+
+  def then other
+    Implies.new(self, other)
+  end
+
+  alias_method :implies, :then
+
+  def not
+    Not.new(self)
+  end
+
+  def ==(other)
+    other.equal?(self) ||
+    (other.instance_of?(self.class) &&
+     other.to_s == self.to_s)
+  end
+end
+
+
 # Expressions
 class Expr
   def product otherExpr
@@ -337,10 +365,13 @@ end
 
 # Function application f(e)1,e_2,..,e_n)
 class FuncApp < Expr
+  include MFormula 
+
   def initialize(f, *e)
     @f = f
     @e = e
   end
+
   def to_s
     args = @e.map(&:to_s).join(', ')
     "#{@f.to_s}[#{args}]"
@@ -531,30 +562,9 @@ end
 
 #########################################
 # Formulas
+
 class Formula
-  def and other
-    And.new(self, other)
-  end
-
-  def or other
-    Or.new(self, other)
-  end
-
-  def then other
-    Implies.new(self, other)
-  end
-
-  alias_method :implies, :then
-
-  def not
-    Not.new(self)
-  end
-
-  def ==(other)
-    other.equal?(self) ||
-    (other.instance_of?(self.class) &&
-     other.to_s == self.to_s)
-  end
+  include MFormula
 end
 
 class AlloyFormula < Formula
