@@ -85,6 +85,18 @@ module Slang
         Slang::Model::View.new(scope_module, self)
       end
 
+      # meta predicates
+
+      def mayAccess(mod, data)
+        pred = Arby::Ast::Fun.pred(:name => :mayAccess)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, mod, data)
+      end
+
+      def trusted(mod)
+        pred = Arby::Ast::Fun.pred(:name => :trusted)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, mod)
+      end
+
     end
 
   end

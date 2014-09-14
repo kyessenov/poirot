@@ -1,6 +1,7 @@
 require 'slang/slang_dsl'
 
 include Slang::Dsl
+Component = Slang::Model::Module
 
 Slang::Dsl.view :SimpleStore do
 
@@ -42,8 +43,8 @@ Slang::Dsl.view :SimpleStore do
 
   policy myPolicy {
     all(o: OrderID) {
-      all(m: Module) {
-        mayAccess(m, o) if trusted[m] 
+      all(m: Component) {
+        mayAccess(m, o) if trusted(m)
       }
     }
   }
