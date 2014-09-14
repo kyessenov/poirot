@@ -253,6 +253,11 @@ class View
     appendix.each do |a|
       alloyChunk += a
     end
+
+    # write policies
+    policies.each do |p|
+      alloyChunk += p.to_alloy
+    end
    
     alloyChunk
   end

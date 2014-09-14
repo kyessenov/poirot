@@ -61,14 +61,27 @@ check Integrity {
   Integrity
 } for #{mkScopeSpec v}"
 
-  if v.isDynamic || (not Options.isOptOn(:OPT_TIMELESS)) then
-    cmdStr += 
+  cmdStr += 
 "
+fun RelevantData : Data -> Step {
+	{ d : Data, s : Step | 
+		some m : Module | 
+			m-> d -> s in this/receives
+	}
+}
+fun talksTo : Module -> Module -> Step {
+	{from, to : Module, s : Step | from = s.o.sender and to = s.o.receiver }
+}
 fun RelevantOp : Op -> Step {
-  {o : Op, t : Step | o.pre = t and o in SuccessOp}
-}"
-  end
-
+	{ o' : SuccessOp, s : Step |
+		o' = s.o
+	}
+}
+fun receives : Module -> Data -> Step {
+	{ m : Module, d : Data, s : Step | 
+		(m = s.o.receiver and d in s.o.args) or (m = s.o.sender and d in s.o.ret)}
+}
+"
   cmdStr
 end
 

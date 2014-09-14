@@ -15,7 +15,10 @@ one sig MyStore extends HttpServer {
 	all o : this.receives[MyStore__NotifyPayment] | MyStore__paid.(o.next) = (MyStore__paid.o + (o.MyStore__NotifyPayment__oid))
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies o in MyStore__PlaceOrder & SuccessOp
 	all o : Op - last | let o' = o.next | MyStore__paid.o' != MyStore__paid.o implies o in MyStore__NotifyPayment & SuccessOp
-	this.initAccess in NonCriticalData + UserID.MyStore__passwords + MyStore__passwords.Password + UserID.MyStore__sessions + MyStore__sessions.SessionID + OrderID.MyStore__price + MyStore__price.Amount + UserID.(MyStore__orders.first) + (MyStore__orders.first).OrderID + (MyStore__paid.first)
+	this.initAccess in this.MyStoreInitData
+}
+fun MyStoreInitData[m : Module] : set Data {
+	NonCriticalData + UserID.(m.MyStore__passwords) + (m.MyStore__passwords).Password + UserID.(m.MyStore__sessions) + (m.MyStore__sessions).SessionID + OrderID.(m.MyStore__price) + (m.MyStore__price).Amount + UserID.((m.MyStore__orders).first) + ((m.MyStore__orders).first).OrderID + ((m.MyStore__paid).first)
 }
 
 -- module PaymentService
@@ -26,7 +29,10 @@ one sig PaymentService extends HttpServer {
 	all o : this.sends[MyStore__NotifyPayment] | triggeredBy[o,PaymentService__MakePayment]
 	all o : this.sends[MyStore__NotifyPayment] | (o.MyStore__NotifyPayment__oid) = ((o.trigger).PaymentService__MakePayment__oid)
 	all o : Op - last | let o' = o.next | PaymentService__transactions.o' != PaymentService__transactions.o implies o in PaymentService__MakePayment & SuccessOp
-	this.initAccess in NonCriticalData + TxID.(PaymentService__transactions.first) + (PaymentService__transactions.first).TxInfo
+	this.initAccess in this.PaymentServiceInitData
+}
+fun PaymentServiceInitData[m : Module] : set Data {
+	NonCriticalData + TxID.((m.PaymentService__transactions).first) + ((m.PaymentService__transactions).first).TxInfo
 }
 
 -- module Customer
@@ -35,7 +41,10 @@ one sig Customer extends Browser {
 	Customer__myPwd : one Password,
 }{
 	all o : this.sends[PaymentService__MakePayment] | triggeredBy[o,MyStore__PlaceOrder]
-	this.initAccess in NonCriticalData + Customer__myId + Customer__myPwd
+	this.initAccess in this.CustomerInitData
+}
+fun CustomerInitData[m : Module] : set Data {
+	NonCriticalData + (m.Customer__myId) + (m.Customer__myPwd)
 }
 
 
@@ -150,3 +159,22 @@ check Confidentiality {
 check Integrity {
   Integrity
 } for 2 but 8 Data, 7 Op, 7 Step, 5 Module
+
+fun RelevantData : Data -> Step {
+	{ d : Data, s : Step | 
+		some m : Module | 
+			m-> d -> s in this/receives
+	}
+}
+fun talksTo : Module -> Module -> Step {
+	{from, to : Module, s : Step | from = s.o.sender and to = s.o.receiver }
+}
+fun RelevantOp : Op -> Step {
+	{ o' : SuccessOp, s : Step |
+		o' = s.o
+	}
+}
+fun receives : Module -> Data -> Step {
+	{ m : Module, d : Data, s : Step | 
+		(m = s.o.receiver and d in s.o.args) or (m = s.o.sender and d in s.o.ret)}
+}

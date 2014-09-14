@@ -91,13 +91,12 @@ fun hasSent[m : Module, o : Op, typ : set Op] : Op {
 }
 
 sig CriticalData, NonCriticalData in Data {}
-sig GoodData, BadData in Data {}
+sig BadData in Data {}
+sig ConfidentialData in Data {}
 fact DataFacts {     
-     no CriticalData & NonCriticalData 
-     Data = CriticalData + NonCriticalData
+	no CriticalData & NonCriticalData
+	Data = CriticalData + NonCriticalData
 
-     	no GoodData & BadData
-	creates.GoodData in TrustedModule
 	creates.BadData in UntrustedModule
 }
 sig TrustedModule, UntrustedModule in Module {}
@@ -117,7 +116,7 @@ pred mayAccess[m : Module, d : Data] {
 }
 
 pred Confidentiality {
-	no m : UntrustedModule, d : GoodData |
+	no m : UntrustedModule, d : ConfidentialData |
 		mayAccess[m, d]
 }
 

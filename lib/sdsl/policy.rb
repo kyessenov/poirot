@@ -26,7 +26,6 @@ class Policy
     alloyChunk += wrap(constr.to_alloy(ctx))
     alloyChunk += wrap("}")
   end
-  
 end
 
 def policy(name, &block)

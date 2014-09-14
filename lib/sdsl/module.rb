@@ -41,10 +41,10 @@ class Mod
     dynamics.map{|e| "#{name}__#{e}"}.include? field.name
   end
 
-  def rel2Set r
-    rname = "#{r.name}"
+  def rel2Set(r,prefix="")
+    rname = enclose("#{prefix}#{r.name}")
     if isDynamic r
-      rname = "(#{r.name}.first)"
+      rname = "(#{rname}.first)"
     end
     if r.is_a? UnaryRel
       "#{rname}" 
@@ -55,10 +55,10 @@ class Mod
     end
   end
 
-  def initDataAccess  
+  def initDataAccess(prefix="")  
     initData = []
     stores.each do |f|
-      initData << (rel2Set f)
+      initData << rel2Set(f,prefix)
     end
     creates.each do |d|
       initData << "#{d}"
@@ -150,19 +150,28 @@ class Mod
              "o in #{opset} & SuccessOp", 1)
     end
 
+    initData = []
+    initDataFun = "#{modn}InitData"
+
     # initial data access
     if not isAbstract then
       initData = [NON_CRITICAL_DATA]
       if not (stores.empty? and creates.empty?)
-        initData += initDataAccess
+        initData += initDataAccess("m.")
         extends.each do |e|
-          initData += e.initDataAccess
+          initData += e.initDataAccess("m.")
         end
       end
-      alloyChunk += wrap("this.initAccess in " + initData.join(" + "), 1)
+      alloyChunk += wrap("this.initAccess in this.#{initDataFun}", 1)
     end
 
     alloyChunk += wrap("}")
+    # define the initDataFunc for this module
+    
+    alloyChunk += wrap("fun #{initDataFun}[m : Module] : set Data {")
+    alloyChunk += wrap(initData.join(" + "),1)
+    alloyChunk += wrap("}")
+
     # facts
     alloyChunk += writeFacts(name.to_s + "Facts", facts)
 

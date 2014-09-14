@@ -1,0 +1,351 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view nodetheme="Martha" edgetheme="Martha">
+
+<projection> <type name="WebBasic/basic/Step"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Eve"/>
+   <type name="EvilScript"/>
+   <type name="EvilServer"/>
+   <type name="Int"/>
+   <type name="Me"/>
+   <type name="MyHMI"/>
+   <type name="MyPaypal"/>
+   <type name="MyScript"/>
+   <type name="String"/>
+   <type name="univ"/>
+   <type name="HMI/HMIToken"/>
+   <type name="HMI/PaypalToken"/>
+   <type name="seq/Int"/>
+   <type name="WebBasic/JSON"/>
+   <type name="WebBasic/Resource"/>
+   <type name="WebBasic/basic/Step"/>
+   <type name="WebBasic/basic/OO/Ord"/>
+   <type name="WebBasic/basic/SO/Ord"/>
+   <set name="$Attack_l" type="WebBasic/basic/Op"/>
+   <set name="$Attack_o" type="WebBasic/basic/Op"/>
+   <set name="$Secret" type="WebBasic/basic/Data"/>
+   <set name="First" type="WebBasic/basic/SO/Ord"/>
+   <set name="Next" type="WebBasic/basic/SO/Ord"/>
+   <set name="CookiePolicy/GetCookie" type="WebBasic/basic/Op"/>
+   <set name="CookiePolicy/HHost" type="WebBasic/Host"/>
+   <set name="CookiePolicy/HPath" type="WebBasic/Path"/>
+   <set name="CORS/CORSScript" type="WebBasic/Script"/>
+   <set name="CORS/CORSServer" type="WebBasic/Server"/>
+   <set name="CSRF/CSRFScript" type="WebBasic/Script"/>
+   <set name="CSRF/FormSubmit" type="WebBasic/basic/Op"/>
+   <set name="CSRF/TargetServer" type="WebBasic/Server"/>
+   <set name="HMI/Account" type="WebBasic/basic/Op"/>
+   <set name="HMI/Claim" type="WebBasic/basic/Op"/>
+   <set name="HMI/HMI" type="WebBasic/Server"/>
+   <set name="HMI/Login" type="WebBasic/basic/Op"/>
+   <set name="HMI/Merchant" type="WebBasic/Server"/>
+   <set name="HMI/NotifyPayment" type="WebBasic/basic/Op"/>
+   <set name="HMI/Pay" type="WebBasic/basic/Op"/>
+   <set name="HMI/Paypal" type="WebBasic/Server"/>
+   <set name="HMI/Return" type="WebBasic/basic/Op"/>
+   <set name="HMI/User" type="WebBasic/Browser"/>
+   <set name="SOP/SOP_DOMOp" type="WebBasic/basic/Op"/>
+   <set name="WebBasic/HTTPS" type="WebBasic/basic/Op"/>
+   <set name="XSS/GoodServer" type="WebBasic/Server"/>
+   <set name="XSS/InjectedFrame" type="WebBasic/Frame"/>
+   <set name="XSS/InjectedHTML" type="WebBasic/HTML"/>
+   <set name="XSS/InjectedScript" type="WebBasic/Script"/>
+</node>
+
+<node color="Green">
+   <type name="WebBasic/basic/Module"/>
+</node>
+
+<node hideunconnected="yes">
+   <type name="WebBasic/Protocol"/>
+</node>
+
+<node hideunconnected="yes" label="Origin">
+   <type name="WebBasic/Origin"/>
+</node>
+
+<node hideunconnected="yes" label="Port">
+   <type name="WebBasic/Port"/>
+</node>
+
+<node label="Amount">
+   <type name="HMI/Amount"/>
+</node>
+
+<node label="BadData">
+   <set name="WebBasic/basic/BadData" type="WebBasic/basic/Data"/>
+</node>
+
+<node label="Browser">
+   <type name="WebBasic/Browser"/>
+</node>
+
+<node label="BrowserOp">
+   <set name="WebBasic/BrowserOp" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="CORSReq">
+   <set name="CORS/CORSReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="Code">
+   <type name="HMI/Code"/>
+</node>
+
+<node label="Cookie">
+   <set name="CookiePolicy/Cookie" type="WebBasic/Token"/>
+</node>
+
+<node label="CookieBr">
+   <set name="CookiePolicy/CookieBrowser" type="WebBasic/Browser"/>
+</node>
+
+<node label="CookieFr">
+   <set name="CookiePolicy/CookieFrame" type="WebBasic/Frame"/>
+</node>
+
+<node label="Fragment">
+   <set name="Redirect/Fragment" type="WebBasic/basic/Data"/>
+</node>
+
+<node label="Frame">
+   <type name="WebBasic/Frame"/>
+</node>
+
+<node label="GetFrag">
+   <set name="Redirect/GetFragment" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="HMICred">
+   <type name="HMI/HMICred"/>
+</node>
+
+<node label="HTML">
+   <type name="WebBasic/HTML"/>
+</node>
+
+<node label="HTTP">
+   <type name="WebBasic/ProcHTTP"/>
+</node>
+
+<node label="HTTPS">
+   <type name="WebBasic/ProcHTTPS"/>
+</node>
+
+<node label="ItemID">
+   <type name="HMI/ItemID"/>
+</node>
+
+<node label="PaypalCred">
+   <type name="HMI/PaypalCred"/>
+</node>
+
+<node label="RID">
+   <type name="HMI/RID"/>
+</node>
+
+<node label="ReadDOM">
+   <set name="WebBasic/ReadDOM" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="RedirBr">
+   <set name="Redirect/RedirectingBrowser" type="WebBasic/Browser"/>
+</node>
+
+<node label="Redirected">
+   <set name="Redirect/RedirectedReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="Redirecting">
+   <set name="Redirect/RedirectingReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="SOPBr">
+   <set name="SOP/SOPBrowser" type="WebBasic/Browser"/>
+</node>
+
+<node label="SOPFr">
+   <set name="SOP/SOPFrame" type="WebBasic/Frame"/>
+</node>
+
+<node label="SOPScript">
+   <set name="SOP/SOPScript" type="WebBasic/Script"/>
+</node>
+
+<node label="Script">
+   <type name="WebBasic/Script"/>
+</node>
+
+<node label="Server">
+   <type name="WebBasic/Server"/>
+</node>
+
+<node label="SessionID">
+   <type name="HMI/SessionID"/>
+</node>
+
+<node label="TxnID">
+   <type name="HMI/TxnID"/>
+</node>
+
+<node label="UID">
+   <type name="HMI/UID"/>
+</node>
+
+<node label="URL">
+   <type name="WebBasic/URL"/>
+</node>
+
+<node label="UserReq">
+   <set name="this/UserReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="WriteDOM">
+   <set name="WebBasic/WriteDOM" type="WebBasic/basic/Op"/>
+</node>
+
+<node label="XML">
+   <type name="WebBasic/XML"/>
+</node>
+
+<node label="XMLHTTPReq">
+   <set name="WebBasic/XMLHTTPReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no">
+   <set name="o" type="WebBasic/basic/Op"/>
+   <set name="WebBasic/DOMOp" type="WebBasic/basic/Op"/>
+   <set name="WebBasic/basic/ProtectedModule" type="WebBasic/basic/Module"/>
+   <set name="WebBasic/basic/TrustedModule" type="WebBasic/basic/Module"/>
+</node>
+
+<node showlabel="no" color="Red">
+   <set name="WebBasic/basic/UntrustedModule" type="WebBasic/basic/Module"/>
+</node>
+
+<node showlabel="no" label="CookieReq">
+   <set name="CookiePolicy/CookieReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no" label="GET">
+   <set name="WebBasic/GET" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no" label="HTTPReq">
+   <set name="WebBasic/HTTPReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no" label="POST">
+   <set name="WebBasic/POST" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no" label="SOPReq">
+   <set name="SOP/SOPReq" type="WebBasic/basic/Op"/>
+</node>
+
+<node showlabel="no" style="Bold" shape="Box" color="Red" label="GoodData">
+   <set name="WebBasic/basic/GoodData" type="WebBasic/basic/Data"/>
+</node>
+
+<node visible="no" color="Gray">
+   <type name="WebBasic/basic/Data"/>
+</node>
+
+<node visible="no" hideunconnected="yes" label="Host">
+   <type name="WebBasic/Host"/>
+</node>
+
+<node visible="no" hideunconnected="yes" label="Path">
+   <type name="WebBasic/Path"/>
+</node>
+
+<node visible="no" label="Token">
+   <type name="WebBasic/Token"/>
+</node>
+
+<node visible="no" shape="Ellipse" color="Gray" label="Op">
+   <type name="WebBasic/basic/Op"/>
+</node>
+
+<node visible="yes" showlabel="no">
+   <set name="$RelevantData" type="WebBasic/basic/Data"/>
+   <set name="$RelevantOp" type="WebBasic/basic/Op"/>
+</node>
+
+<edge color="Black" style="Bold">
+   <relation name="$receives"> <type name="WebBasic/basic/Module"/> <type name="WebBasic/basic/Data"/> </relation>
+   <relation name="$talksTo"> <type name="WebBasic/basic/Module"/> <type name="WebBasic/basic/Module"/> </relation>
+   <relation name="sender"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/basic/Module"/> </relation>
+</edge>
+
+<edge layout="yes">
+   <relation name="context"> <type name="WebBasic/Script"/> <type name="WebBasic/Frame"/> </relation>
+</edge>
+
+<edge visible="no">
+   <relation name="$Attack_s"> <type name="WebBasic/Frame"/> <type name="WebBasic/Server"/> </relation>
+   <relation name="$Attack_u"> <type name="WebBasic/Frame"/> <type name="WebBasic/URL"/> </relation>
+   <relation name="args"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/basic/Data"/> </relation>
+   <relation name="fragment"> <type name="WebBasic/Browser"/> <type name="WebBasic/URL"/> <type name="WebBasic/basic/Data"/> </relation>
+   <relation name="receiver"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/basic/Module"/> </relation>
+   <relation name="ret"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/basic/Data"/> </relation>
+</edge>
+
+<edge visible="no" attribute="no">
+   <relation name="accesses"> <type name="WebBasic/basic/Module"/> <type name="WebBasic/basic/Data"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="resources"> <type name="WebBasic/Server"/> <type name="WebBasic/URL"/> <type name="WebBasic/Resource"/> </relation>
+</edge>
+
+<edge visible="no" attribute="yes">
+   <relation name="activated"> <type name="WebBasic/Server"/> <type name="HMI/Code"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="allowedOrigins"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/Origin"/> </relation>
+   <relation name="codes"> <type name="WebBasic/Server"/> <type name="HMI/Code"/> <type name="HMI/UID"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="creates"> <type name="WebBasic/basic/Module"/> <type name="WebBasic/basic/Data"/> </relation>
+   <relation name="dest"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/URL"/> </relation>
+   <relation name="from"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="hmiCred"> <type name="Me"/> <type name="HMI/HMICred"/> </relation>
+   <relation name="hmiCreds"> <type name="WebBasic/Server"/> <type name="HMI/UID"/> <type name="HMI/HMICred"/> </relation>
+   <relation name="host"> <type name="WebBasic/Frame"/> <type name="WebBasic/Host"/> </relation>
+   <relation name="host"> <type name="WebBasic/Origin"/> <type name="WebBasic/Host"/> </relation>
+   <relation name="host"> <type name="WebBasic/Server"/> <type name="WebBasic/Host"/> </relation>
+   <relation name="host"> <type name="WebBasic/URL"/> <type name="WebBasic/Host"/> </relation>
+   <relation name="html"> <type name="WebBasic/Frame"/> <type name="WebBasic/HTML"/> </relation>
+   <relation name="items"> <type name="WebBasic/Server"/> <type name="HMI/ItemID"/> <type name="HMI/Code"/> </relation>
+   <relation name="links"> <type name="WebBasic/HTML"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="login_sid"> <type name="WebBasic/basic/Op"/> <type name="HMI/SessionID"/> </relation>
+   <relation name="origin"> <type name="WebBasic/Frame"/> <type name="WebBasic/Origin"/> </relation>
+   <relation name="origin"> <type name="WebBasic/Script"/> <type name="WebBasic/Origin"/> </relation>
+   <relation name="originHeader"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/Origin"/> </relation>
+   <relation name="owns"> <type name="WebBasic/Browser"/> <type name="HMI/Code"/> </relation>
+   <relation name="path"> <type name="WebBasic/Frame"/> <type name="WebBasic/Path"/> </relation>
+   <relation name="path"> <type name="WebBasic/Token"/> <type name="WebBasic/Path"/> </relation>
+   <relation name="path"> <type name="WebBasic/URL"/> <type name="WebBasic/Path"/> </relation>
+   <relation name="paypalCred"> <type name="Me"/> <type name="HMI/PaypalToken"/> </relation>
+   <relation name="paypalCreds"> <type name="WebBasic/Server"/> <type name="HMI/UID"/> <type name="HMI/PaypalToken"/> </relation>
+   <relation name="port"> <type name="WebBasic/Origin"/> <type name="WebBasic/Port"/> </relation>
+   <relation name="port"> <type name="WebBasic/URL"/> <type name="WebBasic/Port"/> </relation>
+   <relation name="protocol"> <type name="WebBasic/Origin"/> <type name="WebBasic/Protocol"/> </relation>
+   <relation name="protocol"> <type name="WebBasic/URL"/> <type name="WebBasic/Protocol"/> </relation>
+   <relation name="returned"> <type name="WebBasic/Server"/> <type name="HMI/Code"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="rid"> <type name="WebBasic/Server"/> <type name="HMI/RID"/> </relation>
+   <relation name="senderOrigin"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/Origin"/> </relation>
+   <relation name="sids"> <type name="WebBasic/Server"/> <type name="HMI/UID"/> <type name="HMI/SessionID"/> </relation>
+   <relation name="transc"> <type name="WebBasic/Server"/> <type name="HMI/TxnID"/> <type name="WebBasic/basic/Op"/> </relation>
+   <relation name="txnItem"> <type name="WebBasic/Server"/> <type name="HMI/TxnID"/> <type name="HMI/ItemID"/> </relation>
+   <relation name="txnPayer"> <type name="WebBasic/Server"/> <type name="HMI/TxnID"/> <type name="HMI/UID"/> </relation>
+   <relation name="txnReceiver"> <type name="WebBasic/Server"/> <type name="HMI/TxnID"/> <type name="HMI/RID"/> </relation>
+   <relation name="uid"> <type name="WebBasic/Browser"/> <type name="HMI/UID"/> </relation>
+   <relation name="uid"> <type name="WebBasic/basic/Op"/> <type name="HMI/UID"/> </relation>
+   <relation name="url"> <type name="WebBasic/basic/Op"/> <type name="WebBasic/URL"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

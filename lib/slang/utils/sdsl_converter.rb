@@ -35,7 +35,7 @@ module Slang
         vb.modules *view.modules.map(&method(:convert_module))
         
         # add all policies
-        vb.policies *view.assertions.map(&method(:convert_policy))
+        #vb.policies *view.assertions.map(&method(:convert_policy))
 
         @must_find_in_cache = 1
 
@@ -89,11 +89,6 @@ module Slang
       end
 
       def convert_policy(policy)
-
-        #tmp = convert_expr(policy.body.sym_exe_export)
-        binding.pry
-        
-        return null
       end
 
       # @param mod [Class(? < Slang::Model::Module)]
