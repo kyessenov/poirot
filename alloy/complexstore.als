@@ -34,7 +34,7 @@ one sig Customer extends Browser {
 	Customer__myId : one UserID,
 	Customer__myPwd : one Password,
 }{
-	all o : this.sends[PaymentService__MakePayment] | (triggeredBy[o,MyStore__PlaceOrder] and ((o.trigger).MyStore__PlaceOrder__oid) = (o.PaymentService__MakePayment__oid))
+	all o : this.sends[PaymentService__MakePayment] | triggeredBy[o,MyStore__PlaceOrder]
 	this.initAccess in NonCriticalData + Customer__myId + Customer__myPwd
 }
 
@@ -47,8 +47,8 @@ sig MyStore__Login extends Op {
 }{
 	args in MyStore__Login__uid + MyStore__Login__pwd
 	ret in MyStore__Login__ret
-	sender in Customer
-	receiver in MyStore
+	TrustedModule & sender in Customer
+	TrustedModule & receiver in MyStore
 }
 
 -- operation MyStore__PlaceOrder
@@ -58,8 +58,8 @@ sig MyStore__PlaceOrder extends Op {
 }{
 	args in MyStore__PlaceOrder__uid + MyStore__PlaceOrder__oid
 	no ret
-	sender in Customer
-	receiver in MyStore
+	TrustedModule & sender in Customer
+	TrustedModule & receiver in MyStore
 }
 
 -- operation MyStore__Checkout
@@ -69,8 +69,8 @@ sig MyStore__Checkout extends Op {
 }{
 	args in MyStore__Checkout__sid
 	ret in MyStore__Checkout__ret
-	sender in Customer
-	receiver in MyStore
+	TrustedModule & sender in Customer
+	TrustedModule & receiver in MyStore
 }
 
 -- operation MyStore__NotifyPayment
@@ -79,8 +79,8 @@ sig MyStore__NotifyPayment extends Op {
 }{
 	args in MyStore__NotifyPayment__oid
 	no ret
-	sender in PaymentService
-	receiver in MyStore
+	TrustedModule & sender in PaymentService
+	TrustedModule & receiver in MyStore
 }
 
 -- operation PaymentService__MakePayment
@@ -90,8 +90,8 @@ sig PaymentService__MakePayment extends Op {
 }{
 	args in PaymentService__MakePayment__oid + PaymentService__MakePayment__amt
 	no ret
-	sender in Customer
-	receiver in PaymentService
+	TrustedModule & sender in Customer
+	TrustedModule & receiver in PaymentService
 }
 
 -- datatype declarations
@@ -122,21 +122,31 @@ fact criticalDataFacts {
 	CriticalData = SessionID + Password
 }
 
+
+one sig EvilClient extends Browser {}
+one sig EvilServer extends HttpServer {}
+one sig EvilHttpReq extends Op {}{
+  receiver in EvilServer
+}
+
+fact GenericFacts {
+  all s : HttpServer, o : receiver.s | o in HTTPReq 
+}
 run SanityCheck {
   some MyStore__Login & SuccessOp
   some MyStore__PlaceOrder & SuccessOp
   some MyStore__Checkout & SuccessOp
   some MyStore__NotifyPayment & SuccessOp
   some PaymentService__MakePayment & SuccessOp
-} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 7 Op, 7 Step, 5 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 7 Op, 7 Step, 5 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 8 Data, 5 Op, 5 Step, 3 Module
+} for 2 but 8 Data, 7 Op, 7 Step, 5 Module

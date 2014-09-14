@@ -29,6 +29,18 @@ module Slang
         OpConstr.new inst_expr, constrs
       end
 
+      def following(op, &block)
+        cause_op = Arby::Ast::Fun.dummy_instance(op)
+        trig_op = Arby::Ast::Fun.dummy_instance(self)
+        trig_op_expr = trig_op.make_me_sym_expr()        
+        constr = TrigByExpr.new(op, self)
+        if block
+          body = get_appended_facts(trig_op_expr, cause_op.make_me_trig_expr, &block).first
+          constr = constr.and(body)
+        end
+        OpConstr.new trig_op_expr, [constr]        
+      end
+
       def then(op, &block)
         cause_op = Arby::Ast::Fun.dummy_instance(self)
         trig_op = Arby::Ast::Fun.dummy_instance(op)

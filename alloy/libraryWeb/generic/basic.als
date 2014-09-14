@@ -59,8 +59,11 @@ abstract sig Op {
 	receiver != sender
 	(args) in sender.accesses.this
 	(ret) in receiver.accesses.this + args
-	trigger in this.prevs
-	trigger.@receiver in sender
+
+	some trigger implies {
+		trigger in this.prevs
+		sender in trigger.@receiver + trigger.@sender
+	}
 }
 
 pred triggeredBy[o : Op, trigType : set Op] {

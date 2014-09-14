@@ -5,42 +5,47 @@ include Slang::Dsl
 Slang::Dsl.view :SimpleStore do
 
   data UserID
-  data ProductID # product ID
-  data ProductInfo # product info
-  data Password # password
+  data OrderID # order ID
+  secret data SessionID 
+  secret data Password # password
 
-  component MyStore [
+  trusted component MyStore [
      passwords: UserID ** Password,
-     products: ProductID ** ProductInfo,
-     orders: (dynamic UserID ** ProductID)
-  ]{
-    
+     sessions: UserID ** SessionID,
+     orders: (dynamic UserID ** OrderID)
+  ]{    
     typeOf HttpServer
 
-    op Login[uid: UserID, pass: Password] {
-      allows { pass == passwords[uid] }
-    }
-
-    op GetProduct[pid: ProductID, ret: ProductInfo] {
-      allows { ret == products[pid] }
+    op Login[uid: UserID, pwd: Password, ret: SessionID] {
+      allows { pwd == passwords[uid] and ret == sessions[uid]}
     }
   
-    op OrderProduct[uid: UserID, pid: ProductID] {
-      updates { orders.insert(uid**pid) }
+    op PlaceOrder[uid: UserID, oid: OrderID] {
+      updates { orders.insert(uid**oid) }
     }
-
+    
+    op ListOrder[uid: UserID, ret: OrderID] {
+      allows { ret == orders[uid] }
+    }
   }
 
-  component Customer [
-    id: UserID,
-    pass: Password
+  trusted component Customer [
+    myId: UserID,
+    myPwd: Password
   ]{
-
     typeOf Browser
 
     calls { MyStore::Login }
-    calls { MyStore::GetProduct }
-    calls { MyStore::OrderProduct }
+    calls { MyStore::PlaceOrder }
+    calls { MyStore::ListOrder }
   }
 
+  policy myPolicy {
+    all(o: OrderID) {
+      all(m: Module) {
+        mayAccess(m, o) if trusted[m] 
+      }
+    }
+  }
+  
 end

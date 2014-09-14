@@ -13,6 +13,10 @@ module Slang
       include Slang::Dsl::TypeModHelper
       extend self
 
+      def policy(*args, &block)
+        assertion(*args, &block)
+      end
+
       def data(*args, &block)
         Arby::Dsl::SigBuilder.new(
           :superclass => Slang::Model::Data,

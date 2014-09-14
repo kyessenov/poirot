@@ -13,17 +13,40 @@ UNIT = "UNIT"
 SUPER_COLOR="gold"
 CHILD_COLOR="beige"
 STEP_TYPE = :Op
+NUM_THREAT_MODULES = 2
+NUM_THREAT_OPS = 2
 
 def mkScopeSpec v
   scopes = v.calcScopes
   default_scope = Options.optVal(:DEFAULT_SCOPE)
-  if (not v.isDynamic) && Options.isOptOn(:OPT_TIMELESS) then
-    "#{default_scope} but #{scopes[:Data]} Data, " + 
-      "#{scopes[:Op]} Op, #{scopes[:Op]} Step, #{scopes[:Module]} Module\n"
-  else 
-    "#{default_scope} but #{scopes[:Data]} Data, #{scopes[:Op] + 1} Step," + 
-      "#{scopes[:Op]} Op, #{scopes[:Op]} Step, #{scopes[:Module]} Module\n"
-  end
+  
+  mod_scope = scopes[:Module] + NUM_THREAT_MODULES
+  op_scope = scopes[:Op] + NUM_THREAT_OPS
+
+  "#{default_scope} but #{scopes[:Data]} Data, " + 
+    "#{op_scope} Op, #{op_scope} Step, #{mod_scope} Module\n"
+end
+
+def mkThreatInstances v
+  threatStr =
+"
+one sig EvilClient extends Browser {}
+one sig EvilServer extends HttpServer {}
+one sig EvilHttpReq extends Op {}{
+  receiver in EvilServer
+}
+"
+  threatStr
+end
+
+def mkGenericFacts v
+  factStr = 
+"
+fact GenericFacts {
+  all s : HttpServer, o : receiver.s | o in HTTPReq 
+}
+"
+  factStr
 end
 
 def mkPropertyCmds v
@@ -249,6 +272,8 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.puts v.to_alloy
   # footers
   f.puts
+  f.puts mkThreatInstances(v)
+  f.puts mkGenericFacts(v)
   f.puts mkAlloyCmds(v)
   f.close
 end

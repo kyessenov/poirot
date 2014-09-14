@@ -6,7 +6,7 @@ require 'sdsl/options.rb'
 
 View = Struct.new(:name, :modules, :trusted, :data, :critical,
                   :global, :assumptions, :protected, :ctx,
-                  :appendix)
+                  :appendix, :policies)
 
 # HACK!
 RET_VAR_SUFFIX = "__ret"
@@ -172,14 +172,14 @@ class View
     # write facts about invocation
     invokers.each do |k, v|
       if sigfacts.has_key? k
-        sigfacts[k] << "sender in " + v.join(" + ")
+        sigfacts[k] << "TrustedModule & sender in " + v.join(" + ")
       end
     end
 
     # write facts about exports
     exporters.each do |k, v|
       if sigfacts.has_key? k
-        sigfacts[k] << "receiver in " + v.join(" + ")
+        sigfacts[k] << "TrustedModule & receiver in " + v.join(" + ")
       end
     end
 
@@ -274,6 +274,7 @@ class ViewBuilder
     @protected = []
     @ctx = {}
     @appendix = []
+    @policies = []
   end
   
   def data(*data)
@@ -306,6 +307,10 @@ class ViewBuilder
     }
   end
 
+  def policies(*policies)
+    @policies += policies
+  end
+
   def modules(*mods)
     @modules += mods
   end
@@ -335,7 +340,7 @@ class ViewBuilder
     checkWellformedness
     View.new(name, @modules, @trusted,
              @data, @critical, @global, 
-             @assumptions, @protected, @ctx, @appendix)
+             @assumptions, @protected, @ctx, @appendix, @policies)
   end
 end
 
