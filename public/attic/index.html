@@ -1,0 +1,516 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<script src="d3.v3.min.js" charset="utf-8"></script>
+<script src="jquery-1.11.0.min.js"></script>
+<!-- <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script> -->
+<link rel="stylesheet" href="pure-min.css">
+<style>
+text {
+  fill: #000;
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+
+table {
+ border: 1px solid grey;
+ margin-left: 1px;
+}
+
+tr {
+ font: 12px sans-serif;
+}
+
+div#database {
+  width: 700;
+  height: 146;
+  border: 1px solid rgb(190, 190, 190);
+}
+
+div#wrapper {
+}
+
+div#container {
+  float: left;
+}
+
+div#graph {
+  border: 1px solid rgb(190, 190, 190);
+}
+
+.my-button {
+  border-radius: 4px;
+  background: rgb(102, 178, 255);
+}
+
+div#panelwrapper{
+overflow: hidden;
+}
+
+div#vizpanel{
+  width: 700;
+  height: 50;
+  float: left;
+}
+
+div#codepanel{
+overflow: hidden;
+  width: 200;
+  height: 50;
+}
+
+div#editor { 
+  height:598;
+  border: 1px solid rgb(190, 190, 190);
+}
+
+h1 {
+    font-family: sans-serif;
+	font-size: 18pt;
+	color: black;
+    padding-left: 10px;
+}
+  
+</style>
+<title>Poirot</title>
+</head>
+
+<body>
+
+<h1>Poirot Threat Modeling and Analysis Tool</h1>
+
+<div id="wrapper">
+  <div id="container">
+    <div id="graph"></div>
+    <div id="database"></div>
+  </div>
+  <div id="editor">
+Slang::Dsl.view :ComplexStore do
+ 
+  data UserID 
+  secret data SessionID 
+  secret data Password # password
+
+  data Amount
+  data OrderID # order ID
+  data PaymentInfo[order: OrderID, amtCharged: Amount]
+
+  data TxID # Transaction ID
+  data TxInfo[order: OrderID, amtPaid: Amount] # Transaction info  
+
+  component MyStore [
+     passwords: UserID ** Password,
+     sessions: UserID ** SessionID,
+     price: OrderID ** Amount,
+     orders: (dynamic UserID ** OrderID),
+     paid: (dynamic set OrderID)
+  ]{    
+    typeOf HttpServer
+
+    op Login[uid: UserID, pwd: Password, ret: SessionID] {
+      allows { pwd == passwords[uid] and ret == sessions[uid]}
+    }
+  
+    op PlaceOrder[uid: UserID, oid: OrderID] {
+      updates { orders.insert(uid**oid) }
+    }
+
+    op Checkout[sid: SessionID, ret: PaymentInfo] {
+      allows { ret.order == orders[sessions.(sid)] and ret.amtCharged == price[ret.order] }
+    }
+  
+    op NotifyPayment[oid: OrderID] {
+      updates { paid.insert(oid) } 
+    }
+  }
+
+  component PaymentService [
+    transactions: (dynamic TxID ** TxInfo),
+  ]{
+    typeOf HttpServer
+    
+    op MakePayment[oid: OrderID, amt: Amount]{      
+      calls { MyStore::NotifyPayment[oid] }    
+      updates { 
+        some(t: TxID) | some(i: TxInfo) {
+          i.order == oid and
+          i.amtPaid == amt and
+          transactions.insert(t**i) 
+        }
+      }      
+    }
+  }
+
+  component Customer [
+    myId: UserID,
+    myPwd: Password
+  ]{
+
+    typeOf Browser
+
+    calls { MyStore::Login }
+    calls { MyStore::PlaceOrder }
+    calls { MyStore::Checkout }
+    calls { 
+      MyStore::PlaceOrder.then PaymentService::MakePayment do |order, payment|
+        order.oid == payment.oid
+      end
+    }
+  }
+
+end
+  </div>
+</div>
+
+<div id="panelwrapper">
+  <div id="vizpanel">
+    <button id="prev" class="pure-button my-button">Prev</button>
+    <button id="next" class="pure-button my-button">Next</button>
+  </div>
+  <div id="codepanel">
+    <button id="run" class="pure-button my-button">Run</button>
+  </div>
+</div>
+
+<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.getSession().setMode("ace/mode/ruby");
+</script>
+
+<script>
+
+/**
+* Visualizer
+*/
+var vis = d3.select("#graph").append("svg");
+var w = 700,h = 450;
+var cmpW = 90, cmpH = 55;
+var cmpRx = 10, cmpRy = 10;
+var opSize = 12;
+var bordercolor = "grey";
+var border = "1px";
+var colorTrusted = "#ccc";
+var colorMalicious = "rgb(246, 127, 127)";
+var currOp = -1;
+var i;	// generic index
+
+vis.attr("width", w).attr("height", h);
+vis.text("Our Graph").select("#graph");
+
+// add border around svg
+var borderPath = vis.append("rect")
+  .attr("x", 0)
+  .attr("y", 0)
+  .attr("height", h)
+  .attr("width", w)
+  .style("stroke", bordercolor)
+  .style("fill", "none")
+  .style("stroke-width", 0);
+
+function cmpCenterX(x) { return x + (cmpW/2.0); }
+function cmpCenterY(y) { return y + (cmpH/2.0); }
+
+var cmps = [
+{inst: "Server0", type: "Server", trusted: true},
+{inst: "Server1", type: "Server", trusted: false},
+{inst: "Browser0", type: "Browser", trusted: true},
+{inst: "Browser1", type: "Browser", trusted: false},
+{inst: "User0", type: "User", trusted: true},
+{inst: "User1", type: "User", trusted: false}
+];
+
+var data = [
+{inst: "d0", type: "TypeA"},
+{inst: "d1", type: "TypeA"},
+{inst: "d2", type: "TypeB"},
+{inst: "d3", type: "TypeB"},
+{inst: "d4", type: "TypeC"},
+{inst: "d5", type: "TypeC"}
+]
+
+var events = [
+{inst: "Op0", type: "HTTPReq", args: [data[0]], ret: [data[1]], sender: cmps[2], receiver: cmps[0]},
+{inst: "Op1", type: "HTTPReq", args: [data[1], data[2]], ret:
+[data[3]], sender: cmps[3], receiver: cmps[0]},
+{inst: "Op2", type: "VisitPage", args: [], ret: [data[4]], sender: cmps[4], receiver: cmps[2]},
+{inst: "Op3", type: "VisitPage", args: [data[5]], ret: [], sender:
+cmps[5], receiver: cmps[3]},
+{inst: "Op4", type: "HTTPReq", args: [data[2]], ret: [data[3]], sender: cmps[3], receiver: cmps[1]}
+]
+
+var lastEventIdx = events.length - 1;
+
+function hasTuple(lst, t){
+  var i;
+  for (i = 0; i < lst.length; ++i) {
+    if (JSON.stringify(lst[i]) == JSON.stringify(t)) return lst[i];
+  }
+  return false;
+}
+
+var ops = [];
+var exports = [];
+var invokes = [];
+for (i=0; i < events.length; ++i){
+  var e = events[i];
+  var t = {type: e.type, receiver: e.receiver};
+  var j, invk;
+  var op = hasTuple(ops, t);
+  var invk = ({source: e.sender, target: t});
+
+  if (!op) {
+    exports.push({source: e.receiver, target: t});
+    ops.push(t);
+  } else {
+    invk.target = op;
+  }
+  invk.rep = e;
+  invokes.push(invk);
+}
+
+var nodes = cmps.concat(ops);
+var links = exports.concat(invokes);
+
+// build the arrow.
+vis.append("svg:defs").selectAll("marker")
+    .data(["mid"])      // Different link/path types can be defined here
+  .enter().append("svg:marker")    // This section adds in the arrows
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("markerWidth", 12)
+    .attr("markerHeight", 12)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+// add force layout
+var force = d3.layout.force()
+    .nodes(nodes)
+    .links(links)
+    .size([w, h])
+    .linkDistance(function (d) {
+  if ($.inArray(d, invokes) != -1) {
+    return 200;
+  } else {
+    return 50;
+  }
+})
+    .charge(-400)
+    .start();
+
+<!-- var force = cola.d3adaptor() -->
+<!--     .nodes(nodes) -->
+<!--     .links(links) -->
+<!--     .linkDistance(75) -->
+<!--     .size([w, h]).start(); -->
+
+// export lines
+var expset = vis.selectAll("#exports")
+   .data(exports)
+   .enter()
+   .append("line")
+   .style("stroke-width", 3)
+   .style("stroke", "#ccc");
+
+// add invocation paths
+var invset = vis.selectAll("#invokes")
+   .data(invokes)
+   .enter()
+   .append("svg:path")
+   .attr("marker-mid", "url(#mid)")
+   .attr("id", function(d) {
+	return "inv_" + d.rep.inst;
+    })
+   .attr("fill", "none")
+   .style("stroke", "black");
+
+var mk_inv_arglst = function(evt){
+  var argnames = [];
+  var j;
+  for (j = 0; j < evt.args.length; ++j){
+    argnames.push(evt.args[j].inst);
+  }
+  return "[" +  argnames.join(",") + "]";
+};
+
+var draw_inv_label = function(inv_label){
+ var inv_evt = inv_label.datum().rep;
+ inv_label.text(mk_inv_arglst(inv_evt));
+}
+
+var hide_inv_label = function(inv_label){
+  inv_label.text("");
+}
+
+// add labels on invocation paths
+var invlabels = [];
+for (i=0; i < invset[0].length; ++i){
+  var inv_id = invset[0][i].id;
+  var inv_data = vis.select("#" + inv_id).datum();
+  var inv_evt = inv_data.rep;
+  var label = vis.append("text")
+	.style("font-size", "14px")
+	.append("textPath")
+	.attr("xlink:href", "#" + inv_id)
+	.attr("startOffset", "40%")
+	.append("tspan")
+	.attr("dy", -7)
+        .datum(inv_data);
+  invlabels[inv_id.slice(-1)] = label;
+  draw_inv_label(label);
+}
+
+// components
+var cmpset = vis.selectAll("#cmpset")
+      .data(cmps)
+      .enter().append("g").attr("class", "cmp").call(force.drag);
+cmpset.append("svg:rect")
+  .attr("width", cmpW)
+  .attr("height", cmpH)
+  .attr("rx", cmpRx)
+  .attr("ry", cmpRy)
+  .attr("fill", function(d) {return (d.trusted ? colorTrusted : colorMalicious) })
+  .attr("class", "rectCmp")
+
+cmpset.append("text")
+  .attr("x", 10)
+  .attr("y", cmpH - 10)
+  .text(function(d) {return d.inst});
+
+//operations
+var opset = vis.selectAll("#opset")
+      .data(ops)
+      .enter().append("g").attr("class", "op").call(force.drag);
+opset.append("svg:circle")
+     .attr("r", opSize)
+     .attr("fill", function(d) { 
+return (d.receiver.trusted? colorTrusted : colorMalicious)});
+
+opset.append("text")
+  .text(function(d) {return d.type});
+ 
+// fix dragged node
+function myDragstart(d) {
+  d3.select(this).classed("fixed", d.fixed = true);
+};
+var drag = force.drag().on("dragstart", myDragstart);
+
+force.on("tick", function() {
+  // from component to op
+  expset.attr("x1", function(d) { return cmpCenterX(d.source.x); })
+      .attr("y1", function(d) { return cmpCenterY(d.source.y); })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+  // from op to component
+  invset.attr("d", function(d) {
+var srcX = cmpCenterX(d.source.x);
+var srcY = cmpCenterY(d.source.y);
+var dstX = d.target.x;
+var dstY = d.target.y;
+var dx = srcX + (dstX - srcX)/2;
+var dy = srcY + (dstY - srcY)/2;
+return "M" + srcX + " " + srcY +
+       " L" + dx + " " +  dy +
+       " L" + dstX + " " +  dstY;
+});
+
+  cmpset.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";});
+  opset.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";});
+});
+
+/**
+* Visualizer
+*/
+var dbViz = d3.select("#database");
+
+// The table generation function
+function tabulate(data, columns) {
+    var table = dbViz.append("table")
+        .attr("class", "pure-table")
+        .attr("style","margin-top:1"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+            .text(function(column) { return column; });
+
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        .attr("style", "font-family: Courier") // sets the font style
+            .html(function(d) { return d.value; });
+    
+    return table;
+}
+
+var myTable = tabulate([
+{"UserID": "UserID0", "Key": "Key2"}, {"UserID": "UserID1", "Key": "Key1"}],
+["UserID", "Key"]);
+
+var highlight = function() {
+  if (currOp >= 0) {
+    invset.style("stroke", function(d) {
+      if (d.rep.inst == ("Op" + currOp)) return "black";
+      else return "lightgrey";
+    });
+    invset.style("stroke-width", function(d) {
+      if (d.rep.inst == ("Op" + currOp)) return "2";
+      else return "1";
+    });
+    invset.style("marker-mid", function(d) {
+      if (d.rep.inst == ("Op" + currOp)) return "url(#mid)";
+      else return "none";
+    });
+    for (i=0; i < invlabels.length; ++i){
+      if (i == currOp) draw_inv_label(invlabels[i]);
+      else hide_inv_label(invlabels[i]);
+    }
+    
+  } else {
+    invset.style("stroke", "black").style("stroke-width", 1);
+    for (i=0; i < invlabels.length; ++i){
+      draw_inv_label(invlabels[i]);
+    }
+  }
+}
+
+var doPrev = function() {
+  if (currOp >= 0) {
+    currOp = currOp - 1;
+    highlight();
+  }
+}
+
+var doNext = function() {
+  if (currOp < lastEventIdx) {
+    currOp = currOp + 1;
+    highlight();
+  }
+}
+
+d3.select("#prev").on("click", doPrev);
+d3.select("#next").on("click", doNext);
+
+</script>
+
+</body> </html>

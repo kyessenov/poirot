@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<script src="d3.v3.min.js" charset="utf-8"></script>
+<script src="jquery-1.11.0.min.js"></script>
+<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="poirot-viz.js"></script>
+<!-- <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script> -->
+<link rel="stylesheet" href="pure-min.css">
+<style>
+text {
+  fill: #000;
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+
+table {
+ border: 1px solid grey;
+ margin-left: 1px;
+}
+
+tr {
+ font: 12px sans-serif;
+}
+
+div#database {
+  width: 700;
+  height: 146;
+  border: 1px solid rgb(190, 190, 190);
+}
+
+div#wrapper {
+}
+
+div#container {
+  float: left;
+}
+
+div#graph {
+  border: 1px solid rgb(190, 190, 190);
+}
+
+.my-button {
+  border-radius: 4px;
+  background: rgb(102, 178, 255);
+}
+
+div#panelwrapper{
+overflow: hidden;
+}
+
+div#vizpanel{
+  width: 700;
+  height: 50;
+  float: left;
+}
+
+div#codepanel{
+overflow: hidden;
+  width: 200;
+  height: 50;
+}
+
+div#editor { 
+  height:598;
+  border: 1px solid rgb(190, 190, 190);
+}
+
+h1 {
+    font-family: sans-serif;
+	font-size: 18pt;
+	color: black;
+    padding-left: 10px;
+}
+</style>
+<script>
+$( document ).ready(function() {
+  initPoirot();
+});
+</script>
+
+<title>Poirot</title>
+</head>
+
+<body>
+
+<h1>Poirot Threat Modeling and Analysis Tool</h1>
+
+<div id="wrapper">
+  <div id="container">
+    <div id="graph"></div>
+    <div id="database"></div>
+  </div>
+  <div id="editor">
+Slang::Dsl.view :ComplexStore do
+ 
+  data UserID 
+  secret data SessionID 
+  secret data Password # password
+
+  data Amount
+  data OrderID # order ID
+  data PaymentInfo[order: OrderID, amtCharged: Amount]
+
+  data TxID # Transaction ID
+  data TxInfo[order: OrderID, amtPaid: Amount] # Transaction info  
+
+  component MyStore [
+     passwords: UserID ** Password,
+     sessions: UserID ** SessionID,
+     price: OrderID ** Amount,
+     orders: (dynamic UserID ** OrderID),
+     paid: (dynamic set OrderID)
+  ]{    
+    typeOf HttpServer
+
+    op Login[uid: UserID, pwd: Password, ret: SessionID] {
+      allows { pwd == passwords[uid] and ret == sessions[uid]}
+    }
+  
+    op PlaceOrder[uid: UserID, oid: OrderID] {
+      updates { orders.insert(uid**oid) }
+    }
+
+    op Checkout[sid: SessionID, ret: PaymentInfo] {
+      allows { ret.order == orders[sessions.(sid)] and ret.amtCharged == price[ret.order] }
+    }
+  
+    op NotifyPayment[oid: OrderID] {
+      updates { paid.insert(oid) } 
+    }
+  }
+
+  component PaymentService [
+    transactions: (dynamic TxID ** TxInfo),
+  ]{
+    typeOf HttpServer
+    
+    op MakePayment[oid: OrderID, amt: Amount]{      
+      calls { MyStore::NotifyPayment[oid] }    
+      updates { 
+        some(t: TxID) | some(i: TxInfo) {
+          i.order == oid and
+          i.amtPaid == amt and
+          transactions.insert(t**i) 
+        }
+      }      
+    }
+  }
+
+  component Customer [
+    myId: UserID,
+    myPwd: Password
+  ]{
+
+    typeOf Browser
+
+    calls { MyStore::Login }
+    calls { MyStore::PlaceOrder }
+    calls { MyStore::Checkout }
+    calls { 
+      MyStore::PlaceOrder.then PaymentService::MakePayment do |order, payment|
+        order.oid == payment.oid
+      end
+    }
+  }
+
+end
+  </div>
+</div>
+
+<div id="panelwrapper">
+  <div id="vizpanel">
+    <button id="prev" class="pure-button my-button">Prev</button>
+    <button id="next" class="pure-button my-button">Next</button>
+  </div>
+  <div id="codepanel">
+    <button id="run" class="pure-button my-button">Run</button>
+  </div>
+</div>
+</body> </html>
