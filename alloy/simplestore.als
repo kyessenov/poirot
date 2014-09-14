@@ -7,9 +7,9 @@ one sig MyStore extends HttpServer {
 	MyStore__products : ProductID set -> lone ProductInfo,
 	MyStore__orders : (UserID set -> lone ProductID) -> set Op,
 }{
-	all o : this.receives[MyStore__Login] | o.MyStore__Login__pass = MyStore__passwords[o.MyStore__Login__uid]
-	all o : this.receives[MyStore__GetProduct] | o.MyStore__GetProduct__ret = MyStore__products[o.MyStore__GetProduct__pid]
-	all o : this.receives[MyStore__OrderProduct] | MyStore__orders.(o.next) = (MyStore__orders.o + o.MyStore__OrderProduct__uid -> o.MyStore__OrderProduct__pid)
+	all o : this.receives[MyStore__Login] | (o.MyStore__Login__pass) = MyStore__passwords[(o.MyStore__Login__uid)]
+	all o : this.receives[MyStore__GetProduct] | (o.MyStore__GetProduct__ret) = MyStore__products[(o.MyStore__GetProduct__pid)]
+	all o : this.receives[MyStore__OrderProduct] | MyStore__orders.(o.next) = (MyStore__orders.o + ((o.MyStore__OrderProduct__uid) -> (o.MyStore__OrderProduct__pid)))
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies o in MyStore__OrderProduct & SuccessOp
 	this.initAccess in NonCriticalData + UserID.MyStore__passwords + MyStore__passwords.Password + ProductID.MyStore__products + MyStore__products.ProductInfo + UserID.(MyStore__orders.first) + (MyStore__orders.first).ProductID
 }
