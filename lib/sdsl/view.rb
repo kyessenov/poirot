@@ -11,8 +11,7 @@ View = Struct.new(:name, :modules, :trusted, :data, :critical,
 # HACK!
 RET_VAR_SUFFIX = "__ret"
 
-class View
-  
+class View  
   # return the first module with the name s
   def findMod s
     (modules.select { |m| m.name == s })[0]
@@ -66,7 +65,8 @@ class View
    
     modules.each do |m|
       modn = m.name.to_s
-      alloyChunk += wrap(m.to_alloy(ctx))
+      isTrusted = trusted.include? m
+      alloyChunk += wrap(m.to_alloy(ctx, isTrusted))
       # invocations
       m.invokes.each do |o|
         n = o.name.to_s
@@ -85,7 +85,10 @@ class View
             abstractOps << p
           end       
           decls[n] = p
-        else
+        elsif (not o.types.empty?)
+          #TODO: Hack! Need a better way to handle supertypes
+          decls[n] = o.types[0].to_s
+        else          
           decls[n] = "Op"
         end
 
@@ -125,7 +128,7 @@ class View
                 
         if not args.empty? and not o.isAbstract     
           if not o.child
-            sigfacts[n] << "args in " + args.join(" + ")
+            sigfacts[n] << "args = " + args.join(" + ")
           else
             childSet = o.child.map {|e| e.name}.join(" + ")
             sigfacts[n] << 
@@ -136,7 +139,7 @@ class View
           sigfacts[n] << "no args"
         end
         if ret 
-          sigfacts[n] << "ret in " + ret
+          sigfacts[n] << "ret = " + ret
         else
           sigfacts[n] << "no ret"
         end        
@@ -189,7 +192,7 @@ class View
       if abstractOps.include? k
          alloyChunk += "abstract "
       end
-      alloyChunk += wrap("sig " + k + " extends " + v + " {")
+      alloyChunk += wrap("sig " + k + " in " + v + " {")
       # fields      
       fields[k].each do |f|
         alloyChunk += wrap(f.to_alloy(ctx) + ",", 1)
@@ -238,9 +241,9 @@ class View
     # write critical data fact
     if not critical.empty?
       alloyChunk += writeFacts("criticalDataFacts", 
-                               ["CriticalData = " + 
-                                critical.map { |d| d.name.to_s }.
-                                join(" + ")])
+                               [ critical.map { |d| d.name.to_s }.
+                                join(" + ") + " in CriticalData" ]
+                               )
     end
 
     # write assumptions
@@ -248,7 +251,24 @@ class View
       alloyChunk += writeFacts("assumptions", 
                                assumptions.map { |a| a.to_alloy(ctx)})
     end
-      
+     
+    # write facts about operations
+    optypes = decls.keys;
+    num_ops = optypes.length
+    disjoint_facts = []
+       
+    if (num_ops > 1) 
+      for i in 0..(num_ops - 1)
+        for j in (i + 1)..(num_ops - 1)
+          disjoint_facts.push("disjointOps[#{optypes[i]}, #{optypes[j]}]")
+        end
+      end
+    end
+
+    alloyChunk += writeFacts("operationList",
+                             ["Op = " + optypes.join(" + ")] + 
+                             disjoint_facts)    
+
     # append any other extra Alloy expressions
     appendix.each do |a|
       alloyChunk += a
@@ -613,29 +633,6 @@ def buildView(v1, v2, mapping, refineRel)
     end
   end
   modules = myuniq(modules)
-  
-  # TODO: Probably need this
-  # invokesRel.each do |from, to|
-  #   if from == to then next end
-  #   o = mkMixedName(from, to)
-  #   if modules.any? { |m| m.findExport(o) } then next end
-
-  #   o1 = v1.findModsWithExport(from)[0].findExport(from)  
-
-  #   modules.each do |m| 
-  #     if m.findExport o or not (m.findExport to) then next end
-  #     o2 = m.findExport to     
-  #     m.exports << Op.new(from,
-  #                         {:when => [],
-  #                           :args => (o1.constraints[:args])}, o2, o1)
-  #     # simplification
-  #     # if m1.invokes op1, op2 in m2 and op1 is a specialization of op2, 
-  #     # then remove op2 from m1.invokes
-  #     modules.select { |m2| m2.findInvoke o and m2.findInvoke to}.each do |m2|
-  #       m2.invokes.delete(m2.findInvoke to)
-  #     end 
-  #   end
-  # end
 
   # trusted modules
   trusted = (v1.trusted + v2.trusted).map{ |m| if mapping.has_key? m then 
@@ -670,40 +667,6 @@ def buildView(v1, v2, mapping, refineRel)
         o.parent.child << o
       end
     end
-    
-    # m.invokes.each do |o1|
-    #   if m.extends[0]        
-    #     # m2 is a parent of m
-    #     m2 = m.extends[0]
-        
-    #     m2.invokes.each do |o2|  
-    #       # find the module that exports o1
-    #       emod1 = (findModsWithExport(modules, o1.name))[0]
-    #       eop1 = emod1.findExport o1.name
-          
-    #       if eop1.parent && eop1.parent.name == o2.name
-    #         if eop1.parent.isAbstract
-    #           next
-    #         end
-
-    #         if o1.parent && o1.parent.name == eop1.parent.name
-    #           next
-    #         end
-
-    #         if o1.constraints[:when].empty? or o2.constraints[:when].empty?
-    #           newConstraints = []
-    #         else               
-    #           newConstraints =  union(o1.constraints[:when], 
-    #                                   o2.constraints[:when])
-    #         end
-    #         o1.constraints = 
-    #           {:args => o1.constraints[:args],
-    #           :when => newConstraints}
-    #       end
-    #     end
-    #   end
-    # end
-
   end
 
   View.new(:MergedView, modules, trusted,

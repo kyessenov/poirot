@@ -66,7 +66,7 @@ class Mod
     initData 
   end
 
-  def to_alloy(ctx)
+  def to_alloy(ctx, trusted)
     # (s1, s2) in decls => sig s1 extends s2
     sigfacts = []
     facts = []
@@ -147,26 +147,41 @@ class Mod
       alloyChunk += 
         wrap("all o : Op - last | let o' = o.next |" + 
              " #{k}.o' != #{k}.o implies " + 
-             "o in #{opset} & SuccessOp", 1)
+             "(o in #{opset} & SuccessOp and o.receiver = this)", 1)
     end
 
     initData = []
     initDataFun = "#{modn}InitData"
+    fieldDataFun = "#{modn}FieldData"
 
     # initial data access
-    if not isAbstract then
-      initData = [NON_CRITICAL_DATA]
+    if not isAbstract then      
+      if trusted 
+        defaultData = [NON_CRITICAL_DATA] 
+      else
+        defaultData = ["Data - (ConfidentialData + (CriticalData & TrustedModule.initAccess))"]
+      end
+      fieldData = []
       if not (stores.empty? and creates.empty?)
-        initData += initDataAccess("m.")
+        fieldData += initDataAccess("m.")
         extends.each do |e|
-          initData += e.initDataAccess("m.")
+          fieldData += e.initDataAccess("m.")
         end
       end
       alloyChunk += wrap("this.initAccess in this.#{initDataFun}", 1)
+      if (not fieldData.empty?)
+        alloyChunk += wrap("this.#{fieldDataFun} in this.initAccess", 1)
+      end 
     end
-
+    initData = defaultData + fieldData
     alloyChunk += wrap("}")
     # define the initDataFunc for this module
+    
+    if (not fieldData.empty?)
+      alloyChunk += wrap("fun #{fieldDataFun}[m : Module] : set Data {")
+      alloyChunk += wrap(fieldData.join(" + "),1)
+      alloyChunk += wrap("}")
+    end
     
     alloyChunk += wrap("fun #{initDataFun}[m : Module] : set Data {")
     alloyChunk += wrap(initData.join(" + "),1)
@@ -193,7 +208,7 @@ class ModuleBuilder
     @types = []
   end
 
-  def exports(op, constraints = {}, modifies = [], types = [])   
+  def exports(op, constraints = {}, modifies = [], types = [])
     if constraints.empty?
       @exports << Op.new(op, {:when => [], :args => []}, nil, nil, false, 
                          modifies, types)
@@ -228,8 +243,12 @@ class ModuleBuilder
     end
   end
 
-  def exports_ops(*ops) @exports += ops end
-  def invokes_ops(*ops) @invokes += ops end
+  def exports_ops(*ops) 
+    @exports += ops 
+  end
+  def invokes_ops(*ops) 
+    @invokes += ops 
+  end
 
   def assumes(*constr)
     @assumptions += constr   
@@ -270,6 +289,13 @@ class ModuleBuilder
   end
 
   def build name
+    #TODO: Hack! Need a better way to do this
+    if (@types.include? :HttpServer)
+      @exports.each do |e|
+        e.types << :HTTPReq
+      end
+    end
+
     Mod.new(name, @exports, @invokes, @assumptions, @stores, 
             @creates, @extends, @isAbstract, @isUniq, @dynamics, @types)
   end

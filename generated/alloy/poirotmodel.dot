@@ -1,0 +1,36 @@
+digraph g {
+graph[fontname="helvetica", splines=true, concentrate=true];
+node[fontname="helvetica"];
+edge[fontname="helvetica", len=1.0];
+subgraph cluster_MyStore { 
+style=filled; color=lightgrey;
+MyStore [shape=component,style="filled",color="beige"];
+MyStore_MyStore__Login [label="Login",shape=rectangle,fillcolor="beige",style="filled,rounded"];
+MyStore -> MyStore_MyStore__Login [style=dashed,dir=none];
+MyStore_MyStore__PlaceOrder [label="PlaceOrder",shape=rectangle,fillcolor="beige",style="filled,rounded"];
+MyStore -> MyStore_MyStore__PlaceOrder [style=dashed,dir=none];
+MyStore_MyStore__ListOrder [label="ListOrder",shape=rectangle,fillcolor="beige",style="filled,rounded"];
+MyStore -> MyStore_MyStore__ListOrder [style=dashed,dir=none];
+}
+subgraph cluster_Customer { 
+style=filled; color=lightgrey;
+Customer [shape=component,style="filled",color="beige"];
+}
+Customer -> MyStore_MyStore__Login;
+Customer -> MyStore_MyStore__PlaceOrder;
+Customer -> MyStore_MyStore__ListOrder;
+subgraph cluster_EvilServer { 
+style=filled; color=lightgrey;
+EvilServer [shape=component,style="filled",color="beige"];
+EvilServer_EvilServer__EvilHttpReq [label="EvilHttpReq",shape=rectangle,fillcolor="beige",style="filled,rounded"];
+EvilServer -> EvilServer_EvilServer__EvilHttpReq [style=dashed,dir=none];
+}
+subgraph cluster_EvilClient { 
+style=filled; color=lightgrey;
+EvilClient [shape=component,style="filled",color="beige"];
+}
+UserID[shape=ellipse,style="filled",color="greenyellow"];
+OrderID[shape=ellipse,style="filled",color="greenyellow"];
+SessionID[shape=ellipse,style="filled",color="greenyellow"];
+Password[shape=ellipse,style="filled",color="greenyellow"];
+}

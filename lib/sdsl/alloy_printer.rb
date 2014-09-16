@@ -20,8 +20,8 @@ def mkScopeSpec v
   scopes = v.calcScopes
   default_scope = Options.optVal(:DEFAULT_SCOPE)
   
-  mod_scope = scopes[:Module] + NUM_THREAT_MODULES
-  op_scope = scopes[:Op] + NUM_THREAT_OPS
+  mod_scope = scopes[:Module]
+  op_scope = scopes[:Op]
 
   "#{default_scope} but #{scopes[:Data]} Data, " + 
     "#{op_scope} Op, #{op_scope} Step, #{mod_scope} Module\n"
@@ -32,7 +32,7 @@ def mkThreatInstances v
 "
 one sig EvilClient extends Browser {}
 one sig EvilServer extends HttpServer {}
-one sig EvilHttpReq extends Op {}{
+one sig EvilHttpReq in Op {}{
   receiver in EvilServer
 }
 "
@@ -43,10 +43,19 @@ def mkGenericFacts v
   factStr = 
 "
 fact GenericFacts {
-  all s : HttpServer, o : receiver.s | o in HTTPReq 
+  Op in SuccessOp
+  all o : Op | 
+    (o.sender in TrustedModule and some o.args & CriticalData) implies 
+      o.receiver in TrustedModule
 }
 "
   factStr
+end
+
+def mkCustomCheck(policy_name, v)
+"
+check #{policy_name} for #{mkScopeSpec v}
+"
 end
 
 def mkPropertyCmds v
@@ -269,10 +278,13 @@ end
 def mkSanityCheck v
   sanityCheck = "run SanityCheck {\n"
   v.modules.each do |m|
-    m.exports.each do |o|
-      sanityCheck += "  some #{o.name} & SuccessOp\n"
+    if (v.trusted.include? m)
+      m.exports.each do |o|
+        sanityCheck += "  some #{o.name} & SuccessOp\n"
+      end
     end
   end
+  sanityCheck += wrap("  no (receiver + sender).UntrustedModule & SuccessOp")
   sanityCheck += "} for " + (mkScopeSpec v)
 end
 
@@ -285,8 +297,11 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f.puts v.to_alloy
   # footers
   f.puts
-  f.puts mkThreatInstances(v)
+#  f.puts mkThreatInstances(v)
   f.puts mkGenericFacts(v)
+  v.policies.each do |p|
+    f.puts mkCustomCheck(p.name, v)
+  end
   f.puts mkAlloyCmds(v)
   f.close
 end

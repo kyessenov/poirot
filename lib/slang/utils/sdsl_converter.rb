@@ -20,6 +20,7 @@ module Slang
         @assignlhs          = false
         @mod_field_names    = Set.new
         @must_find_in_cache = nil
+        @converting_policy  = false     # Hack! need a better way
       end
 
       # @param view [Module(? < Slang::Model::View)]
@@ -89,10 +90,12 @@ module Slang
         end
       end
 
-      def convert_policy(policy)
+      def convert_policy(policy)        
         pb = PolicyBuilder.new
         e = policy.sym_exe()
+        @converting_policy = true
         pb.constraint convert_expr(e)
+        @converting_policy = false
         pb.build(policy.name)
       end
 
@@ -391,9 +394,14 @@ module Slang
       def convert_fieldexpr(f)
         fldname = _arg_name(f.__field)
         if f.__field.type.has_modifier?(:dynamic)
-          prepost = @assignlhs ? "post" : "pre"
           @mod_field_names << fldname if @assignlhs
-          fldname = @assignlhs ? "#{fldname}.(o.next)" : "#{fldname}.o"
+          if @converting_policy
+            fldname = "(#{fldname}.Op)"
+          elsif @assignlhs
+            fldname = "#{fldname}.(o.next)"
+          else
+            fldname = "#{fldname}.o"
+          end
         end
         e(fldname)
       end
@@ -451,6 +459,7 @@ module Slang
         when sig_cls < Slang::Model::Module;     _mod_name(sig_cls)
         when sig_cls < Slang::Model::Data;       _data_name(sig_cls)
         when sig_cls == Integer;                 "Int"
+        when sig_cls == Data;                    "Data"
         else
           fail "Unknown sig cls: #{sig_cls}"
         end

@@ -92,11 +92,15 @@ module Slang
         Arby::Ast::Expr::CallExpr.new(nil, pred, mod, data)
       end
 
-      def trusted(mod)
-        pred = Arby::Ast::Fun.pred(:name => :trusted)
+      def isTrusted(mod)
+        pred = Arby::Ast::Fun.pred(:name => :isTrusted)
         Arby::Ast::Expr::CallExpr.new(nil, pred, mod)
-      end
+      end   
 
+      def confidential(rel, col)
+        pred = Arby::Ast::Fun.pred(:name => :confidential)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, rel, col)
+      end
     end
 
   end

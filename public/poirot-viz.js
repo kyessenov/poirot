@@ -11,6 +11,7 @@ var border = "1px";
 var colorTrusted = "#ccc";
 var colorMalicious = "rgb(246, 127, 127)";
 var currOp = -1;
+var currCmp = null;
 
 var hasTuple = function(lst, t){
     var i;
@@ -24,11 +25,25 @@ var cmpCenterY = function(y) { return y + (cmpH/2.0); };
 
 var mkInvArglst = function(evt){
     var argnames = [];
+    var retnames = []
     var j;
     for (j = 0; j < evt.args.length; ++j){
     	argnames.push(evt.args[j]);
     }
-    return "[" +  argnames.join(",") + "]";
+    for (j = 0; j < evt.ret.length; ++j){
+	retnames.push(evt.ret[j]);
+    }
+    if (argnames.length < 1) {
+	if (retnames.length < 1) {
+	    return "";
+	} else {
+	    return "[ ] : " + retnames.join(",");
+	}
+    }
+    if (retnames.length < 1){
+	return "[" +  argnames.join(",") + "]";
+    }
+    return "[" +  argnames.join(",") + "] : " + retnames.join(",");
 };
 
 var drawInvLabel = function(invLabel){
@@ -75,6 +90,45 @@ var hideInvLabel = function(invLabel){ invLabel.text(""); };
     	return table;
     };
 
+var delDuplicates = function(lst) {
+    var newlst = [];
+    $.each(lst, function(i, el){
+	if($.inArray(el, newlst) === -1) newlst.push(el);
+    });
+    return newlst;
+};
+
+var showAccesses = function(cmp, accesses, currOp) {
+    var text;
+    var i;
+    var data = [];
+    clearDBViz();
+    
+    for (i = 0; i < accesses.length; ++i){
+	var c = accesses[i].cmp;
+	var d = accesses[i].data;
+	var o = accesses[i].op;
+	if (c == cmp.inst){
+	    if (currOp < 0) data.push(d)
+	    else {
+		var n = o[o.length - 1];
+		if (n <= currOp) data.push(d)
+	    }
+	}
+    }
+    data = delDuplicates(data)
+    text = cmp.type;
+    if (currOp >= 0)
+	text += " has access to the following data at Event " + (currOp + 1) + ":\n";
+    else 
+	text += " has access to the following data during this scenario:\n"
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(text);
+    dbViz.append("div").attr("class", "accesses-text")
+	.text("[" + data.join(", ") + "]");
+    currCmp = cmp;
+};
+
 var sampleInst = {
     cmps: [
 	{inst: "Server0", type: "Server", trusted: true},
@@ -118,7 +172,7 @@ var findObj = function(objs, inst) {
 };
 
 var drawInst = function(inst){
-    drawTrace(inst.cmps, inst.data, inst.events);
+    drawTrace(inst.cmps, inst.data, inst.events, inst.accesses);
     drawDB(inst.database);
 };
 
@@ -127,13 +181,18 @@ var drawDB = function(database) {
 };
 
 var clearViz = function(){
-    vis.selectAll("*").remove();    
-}
+    vis.selectAll("*").remove();
+};
+var clearDBViz = function(){
+    dbViz.selectAll("*").remove();
+    currCmp = null;
+};
 
-var drawTrace = function(cmps, data, events){
+var drawTrace = function(cmps, data, events, accesses){
 
     var lastEventIdx = events.length - 1;
     clearViz();
+    clearDBViz();
 
     var ops = [];
     var exports = [];
@@ -173,25 +232,31 @@ var drawTrace = function(cmps, data, events){
     	.attr("d", "M0,-5L10,0L0,5");
 
     // add force layout
-    var force = d3.layout.force()
-    	.nodes(nodes)
-    	.links(links)
-    	.size([w, h])
-    	.linkDistance(function (d) {
-    	    if ($.inArray(d, invokes) != -1) {
-    		return 200;
-    	    } else {
-    		return 50;
-    	    }
-    	})
-    	.charge(-400)
-    	.start();
+    // var force = d3.layout.force()
+    // 	.nodes(nodes)
+    // 	.links(links)
+    // 	.size([w, h])
+    // 	.linkDistance(function (d) {
+    // 	    if ($.inArray(d, invokes) != -1) {
+    // 		return 200;
+    // 	    } else {
+    // 		return 50;
+    // 	    }
+    // 	})
+    // 	.charge(-400)
+    // 	.start();
 
-    // <!-- var force = cola.d3adaptor() -->
-    //   <!--     .nodes(nodes) -->
-    //   <!--     .links(links) -->
-    // <!--     .linkDistance(75) -->n
-    // <!--     .size([w, h]).start(); -->
+    var force = cola.d3adaptor()
+        .nodes(nodes) 
+        .links(links) 
+        .linkDistance(function(d) {
+	    if ($.inArray(invokes, d))
+		return 100;
+	    else
+		return 10;
+	})
+        .avoidOverlaps(true)
+        .size([w, h]).start(); 
 
     // export lines
     var expset = vis.selectAll("#exports")
@@ -224,18 +289,20 @@ var drawTrace = function(cmps, data, events){
     	    .style("font-size", "14px")
     	    .append("textPath")
     	    .attr("xlink:href", "#" + inv_id)
-    	    .attr("startOffset", "40%")
+    	    .attr("startOffset", "25%")
     	    .append("tspan")
     	    .attr("dy", -7)
             .datum(inv_data);
     	invlabels[inv_id.slice(-1)] = label;
-    	drawInvLabel(label);
+    	//drawInvLabel(label);
     }
 
     // components
     var cmpset = vis.selectAll("#cmpset")
     	.data(cmps)
-    	.enter().append("g").attr("class", "cmp").call(force.drag);
+    	.enter().append("g").attr("class", "cmp")
+	.call(force.drag);
+    
     cmpset.append("svg:rect")
     	.attr("width", cmpW)
     	.attr("height", cmpH)
@@ -243,21 +310,27 @@ var drawTrace = function(cmps, data, events){
     	.attr("ry", cmpRy)
     	.attr("fill", function(d) {
 	    return (d.trusted ? colorTrusted : colorMalicious) })
-    	.attr("class", "rectCmp");
+    	.attr("class", "rectCmp")
+        .on("click", function(d) {
+	    d.fixed = true;
+	    showAccesses(d, accesses, currOp);
+	});
 
     cmpset.append("text")
-    	.attr("x", 10)
+    	.attr("x", 5)
     	.attr("y", cmpH - 10)
-    	.text(function(d) {return d.inst});
+    	.text(function(d) {return d.type});
 
     //operations
     var opset = vis.selectAll("#opset")
     	.data(ops)
     	.enter().append("g").attr("class", "op").call(force.drag);
+    
     opset.append("svg:circle")
     	.attr("r", opSize)
     	.attr("fill", function(d) { 
-    	    return (d.receiver.trusted? colorTrusted : colorMalicious)});
+    	    return (d.receiver.trusted? colorTrusted : colorMalicious)})
+        .on("click", function(d) {d.fixed = true});
 
     opset.append("text")
     	.text(function(d) {return d.type});
@@ -310,12 +383,16 @@ var drawTrace = function(cmps, data, events){
     	    for (i=0; i < invlabels.length; ++i){
     		if (i == currOp) drawInvLabel(invlabels[i]);
     		else hideInvLabel(invlabels[i]);
-    	    }	    
+    	    }
+	    if (currCmp != null)
+		showAccesses(currCmp, accesses, currOp);
     	} else {
     	    invset.style("stroke", "black").style("stroke-width", 1);
-    	    for (i=0; i < invlabels.length; ++i){
-    		drawInvLabel(invlabels[i]);
+	    for (i=0; i < invlabels.length; ++i){
+    		hideInvLabel(invlabels[i]);
     	    }
+	    if (currCmp != null)
+		showAccesses(currCmp, accesses, currOp);
     	}
     };
     var doPrev = function() {
@@ -359,12 +436,29 @@ var initPoirot = function(){
     editor.getSession().setMode("ace/mode/ruby");
 
     $("#run").click(function(e) {
+	$("#loading").show();
 	$.ajax({type: "POST", 
 		url: "/run",
 		data: { model: editor.getSession().getValue() },
 		success: function(result){ 
 		    var inst = JSON.parse(result);
-		    drawTrace(inst.cmps, inst.data, inst.events);
+		    drawTrace(inst.cmps, inst.data, inst.events,
+			      inst.accesses);
+		    $("#loading").hide();
+		}
+	       });
+    });
+
+    $("#analyze").click(function(e) {
+	$("#loading").show();
+	$.ajax({type: "POST", 
+		url: "/analyze",
+		data: { model: editor.getSession().getValue() },
+		success: function(result){ 
+		    var inst = JSON.parse(result);
+		    drawTrace(inst.cmps, inst.data, inst.events, 
+			      inst.accesses);
+		    $("#loading").hide();
 		}
 	       });
     });

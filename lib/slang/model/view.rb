@@ -34,7 +34,7 @@ module Slang
         Slang::Utils::SdslConverter.new.convert_view(self)
       end
 
-      def to_poirot_sdsl        
+      def to_poirot_sdsl
         Slang::Utils::SdslConverter.new.convert_view(self)
       end
     end
