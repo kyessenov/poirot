@@ -4,11 +4,15 @@ secret data SessionID
 secret data Password # password
 
 trusted component MyStore [
-  passwords: UserID ** Password,
-  sessions: UserID ** SessionID,
+  passwords: (updatable UserID ** Password),
+  sessions: (updatable UserID ** SessionID),
   orders: (updatable UserID ** OrderID)
 ]{    
   typeOf HttpServer
+
+  op Signup[uid: UserID, pwd: Password] {
+    updates { passwords.insert(uid**pwd) }
+  }
 
   op Login[uid: UserID, pwd: Password, ret: SessionID] {
     allows { pwd == passwords[uid] and ret == sessions[uid]}

@@ -21,6 +21,7 @@ module Slang
         @mod_field_names    = Set.new
         @must_find_in_cache = nil
         @converting_policy  = false     # Hack! need a better way
+        @converting_assumption = false
       end
 
       # @param view [Module(? < Slang::Model::View)]
@@ -110,15 +111,17 @@ module Slang
           unless meta.oldest_ancestor.nil?
             mb.extends(convert_module(meta.parent_sig))
           end
-
           # creates
           mb.creates *meta.creates.map(&method(:_mod_name))
 
           # stores
+          #TODO: Hack! Need a better way to do this
+          # meta.fields.each do |f|
+          #   f.instance_variable_set "@type", f.type.apply_modifier(:dynamic)
+          # end
           meta.fields.each{|fld| mb.stores convert_arg(fld)}
 
           ops = meta.operations
-
           # exports
           mb.exports_ops *ops.map(&method(:convert_op_to_exports))
 
@@ -128,7 +131,9 @@ module Slang
           mb.invokes_ops *group_by_op_name(trigger_ops)
 
           # assumes
+          @converting_assumption = true
           mb.assumes *meta.guards.map(&method(:convert_guard))
+          @converting_assumption = false
 
           # set unque
           mb.setUniq(!meta.many?)
@@ -397,6 +402,8 @@ module Slang
           @mod_field_names << fldname if @assignlhs
           if @converting_policy
             fldname = "(#{fldname}.Op)"
+          elsif @converting_assumption
+            fldname = "(#{fldname}.first)"
           elsif @assignlhs
             fldname = "#{fldname}.(o.next)"
           else

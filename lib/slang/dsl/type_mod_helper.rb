@@ -10,8 +10,9 @@ module Slang
     # ================================================================
     module TypeModHelper
       extend self
-      def updatable(type)  Arby::Ast::AType.get(type).apply_modifier(:dynamic) end
+      def updatable(type)  
+        Arby::Ast::AType.get(type).apply_modifier(:dynamic) 
+      end
     end
-
   end
 end

@@ -3,7 +3,7 @@
  */
 var vis, dbViz, editor;
 var w = 700, h = 450;
-var cmpW = 90, cmpH = 55;
+var cmpW = 120, cmpH = 80;
 var cmpRx = 10, cmpRy = 10;
 var opSize = 12;
 var bordercolor = "grey";
@@ -225,8 +225,8 @@ var drawTrace = function(cmps, data, events, accesses){
     	.enter().append("svg:marker")    // This section adds in the arrows
     	.attr("id", String)
     	.attr("viewBox", "0 -5 10 10")
-    	.attr("markerWidth", 12)
-    	.attr("markerHeight", 12)
+    	.attr("markerWidth", 8)
+    	.attr("markerHeight", 8)
     	.attr("orient", "auto")
     	.append("svg:path")
     	.attr("d", "M0,-5L10,0L0,5");
@@ -255,7 +255,6 @@ var drawTrace = function(cmps, data, events, accesses){
 	    else
 		return 10;
 	})
-        .avoidOverlaps(true)
         .size([w, h]).start(); 
 
     // export lines
@@ -263,8 +262,9 @@ var drawTrace = function(cmps, data, events, accesses){
     	.data(exports)
     	.enter()
     	.append("line")
-    	.style("stroke-width", 3)
-    	.style("stroke", "#ccc");
+    	.style("stroke-width", 7)
+	.style("stroke", function(d) { 
+    	    return (d.source.trusted? colorTrusted : colorMalicious)});
 
     // add invocation paths
     var invset = vis.selectAll("#invokes")
@@ -333,7 +333,8 @@ var drawTrace = function(cmps, data, events, accesses){
         .on("click", function(d) {d.fixed = true});
 
     opset.append("text")
-    	.text(function(d) {return d.type});
+    	.text(function(d) {return d.type})
+        .attr("dy", 20);
     
     // fix dragged node
     function myDragstart(d) {
@@ -369,28 +370,31 @@ var drawTrace = function(cmps, data, events, accesses){
     var highlight = function() {
     	if (currOp >= 0) {
     	    invset.style("stroke", function(d) {
-    		if (d.rep.inst == ("Op" + currOp)) return "black";
-    		else return "lightgrey";
+    	    	if (d.rep.inst == ("Op" + currOp)) return "black";
+    	    	else return "lightgrey";
     	    });
     	    invset.style("stroke-width", function(d) {
-    		if (d.rep.inst == ("Op" + currOp)) return "2";
-    		else return "1";
+    	    	if (d.rep.inst == ("Op" + currOp)) return "2";
+    	    	else return "1";
     	    });
     	    invset.style("marker-mid", function(d) {
-    		if (d.rep.inst == ("Op" + currOp)) return "url(#mid)";
-    		else return "none";
+    	    	if (d.rep.inst == ("Op" + currOp)) return "url(#mid)";
+    	    	else return "none";
     	    });
     	    for (i=0; i < invlabels.length; ++i){
-    		if (i == currOp) drawInvLabel(invlabels[i]);
-    		else hideInvLabel(invlabels[i]);
+    	    	if (i == currOp) drawInvLabel(invlabels[i]);
+    	    	else hideInvLabel(invlabels[i]);
     	    }
+
 	    if (currCmp != null)
 		showAccesses(currCmp, accesses, currOp);
     	} else {
-    	    invset.style("stroke", "black").style("stroke-width", 1);
 	    for (i=0; i < invlabels.length; ++i){
     		hideInvLabel(invlabels[i]);
     	    }
+    	    invset.style("stroke", "black")
+		.style("stroke-width", 1)
+		.style("marker-mid", "url(#mid)");
 	    if (currCmp != null)
 		showAccesses(currCmp, accesses, currOp);
     	}

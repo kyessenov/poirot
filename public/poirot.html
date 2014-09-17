@@ -9,7 +9,7 @@
 <style>
 text {
   fill: #000;
-  font: 12px sans-serif;
+  font: 16px sans-serif;
   pointer-events: none;
 }
 
@@ -26,9 +26,6 @@ div#database {
   width: 700;
   height: 146;
   border: 1px solid rgb(190, 190, 190);
-}
-
-div#wrapper {
 }
 
 div#container {
@@ -109,12 +106,16 @@ secret data SessionID
 secret data Password # password
 
 trusted component MyStore [
-  passwords: UserID ** Password,
-  sessions: UserID ** SessionID,
+  passwords: (updatable UserID ** Password),
+  sessions: (updatable UserID ** SessionID),
   orders: (updatable UserID ** OrderID)
 ]{    
   typeOf HttpServer
 
+  op Signup[uid: UserID, pwd: Password] {
+    updates { passwords.insert(uid**pwd) }
+  }
+    
   op Login[uid: UserID, pwd: Password, ret: SessionID] {
     allows { pwd == passwords[uid] and ret == sessions[uid]}
   }

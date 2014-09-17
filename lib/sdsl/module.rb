@@ -116,7 +116,7 @@ class Mod
       end
     end
 
-    # fields      
+    # fields
     stores.each do |f|      
       if isDynamic f
         alloyChunk += wrap(f.dynamic.to_alloy(ctx) + ",", 1)
@@ -148,6 +148,15 @@ class Mod
         wrap("all o : Op - last | let o' = o.next |" + 
              " #{k}.o' != #{k}.o implies " + 
              "(o in #{opset} & SuccessOp and o.receiver = this)", 1)
+    end
+    
+    # if nothing modifies this field, then write a constraint to fix it
+    dynamics.each do |d|
+      fld = "#{name}__#{d}"
+      if (not fconds.keys.include? fld)
+        alloyChunk +=
+          wrap("all o : Op - last | let o' = o.next | #{fld}.o' = #{fld}.o", 1)
+      end
     end
 
     initData = []
@@ -295,7 +304,22 @@ class ModuleBuilder
         e.types << :HTTPReq
       end
     end
-
+    
+    # new_dynamics = []
+    # @dynamics.each do |d|
+    #   fullname = "#{name}__#{d}"
+    #   @exports.each do |e|
+    #     if (e.modifies.include? fullname) 
+    #       binding.pry
+    #       if (not new_dynamics.include? d) 
+    #         binding.pry
+    #         new_dynamics.push(d) 
+    #       end
+    #     end
+    #   end
+    # end    
+    # @dynamics = new_dynamics
+    
     Mod.new(name, @exports, @invokes, @assumptions, @stores, 
             @creates, @extends, @isAbstract, @isUniq, @dynamics, @types)
   end

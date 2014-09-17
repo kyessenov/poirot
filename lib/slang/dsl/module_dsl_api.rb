@@ -25,6 +25,7 @@ module Slang
       include Slang::Dsl::BelongsToHelper
       
       alias_method :typeOf, :belongs_to
+      alias_method :configuration, :guard
       alias_method :assumption, :guard
       alias_method :calls, :sends
       alias_method :invokes, :sends

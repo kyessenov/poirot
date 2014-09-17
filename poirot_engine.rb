@@ -187,7 +187,7 @@ def run_alloy(alloy_file, cmd)
   if (cmd == "SanityCheck") 
     system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file} #{cmd}"
   else 
-    system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file}"    
+    system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file} myPolicy 6"    
   end
   system "mv out.xml #{DEFAULT_ALLOY_INST}"
   puts "%%%%%%%%%%%%%%%"

@@ -1,28 +1,26 @@
 open libraryWeb/WebBasic
 open libraryWeb/Redirect
+open libraryWeb/CSRF
 
 -- module MyStore
 one sig MyStore extends HttpServer {
-	MyStore__passwords : (UserID set -> lone Password) -> set Op,
+	MyStore__passwords : UserID set -> lone Password,
 	MyStore__sessions : (UserID set -> lone SessionID) -> set Op,
 	MyStore__orders : (UserID set -> lone OrderID) -> set Op,
 }{
-	all o : this.receives[MyStore__Signup] | (not (some MyStore__passwords.o[(o.MyStore__Signup__uid)]))
-	all o : this.receives[MyStore__Signup] | MyStore__passwords.(o.next) = (MyStore__passwords.o + ((o.MyStore__Signup__uid) -> (o.MyStore__Signup__pwd)))
-	all o : this.receives[MyStore__Login] | ((o.MyStore__Login__pwd) = MyStore__passwords.o[(o.MyStore__Login__uid)] and (o.MyStore__Login__ret) = MyStore__sessions.o[(o.MyStore__Login__uid)])
+	all o : this.receives[MyStore__Login] | ((o.MyStore__Login__pwd) = MyStore__passwords[(o.MyStore__Login__uid)] and (o.MyStore__Login__ret) = MyStore__sessions.o[(o.MyStore__Login__uid)])
 	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + ((o.MyStore__PlaceOrder__uid) -> (o.MyStore__PlaceOrder__oid)))
 	all o : this.receives[MyStore__ListOrder] | (o.MyStore__ListOrder__ret) = MyStore__orders.o[(MyStore__sessions.o.(o.MyStore__ListOrder__sid))]
-	all o : Op - last | let o' = o.next | MyStore__passwords.o' != MyStore__passwords.o implies (o in MyStore__Signup & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies (o in MyStore__PlaceOrder & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__sessions.o' = MyStore__sessions.o
 	this.initAccess in this.MyStoreInitData
 	this.MyStoreFieldData in this.initAccess
 }
 fun MyStoreFieldData[m : Module] : set Data {
-	UserID.((m.MyStore__passwords).first) + ((m.MyStore__passwords).first).Password + UserID.((m.MyStore__sessions).first) + ((m.MyStore__sessions).first).SessionID + UserID.((m.MyStore__orders).first) + ((m.MyStore__orders).first).OrderID
+	UserID.(m.MyStore__passwords) + (m.MyStore__passwords).Password + UserID.((m.MyStore__sessions).first) + ((m.MyStore__sessions).first).SessionID + UserID.((m.MyStore__orders).first) + ((m.MyStore__orders).first).OrderID
 }
 fun MyStoreInitData[m : Module] : set Data {
-	NonCriticalData + UserID.((m.MyStore__passwords).first) + ((m.MyStore__passwords).first).Password + UserID.((m.MyStore__sessions).first) + ((m.MyStore__sessions).first).SessionID + UserID.((m.MyStore__orders).first) + ((m.MyStore__orders).first).OrderID
+	NonCriticalData + UserID.(m.MyStore__passwords) + (m.MyStore__passwords).Password + UserID.((m.MyStore__sessions).first) + ((m.MyStore__sessions).first).SessionID + UserID.((m.MyStore__orders).first) + ((m.MyStore__orders).first).OrderID
 }
 
 -- module Customer
@@ -62,16 +60,6 @@ fun EvilClientInitData[m : Module] : set Data {
 -- fact trustedModuleFacts
 fact trustedModuleFacts {
 	TrustedModule = MyStore + Customer
-}
-
--- operation MyStore__Signup
-sig MyStore__Signup in HTTPReq {
-	MyStore__Signup__uid : one UserID,
-	MyStore__Signup__pwd : one Password,
-}{
-	args = MyStore__Signup__uid + MyStore__Signup__pwd
-	no ret
-	TrustedModule & receiver in MyStore
 }
 
 -- operation MyStore__Login
@@ -131,16 +119,13 @@ sig OtherData extends Data {}
 
 -- fact criticalDataFacts
 fact criticalDataFacts {
+	//TODO: Changed
 	(SessionID + Password) & TrustedModule.initAccess in CriticalData
 }
 
 -- fact operationList
 fact operationList {
-	Op = MyStore__Signup + MyStore__Login + MyStore__PlaceOrder + MyStore__ListOrder + EvilServer__EvilHttpReq
-	disjointOps[MyStore__Signup, MyStore__Login]
-	disjointOps[MyStore__Signup, MyStore__PlaceOrder]
-	disjointOps[MyStore__Signup, MyStore__ListOrder]
-	disjointOps[MyStore__Signup, EvilServer__EvilHttpReq]
+	Op = MyStore__Login + MyStore__PlaceOrder + MyStore__ListOrder + EvilServer__EvilHttpReq
 	disjointOps[MyStore__Login, MyStore__PlaceOrder]
 	disjointOps[MyStore__Login, MyStore__ListOrder]
 	disjointOps[MyStore__Login, EvilServer__EvilHttpReq]
@@ -148,7 +133,7 @@ fact operationList {
 	disjointOps[MyStore__PlaceOrder, EvilServer__EvilHttpReq]
 	disjointOps[MyStore__ListOrder, EvilServer__EvilHttpReq]
 }
-pred myPolicy {
+assert myPolicy {
 confidential[(MyStore__orders.Op), Customer__myId]
 }
 
@@ -158,38 +143,51 @@ fact GenericFacts {
   all o : Op | 
     (o.sender in TrustedModule and some o.args & CriticalData) implies 
       o.receiver in TrustedModule
-  all o : Op |
-    (o.sender in TrustedModule & HttpServer) implies
-       o.receiver not in UntrustedModule & HttpServer
 }
-check myPolicy2 { myPolicy } for 2 but 8 Data, 2 Op, 2 Step, 4 Module
 
-check myPolicy3 { myPolicy } for 2 but 8 Data, 3 Op, 3 Step, 4 Module
+run {
+	let o0 = (Op <: first),
+		o1 = o0.next,
+		o2 = o1.next,
+		o3 = o2.next {
+			o0 in EvilServer__EvilHttpReq 
+			o0.sender = Customer
+			o0.receiver = EvilServer
+			some o0.ret & Password
+			o0.ret != Customer.Customer__myPwd 
+			let badpwd = o0.ret {
+				o1 in MyStore__Login
+				badpwd not in CriticalData
+				o1.sender = Customer
+				o1.receiver = MyStore
+				some o1.args & badpwd
+				o1.MyStore__Login__uid != Customer.Customer__myId
+				//o1.MyStore__Login__pwd != Customer.Customer__myPwd
+				badpwd in Customer.accesses.o1
+			}
+		
+	}	
+} for 3 but 10 Data, 4 Op, 4 Step, 4 Module
 
-check myPolicy4 { myPolicy } for 2 but 8 Data, 4 Op, 4 Step, 4 Module
-
-check myPolicy5 { myPolicy } for 2 but 8 Data, 5 Op, 5 Step, 4 Module
-
-check myPolicy6 { myPolicy } for 2 but 8 Data, 6 Op, 6 Step, 4 Module
+check myPolicy for 2 but 6 Data, 6 Op, 6 Step, 4 Module
 
 run SanityCheck {
-  some MyStore__Signup & SuccessOp
   some MyStore__Login & SuccessOp
   some MyStore__PlaceOrder & SuccessOp
   some MyStore__ListOrder & SuccessOp
   no (receiver + sender).UntrustedModule & SuccessOp
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+} for 2 but 4 Data, 4 Op, 4 Step, 4 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+} for 2 but 4 Data, 4 Op, 4 Step, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+} for 2 but 4 Data, 4 Op, 4 Step, 4 Module
 
 fun RelevantData : Data -> Step {
 	{ d : Data, s : Step | 

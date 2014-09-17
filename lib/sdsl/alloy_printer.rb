@@ -16,14 +16,17 @@ STEP_TYPE = :Op
 NUM_THREAT_MODULES = 2
 NUM_THREAT_OPS = 2
 
-def mkScopeSpec v
+def mkScopeSpec(v, op_scope=nil)
   scopes = v.calcScopes
   default_scope = Options.optVal(:DEFAULT_SCOPE)
   
   mod_scope = scopes[:Module]
-  op_scope = scopes[:Op]
+  if (op_scope == nil) 
+    op_scope = scopes[:Op] 
+  end
+  data_scope = scopes[:Data]*2
 
-  "#{default_scope} but #{scopes[:Data]} Data, " + 
+  "#{default_scope} but #{data_scope} Data, " + 
     "#{op_scope} Op, #{op_scope} Step, #{mod_scope} Module\n"
 end
 
@@ -47,15 +50,21 @@ fact GenericFacts {
   all o : Op | 
     (o.sender in TrustedModule and some o.args & CriticalData) implies 
       o.receiver in TrustedModule
+  all o : Op |
+    (o.sender in TrustedModule & HttpServer) implies
+       o.receiver not in UntrustedModule & HttpServer
 }
 "
   factStr
 end
 
-def mkCustomCheck(policy_name, v)
-"
-check #{policy_name} for #{mkScopeSpec v}
-"
+def mkCustomCheck(policy_name, v, max_op)
+  
+  checkStr = ""
+  for i in 2..max_op
+    checkStr += wrap("check #{policy_name}#{i} { #{policy_name} } for #{mkScopeSpec(v, i)}")
+  end
+  checkStr
 end
 
 def mkPropertyCmds v
@@ -300,7 +309,7 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
 #  f.puts mkThreatInstances(v)
   f.puts mkGenericFacts(v)
   v.policies.each do |p|
-    f.puts mkCustomCheck(p.name, v)
+    f.puts mkCustomCheck(p.name, v, 6)
   end
   f.puts mkAlloyCmds(v)
   f.close

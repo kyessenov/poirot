@@ -22,7 +22,7 @@ end
 
 class Policy  
   def to_alloy(ctx=nil, global=false)
-    alloyChunk = wrap("assert #{name} {")
+    alloyChunk = wrap("pred #{name} {")
     alloyChunk += wrap(constr.to_alloy(ctx))
     alloyChunk += wrap("}")
   end

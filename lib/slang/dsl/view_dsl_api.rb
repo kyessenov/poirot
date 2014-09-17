@@ -101,6 +101,16 @@ module Slang
         pred = Arby::Ast::Fun.pred(:name => :confidential)
         Arby::Ast::Expr::CallExpr.new(nil, pred, rel, col)
       end
+
+      def contains(rel, col1, col2)
+        pred = Arby::Ast::Fun.pred(:name => :contains)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, rel, col1, col2)
+      end
+
+      def uniqueAssignments(rel)
+        pred = Arby::Ast::Fun.pred(:name => :uniqueAssignments)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, rel)
+      end
     end
 
   end

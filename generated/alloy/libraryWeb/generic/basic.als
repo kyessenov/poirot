@@ -124,6 +124,16 @@ pred mayAccess[m : Module, d : Data] {
 		d in m.accesses.Op
 }
 
+pred contains[rel : Data -> Data, col1 : Module -> Data, col2: Module -> Data] {
+	let c1 = Module.col1, c2 = Module.col2 |
+		c1 -> c2 in rel
+}
+
+pred uniqueAssignments[rel : Data -> Data] {
+	no disj d1, d2 : Data |
+		some rel[d1] & rel[d2]
+}
+
 pred confidential[rel : Module -> Data -> Data, col : Module -> Data] {
    	let r = Module.rel, c = Module.col, data = r[c] |
 		data in ConfidentialData implies

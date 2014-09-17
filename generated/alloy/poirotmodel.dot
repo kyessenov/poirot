@@ -5,6 +5,8 @@ edge[fontname="helvetica", len=1.0];
 subgraph cluster_MyStore { 
 style=filled; color=lightgrey;
 MyStore [shape=component,style="filled",color="beige"];
+MyStore_MyStore__Signup [label="Signup",shape=rectangle,fillcolor="beige",style="filled,rounded"];
+MyStore -> MyStore_MyStore__Signup [style=dashed,dir=none];
 MyStore_MyStore__Login [label="Login",shape=rectangle,fillcolor="beige",style="filled,rounded"];
 MyStore -> MyStore_MyStore__Login [style=dashed,dir=none];
 MyStore_MyStore__PlaceOrder [label="PlaceOrder",shape=rectangle,fillcolor="beige",style="filled,rounded"];

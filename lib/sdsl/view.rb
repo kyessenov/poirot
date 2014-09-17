@@ -241,8 +241,8 @@ class View
     # write critical data fact
     if not critical.empty?
       alloyChunk += writeFacts("criticalDataFacts", 
-                               [ critical.map { |d| d.name.to_s }.
-                                join(" + ") + " in CriticalData" ]
+                               [ enclose(critical.map { |d| d.name.to_s }.join(" + ")) + 
+                                 " & TrustedModule.initAccess in CriticalData" ]
                                )
     end
 
