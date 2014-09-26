@@ -129,9 +129,13 @@ pred contains[rel : Data -> Data, col1 : Module -> Data, col2: Module -> Data] {
 		c1 -> c2 in rel
 }
 
-pred uniqueAssignments[rel : Data -> Data] {
+pred uniquelyAssigned[rel : Data -> Data] {
 	no disj d1, d2 : Data |
 		some rel[d1] & rel[d2]
+}
+
+pred shareKeys[rel1 : Data -> Data, rel2 : Data -> Data] {
+	rel1.Data = rel2.Data
 }
 
 pred confidential[rel : Module -> Data -> Data, col : Module -> Data] {

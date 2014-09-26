@@ -10,12 +10,12 @@ trusted component MyStore [
 ]{    
   typeOf HttpServer
 
-  op Signup[uid: UserID, pwd: Password] {
-    updates { passwords.insert(uid**pwd) }
+  op Login[uid: UserID, pwd: Password, ret: SessionID] {
+    ensures { pwd == passwords[uid] and ret == sessions[uid]}
   }
 
-  op Login[uid: UserID, pwd: Password, ret: SessionID] {
-    allows { pwd == passwords[uid] and ret == sessions[uid]}
+  op Signup[uid: UserID, pwd: Password] {
+    updates { passwords.insert(uid**pwd) }
   }
   
   op PlaceOrder[uid: UserID, oid: OrderID] {
@@ -23,7 +23,7 @@ trusted component MyStore [
   }
   
   op ListOrder[uid: UserID, ret: OrderID] {
-    allows { ret == orders[uid] }
+    ensures { ret == orders[uid] }
   }
 }
 

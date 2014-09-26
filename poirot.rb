@@ -25,7 +25,7 @@ post '/analyze' do
   data = request.body.read
   model = (CGI::unescape(data))
   model = model[("model=".size)..(model.size - 1)]    
-  run_model(model, "myPolicy")    #TODO: Fix it
+  run_model(model, "myRequirement")    #TODO: Fix it
 end
 
 def run_model(model, cmd)

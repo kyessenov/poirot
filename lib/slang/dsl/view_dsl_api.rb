@@ -13,7 +13,7 @@ module Slang
       include Slang::Dsl::TypeModHelper
       extend self
 
-      def policy(*args, &block)
+      def requirement(*args, &block)
         assertion(*args, &block)
       end
 
@@ -107,9 +107,14 @@ module Slang
         Arby::Ast::Expr::CallExpr.new(nil, pred, rel, col1, col2)
       end
 
-      def uniqueAssignments(rel)
-        pred = Arby::Ast::Fun.pred(:name => :uniqueAssignments)
+      def uniquelyAssigned(rel)
+        pred = Arby::Ast::Fun.pred(:name => :uniquelyAssigned)
         Arby::Ast::Expr::CallExpr.new(nil, pred, rel)
+      end
+
+      def shareKeys(rel1, rel2)
+        pred = Arby::Ast::Fun.pred(:name => :shareKeys)
+        Arby::Ast::Expr::CallExpr.new(nil, pred, rel1, rel2)        
       end
     end
 

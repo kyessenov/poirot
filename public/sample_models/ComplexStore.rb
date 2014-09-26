@@ -20,7 +20,7 @@ trusted component MyStore [
   typeOf HttpServer
 
   op Login[uid: UserID, pwd: Password, ret: SessionID] {
-    allows { pwd == passwords[uid] and ret == sessions[uid]}
+    ensures { pwd == passwords[uid] and ret == sessions[uid]}
   }
   
   op PlaceOrder[uid: UserID, oid: OrderID] {
@@ -28,7 +28,7 @@ trusted component MyStore [
   }
 
   op Checkout[sid: SessionID, ret: PaymentInfo] {
-    allows { ret.order == orders[sessions.(sid)] and ret.amtCharged == price[ret.order] }
+    ensures { ret.order == orders[sessions.(sid)] and ret.amtCharged == price[ret.order] }
   }
   
   op NotifyPayment[oid: OrderID] {

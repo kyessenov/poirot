@@ -34,7 +34,7 @@ div#container {
 
 .accesses-text {
   margin-left: 5px;
-  font: 14px sans-serif;
+  font: 16px sans-serif;
 }
 
 div#graph {
@@ -117,7 +117,7 @@ trusted component MyStore [
   }
     
   op Login[uid: UserID, pwd: Password, ret: SessionID] {
-    allows { pwd == passwords[uid] and ret == sessions[uid]}
+    ensures { pwd == passwords[uid] and ret == sessions[uid]}
   }
   
   op PlaceOrder[uid: UserID, oid: OrderID] {
@@ -125,7 +125,12 @@ trusted component MyStore [
   }
   
   op ListOrder[uid: UserID, ret: OrderID] {
-    allows { ret == orders[uid] }
+    ensures { ret == orders[uid] }
+  }
+
+  configuration {
+    contains(passwords, Customer.myId, Customer.myPwd) and
+    uniquelyAssigned(orders)
   }
 }
 
@@ -135,12 +140,13 @@ trusted component Customer [
 ]{
   typeOf Browser
 
+  calls { MyStore::Signup }
   calls { MyStore::Login }
   calls { MyStore::PlaceOrder }
   calls { MyStore::ListOrder }
 }
 
-policy myPolicy {
+requirement myRequirement {
   confidential(MyStore.orders,Customer.myId)
 }
 </div>

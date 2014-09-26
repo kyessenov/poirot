@@ -15,6 +15,7 @@ CHILD_COLOR="beige"
 STEP_TYPE = :Op
 NUM_THREAT_MODULES = 2
 NUM_THREAT_OPS = 2
+MAX_TRACE_LENGTH = 7
 
 def mkScopeSpec(v, op_scope=nil)
   scopes = v.calcScopes
@@ -43,6 +44,7 @@ one sig EvilHttpReq in Op {}{
 end
 
 def mkGenericFacts v
+  # TODO: Hack! Need a better way
   factStr = 
 "
 fact GenericFacts {
@@ -53,6 +55,7 @@ fact GenericFacts {
   all o : Op |
     (o.sender in TrustedModule & HttpServer) implies
        o.receiver not in UntrustedModule & HttpServer
+  (no (SuccessOp - last) & EvilServer__EvilHttpReq implies no sender.EvilServer)
 }
 "
   factStr
@@ -289,7 +292,7 @@ def mkSanityCheck v
   v.modules.each do |m|
     if (v.trusted.include? m)
       m.exports.each do |o|
-        sanityCheck += "  some #{o.name} & SuccessOp\n"
+        sanityCheck += "  some o : #{o.name} & SuccessOp\n | o != last"
       end
     end
   end
@@ -309,7 +312,7 @@ def dumpAlloy(v, alloyFile = ALLOY_FILE)
 #  f.puts mkThreatInstances(v)
   f.puts mkGenericFacts(v)
   v.policies.each do |p|
-    f.puts mkCustomCheck(p.name, v, 6)
+    f.puts mkCustomCheck(p.name, v, MAX_TRACE_LENGTH)
   end
   f.puts mkAlloyCmds(v)
   f.close

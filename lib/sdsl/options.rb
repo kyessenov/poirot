@@ -4,7 +4,7 @@
 module Options 
   @@opts = { 
     :OPT_TIMELESS => true, :OPT_GLOBAL_DATA => true, 
-    :DEFAULT_SCOPE => 2,
+    :DEFAULT_SCOPE => 1,
     :DRAW_DATATYPES => true
   }
 

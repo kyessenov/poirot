@@ -21,27 +21,26 @@ trusted component MyStore [
   typeOf HttpServer
 
   op Signup[uid: UserID, pwd: Password] {
-    allows { no passwords[uid] }
     updates { passwords.insert(uid**pwd) }
   }
     
   op Login[uid: UserID, pwd: Password, ret: SessionID] {
-    allows { pwd == passwords[uid] and ret == sessions[uid]}
+    ensures { pwd == passwords[uid] and ret == sessions[uid]}
   }
   
   op PlaceOrder[uid: UserID, oid: OrderID] {
     updates { orders.insert(uid**oid) }
   }
   
-   op ListOrder[sid: SessionID, ret: OrderID] {
-    allows { ret == orders[sessions.(sid)] }
+  op ListOrder[sid: SessionID, ret: OrderID] {
+    ensures { ret == orders[sessions.(sid)] }
   }
 
-  config {
+  configuration {
     contains(passwords, Customer.myId, Customer.myPwd) and
-    uniqueAssignments(sessions)
+    uniquelyAssigned(orders) and
+    uniquelyAssigned(sessions)
   }
- 
 }
 
 trusted component Customer [
@@ -50,12 +49,13 @@ trusted component Customer [
 ]{
   typeOf Browser
 
+  calls { MyStore::Signup }
   calls { MyStore::Login }
   calls { MyStore::PlaceOrder }
   calls { MyStore::ListOrder }
 }
 
-policy myPolicy {
+requirement myRequirement {
   confidential(MyStore.orders,Customer.myId)
 }
 

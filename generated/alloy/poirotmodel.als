@@ -7,11 +7,11 @@ one sig MyStore extends HttpServer {
 	MyStore__sessions : (UserID set -> lone SessionID) -> set Op,
 	MyStore__orders : (UserID set -> lone OrderID) -> set Op,
 }{
-	all o : this.receives[MyStore__Signup] | (not (some MyStore__passwords.o[(o.MyStore__Signup__uid)]))
 	all o : this.receives[MyStore__Signup] | MyStore__passwords.(o.next) = (MyStore__passwords.o + ((o.MyStore__Signup__uid) -> (o.MyStore__Signup__pwd)))
 	all o : this.receives[MyStore__Login] | ((o.MyStore__Login__pwd) = MyStore__passwords.o[(o.MyStore__Login__uid)] and (o.MyStore__Login__ret) = MyStore__sessions.o[(o.MyStore__Login__uid)])
 	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + ((o.MyStore__PlaceOrder__uid) -> (o.MyStore__PlaceOrder__oid)))
 	all o : this.receives[MyStore__ListOrder] | (o.MyStore__ListOrder__ret) = MyStore__orders.o[(MyStore__sessions.o.(o.MyStore__ListOrder__sid))]
+	((contains[(MyStore__passwords.first), Customer__myId, Customer__myPwd] and uniquelyAssigned[(MyStore__orders.first)]) and uniquelyAssigned[(MyStore__sessions.first)])
 	all o : Op - last | let o' = o.next | MyStore__passwords.o' != MyStore__passwords.o implies (o in MyStore__Signup & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies (o in MyStore__PlaceOrder & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__sessions.o' = MyStore__sessions.o
@@ -71,6 +71,7 @@ sig MyStore__Signup in HTTPReq {
 }{
 	args = MyStore__Signup__uid + MyStore__Signup__pwd
 	no ret
+	TrustedModule & sender in Customer
 	TrustedModule & receiver in MyStore
 }
 
@@ -148,7 +149,7 @@ fact operationList {
 	disjointOps[MyStore__PlaceOrder, EvilServer__EvilHttpReq]
 	disjointOps[MyStore__ListOrder, EvilServer__EvilHttpReq]
 }
-pred myPolicy {
+pred myRequirement {
 confidential[(MyStore__orders.Op), Customer__myId]
 }
 
@@ -161,35 +162,38 @@ fact GenericFacts {
   all o : Op |
     (o.sender in TrustedModule & HttpServer) implies
        o.receiver not in UntrustedModule & HttpServer
+  (no (SuccessOp - last) & EvilServer__EvilHttpReq implies no sender.EvilServer)
 }
-check myPolicy2 { myPolicy } for 2 but 8 Data, 2 Op, 2 Step, 4 Module
+check myRequirement2 { myRequirement } for 1 but 8 Data, 2 Op, 2 Step, 4 Module
 
-check myPolicy3 { myPolicy } for 2 but 8 Data, 3 Op, 3 Step, 4 Module
+check myRequirement3 { myRequirement } for 1 but 8 Data, 3 Op, 3 Step, 4 Module
 
-check myPolicy4 { myPolicy } for 2 but 8 Data, 4 Op, 4 Step, 4 Module
+check myRequirement4 { myRequirement } for 1 but 8 Data, 4 Op, 4 Step, 4 Module
 
-check myPolicy5 { myPolicy } for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+check myRequirement5 { myRequirement } for 1 but 8 Data, 5 Op, 5 Step, 4 Module
 
-check myPolicy6 { myPolicy } for 2 but 8 Data, 6 Op, 6 Step, 4 Module
+check myRequirement6 { myRequirement } for 1 but 8 Data, 6 Op, 6 Step, 4 Module
+
+check myRequirement7 { myRequirement } for 1 but 8 Data, 7 Op, 7 Step, 4 Module
 
 run SanityCheck {
-  some MyStore__Signup & SuccessOp
-  some MyStore__Login & SuccessOp
-  some MyStore__PlaceOrder & SuccessOp
-  some MyStore__ListOrder & SuccessOp
-  no (receiver + sender).UntrustedModule & SuccessOp
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+  some o : MyStore__Signup & SuccessOp
+ | o != last  some o : MyStore__Login & SuccessOp
+ | o != last  some o : MyStore__PlaceOrder & SuccessOp
+ | o != last  some o : MyStore__ListOrder & SuccessOp
+ | o != last  no (receiver + sender).UntrustedModule & SuccessOp
+} for 1 but 8 Data, 5 Op, 5 Step, 4 Module
 
 
 check Confidentiality {
   Confidentiality
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+} for 1 but 8 Data, 5 Op, 5 Step, 4 Module
 
 
 -- check who can create CriticalData
 check Integrity {
   Integrity
-} for 2 but 8 Data, 5 Op, 5 Step, 4 Module
+} for 1 but 8 Data, 5 Op, 5 Step, 4 Module
 
 fun RelevantData : Data -> Step {
 	{ d : Data, s : Step | 

@@ -7,6 +7,9 @@ require 'sdsl/myutils'
 require 'pry'
 require 'nokogiri'
 
+SPECIAL_DATA_ON = true
+MAX_TRACE_LENGTH = 7
+
 SLANG_PREFIX =
 "
 require 'slang/slang_dsl'
@@ -116,8 +119,13 @@ def parse_alloy_instance
   data = []
   cmps = []
   accesses = []
-  
+
+  num_ops = sig_ops.elements.length
+
   sig_ops.elements.each do |op|
+    if op["label"].end_with?("Op$#{num_ops - 1}")
+      break;
+    end
     # get tuples that are relevant to this op
     tuples_sender = join(op, rel_sender)
     tuples_receiver = join(op, rel_receiver)
@@ -178,7 +186,39 @@ def parse_alloy_instance
                     :data => clean_label(data_atom)})
   end
 
-  {:cmps => cmps, :data => data, :events => events, :accesses => accesses}
+  special_data = {}
+  if (SPECIAL_DATA_ON) 
+    tupleMyId = root.xpath(".//field[@label='Customer__myId']")[0].elements[0]
+    tupleMyPwd = root.xpath(".//field[@label='Customer__myPwd']")[0].elements[0]
+    tuplesSessions = root.xpath(".//field[@label='MyStore__sessions']")[0].xpath("tuple")
+    tuplesPasswords = root.xpath(".//field[@label='MyStore__passwords']")[0].xpath("tuple")
+    tuplesOrders = root.xpath(".//field[@label='MyStore__orders']")[0].xpath("tuple")
+    
+    special_data[:myId] = clean_label(tupleMyId.elements[1]);
+    special_data[:myPwd] = clean_label(tupleMyPwd.elements[1]);
+    special_data[:passwords] = []
+    special_data[:sessions] = []
+    special_data[:orders] = []
+
+    tuplesSessions.each do |t|
+      special_data[:sessions].push(:uid => clean_label(t.elements[1]),
+                                   :sid => clean_label(t.elements[2]),
+                                   :op => clean_label(t.elements[3]))
+    end
+    tuplesPasswords.each do |t|
+      special_data[:passwords].push(:uid => clean_label(t.elements[1]),
+                                    :pwd => clean_label(t.elements[2]),
+                                    :op => clean_label(t.elements[3]))
+    end
+    tuplesOrders.each do |t|
+      special_data[:orders].push(:uid => clean_label(t.elements[1]),
+                                 :oid => clean_label(t.elements[2]),
+                                 :op => clean_label(t.elements[3]))
+    end
+  end
+
+  {:cmps => cmps, :data => data, :events => events, :accesses => accesses,
+  :specialData => special_data}
 end
 
 def run_alloy(alloy_file, cmd)
@@ -187,7 +227,7 @@ def run_alloy(alloy_file, cmd)
   if (cmd == "SanityCheck") 
     system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file} #{cmd}"
   else 
-    system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file} myPolicy 6"    
+    system "java -jar -Djava.library.path=#{JNI_PATH} #{ALLOY_JAR_NAME} #{alloy_file} myRequirement #{MAX_TRACE_LENGTH}"    
   end
   system "mv out.xml #{DEFAULT_ALLOY_INST}"
   puts "%%%%%%%%%%%%%%%"

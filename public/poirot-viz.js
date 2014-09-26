@@ -20,6 +20,10 @@ var hasTuple = function(lst, t){
     return false;
 };
 
+var indent = function(str) {
+    return "\u00A0\u00A0\u00A0" + str;
+}
+
 var cmpCenterX = function(x) { return x + (cmpW/2.0); };
 var cmpCenterY = function(y) { return y + (cmpH/2.0); };
 
@@ -98,7 +102,93 @@ var delDuplicates = function(lst) {
     return newlst;
 };
 
-var showAccesses = function(cmp, accesses, currOp) {
+var displayAttackFound = function() {
+    var text = "An attack scenario has been found!"
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(text);    
+}
+
+var displaySampleScenarioGenerated = function() {
+    var text = "A sample scenario has been generated."
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(text);    
+}
+
+var displayCurrOpInfo = function(events) {
+//	{inst: "Op0", type: "HTTPReq", args: ["d0"], 
+//	 ret: ["d1"], sender: "Browser0", receiver: "Server0"},
+
+    if (currOp >= 0){
+	var text = "In Step " + (currOp + 1) + ",";
+	var i;
+	for (i = 0; i < events.length; i++){	   
+	    var e = events[i];
+	    if (e.inst == ("Op" + currOp)) {
+		var senderText = e.sender.substring(0, e.sender.length - 1);
+		var receiverText = e.receiver.substring(0, e.receiver.length - 1);
+		text += " " + senderText + " invokes " + e.type + 
+		    " on " + receiverText + " with:";
+		dbViz.append("div").attr("class", "accesses-text")
+		    .text(text);
+		text = "Arguments: [" + e.args.join(",") + "]"
+		dbViz.append("div").attr("class", "accesses-text")
+		    .text(indent(text));
+		if (e.ret.length > 0) {
+		    text = "Return data: " + e.ret[0]	    
+		} else {
+		    text = "No return data"
+		}
+		dbViz.append("div").attr("class", "accesses-text")
+		    .text(indent(text));
+		break;
+	    }
+	}
+    }
+}
+
+var displaySpecialData = function(data) {
+    dbViz.append("div").attr("class", "accesses-text")
+	.text("Initial configuration for Customer:");
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(indent("myId: " + data.myId));
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(indent("myPwd: " + data.myPwd));
+    
+    dbViz.append("div").attr("class", "accesses-text")
+	.text("Initial configuration for MyStore:");
+    var i;
+    var tuples = [];
+    for (i = 0; i < data.passwords.length; ++i){
+	var p = data.passwords[i]
+	if (p.op == "Op0") {
+	    tuples.push("(" + p.uid + "," + p.pwd + ")");
+	}
+    }
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(indent("passwords: [" + tuples.join(",") + "]"));
+
+    tuples = [];
+    for (i = 0; i < data.sessions.length; ++i){
+	var p = data.sessions[i];
+	if (p.op == "Op0") {
+	    tuples.push("(" + p.uid + "," + p.sid + ")");
+	}
+    }
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(indent("sessions: [" + tuples.join(",") + "]"));
+
+    tuples = [];
+    for (i = 0; i < data.orders.length; ++i){
+	var p = data.orders[i];
+	if (p.op == "Op0") {
+	    tuples.push("(" + p.uid + "," + p.oid + ")");
+	}
+    }
+    dbViz.append("div").attr("class", "accesses-text")
+	.text(indent("orders: [" + tuples.join(",") + "]"));    
+}
+
+var displayInfo = function(cmp, accesses, events, specialData) {
     var text;
     var i;
     var data = [];
@@ -118,14 +208,12 @@ var showAccesses = function(cmp, accesses, currOp) {
     }
     data = delDuplicates(data)
     text = cmp.type;
-    if (currOp >= 0)
-	text += " has access to the following data at Event " + (currOp + 1) + ":\n";
-    else 
-	text += " has access to the following data during this scenario:\n"
-    dbViz.append("div").attr("class", "accesses-text")
-	.text(text);
-    dbViz.append("div").attr("class", "accesses-text")
-	.text("[" + data.join(", ") + "]");
+    if (currOp >= 0) {
+	displayCurrOpInfo(events);
+    } else if (!jQuery.isEmptyObject(specialData)){
+	displaySpecialData(specialData);
+    }
+
     currCmp = cmp;
 };
 
@@ -188,11 +276,12 @@ var clearDBViz = function(){
     currCmp = null;
 };
 
-var drawTrace = function(cmps, data, events, accesses){
+var drawTrace = function(cmps, data, events, accesses, specialData){
 
     var lastEventIdx = events.length - 1;
     clearViz();
     clearDBViz();
+    currOp = -1;
 
     var ops = [];
     var exports = [];
@@ -253,7 +342,7 @@ var drawTrace = function(cmps, data, events, accesses){
 	    if ($.inArray(invokes, d))
 		return 100;
 	    else
-		return 10;
+		return 50;
 	})
         .size([w, h]).start(); 
 
@@ -286,7 +375,7 @@ var drawTrace = function(cmps, data, events, accesses){
     	var inv_data = vis.select("#" + inv_id).datum();
     	var inv_evt = inv_data.rep;
     	var label = vis.append("text")
-    	    .style("font-size", "14px")
+    	    .style("font-size", "16px")
     	    .append("textPath")
     	    .attr("xlink:href", "#" + inv_id)
     	    .attr("startOffset", "25%")
@@ -313,7 +402,7 @@ var drawTrace = function(cmps, data, events, accesses){
     	.attr("class", "rectCmp")
         .on("click", function(d) {
 	    d.fixed = true;
-	    showAccesses(d, accesses, currOp);
+	    displayInfo(d, accesses, events, specialData);
 	});
 
     cmpset.append("text")
@@ -387,7 +476,7 @@ var drawTrace = function(cmps, data, events, accesses){
     	    }
 
 	    if (currCmp != null)
-		showAccesses(currCmp, accesses, currOp);
+		displayInfo(currCmp, accesses, events, specialData);
     	} else {
 	    for (i=0; i < invlabels.length; ++i){
     		hideInvLabel(invlabels[i]);
@@ -396,7 +485,7 @@ var drawTrace = function(cmps, data, events, accesses){
 		.style("stroke-width", 1)
 		.style("marker-mid", "url(#mid)");
 	    if (currCmp != null)
-		showAccesses(currCmp, accesses, currOp);
+		displayInfo(currCmp, accesses, events, specialData);
     	}
     };
     var doPrev = function() {
@@ -447,7 +536,7 @@ var initPoirot = function(){
 		success: function(result){ 
 		    var inst = JSON.parse(result);
 		    drawTrace(inst.cmps, inst.data, inst.events,
-			      inst.accesses);
+			      inst.accesses, inst.specialData);
 		    $("#loading").hide();
 		}
 	       });
@@ -461,7 +550,7 @@ var initPoirot = function(){
 		success: function(result){ 
 		    var inst = JSON.parse(result);
 		    drawTrace(inst.cmps, inst.data, inst.events, 
-			      inst.accesses);
+			      inst.accesses, inst.specialData);
 		    $("#loading").hide();
 		}
 	       });

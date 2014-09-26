@@ -18,6 +18,7 @@ subgraph cluster_Customer {
 style=filled; color=lightgrey;
 Customer [shape=component,style="filled",color="beige"];
 }
+Customer -> MyStore_MyStore__Signup;
 Customer -> MyStore_MyStore__Login;
 Customer -> MyStore_MyStore__PlaceOrder;
 Customer -> MyStore_MyStore__ListOrder;
