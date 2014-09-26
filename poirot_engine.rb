@@ -107,7 +107,7 @@ def parse_alloy_instance
   f = File.open(DEFAULT_ALLOY_INST, 'r')
   root = Nokogiri::XML(f)
   f.close
-  sig_ops = root.xpath(".//sig[@label='WebBasic/basic/Op']")[0]
+  sig_ops = root.xpath(".//sig[@label='webbasic/basic/Op']")[0]
   rel_sender = root.xpath(".//field[@label='sender']")[0]
   rel_receiver = root.xpath(".//field[@label='receiver']")[0]
   rel_args = root.xpath(".//field[@label='args']")[0]

@@ -1,6 +1,6 @@
 <alloy builddate="2014-05-23 16:55 EDT">
 
-<instance bitwidth="0" maxseq="0" command="Check myRequirement5 for 1 but 8 Data, 5 Op, 5 Step, 4 Module" filename="">
+<instance bitwidth="0" maxseq="0" command="Check myRequirement2 for 1 but 8 Data, 2 Op, 2 Step, 4 Module" filename="">
 
 <sig label="seq/Int" ID="0" parentID="1" builtin="yes">
 </sig>
@@ -11,38 +11,38 @@
 <sig label="String" ID="3" parentID="2" builtin="yes">
 </sig>
 
-<sig label="WebBasic/ProcHTTP" ID="4" parentID="5" one="yes">
-   <atom label="WebBasic/ProcHTTP$0"/>
+<sig label="webbasic/ProcHTTP" ID="4" parentID="5" one="yes">
+   <atom label="webbasic/ProcHTTP$0"/>
 </sig>
 
-<sig label="WebBasic/ProcHTTPS" ID="6" parentID="5" one="yes">
-   <atom label="WebBasic/ProcHTTPS$0"/>
+<sig label="webbasic/ProcHTTPS" ID="6" parentID="5" one="yes">
+   <atom label="webbasic/ProcHTTPS$0"/>
 </sig>
 
-<sig label="WebBasic/Protocol" ID="5" parentID="2" abstract="yes">
+<sig label="webbasic/Protocol" ID="5" parentID="2" abstract="yes">
 </sig>
 
-<sig label="WebBasic/IP" ID="7" parentID="2" abstract="yes">
-   <atom label="WebBasic/IP$0"/>
+<sig label="webbasic/IP" ID="7" parentID="2" abstract="yes">
+   <atom label="webbasic/IP$0"/>
 </sig>
 
-<sig label="WebBasic/Port" ID="8" parentID="2" abstract="yes">
+<sig label="webbasic/Port" ID="8" parentID="2" abstract="yes">
 </sig>
 
-<sig label="WebBasic/Path" ID="9" parentID="2" abstract="yes">
+<sig label="webbasic/Path" ID="9" parentID="2" abstract="yes">
 </sig>
 
-<sig label="WebBasic/URL" ID="10" parentID="2" abstract="yes">
-   <atom label="WebBasic/URL$0"/>
+<sig label="webbasic/URL" ID="10" parentID="2" abstract="yes">
+   <atom label="webbasic/URL$0"/>
 </sig>
 
 <field label="protocol" ID="11" parentID="10">
-   <tuple> <atom label="WebBasic/URL$0"/> <atom label="WebBasic/ProcHTTP$0"/> </tuple>
+   <tuple> <atom label="webbasic/URL$0"/> <atom label="webbasic/ProcHTTP$0"/> </tuple>
    <types> <type ID="10"/> <type ID="5"/> </types>
 </field>
 
 <field label="host" ID="12" parentID="10">
-   <tuple> <atom label="WebBasic/URL$0"/> <atom label="WebBasic/IP$0"/> </tuple>
+   <tuple> <atom label="webbasic/URL$0"/> <atom label="webbasic/IP$0"/> </tuple>
    <types> <type ID="10"/> <type ID="7"/> </types>
 </field>
 
@@ -54,7 +54,7 @@
    <types> <type ID="10"/> <type ID="9"/> </types>
 </field>
 
-<sig label="WebBasic/Origin" ID="15" parentID="2" abstract="yes">
+<sig label="webbasic/Origin" ID="15" parentID="2" abstract="yes">
 </sig>
 
 <field label="protocol" ID="16" parentID="15">
@@ -69,7 +69,7 @@
    <types> <type ID="15"/> <type ID="8"/> </types>
 </field>
 
-<sig label="WebBasic/Frame" ID="19" parentID="2" abstract="yes">
+<sig label="webbasic/Frame" ID="19" parentID="2" abstract="yes">
 </sig>
 
 <field label="content" ID="20" parentID="19">
@@ -88,50 +88,39 @@
    <types> <type ID="19"/> <type ID="9"/> </types>
 </field>
 
-<sig label="WebBasic/basic/Step" ID="26" parentID="2">
-   <atom label="WebBasic/basic/Step$0"/>
-   <atom label="WebBasic/basic/Step$1"/>
-   <atom label="WebBasic/basic/Step$2"/>
-   <atom label="WebBasic/basic/Step$3"/>
-   <atom label="WebBasic/basic/Step$4"/>
+<sig label="webbasic/basic/Step" ID="26" parentID="2">
+   <atom label="webbasic/basic/Step$0"/>
+   <atom label="webbasic/basic/Step$1"/>
 </sig>
 
 <field label="o" ID="27" parentID="26">
-   <tuple> <atom label="WebBasic/basic/Step$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Step$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Step$2"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Step$3"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Step$4"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Step$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Step$1"/> <atom label="webbasic/basic/Op$1"/> </tuple>
    <types> <type ID="26"/> <type ID="22"/> </types>
 </field>
 
 <sig label="this/UserID" ID="28" parentID="29">
    <atom label="UserID$0"/>
-   <atom label="UserID$1"/>
 </sig>
 
 <sig label="this/OrderID" ID="30" parentID="29">
    <atom label="OrderID$0"/>
-   <atom label="OrderID$1"/>
 </sig>
 
 <sig label="this/SessionID" ID="31" parentID="29">
-   <atom label="SessionID$0"/>
 </sig>
 
 <sig label="this/Password" ID="32" parentID="29">
    <atom label="Password$0"/>
-   <atom label="Password$1"/>
 </sig>
 
 <sig label="this/OtherData" ID="33" parentID="29">
 </sig>
 
-<sig label="WebBasic/Token" ID="34" parentID="29" abstract="yes">
-   <atom label="WebBasic/Token$0"/>
+<sig label="webbasic/Token" ID="34" parentID="29" abstract="yes">
 </sig>
 
-<sig label="WebBasic/HTML" ID="21" parentID="35" abstract="yes">
+<sig label="webbasic/HTML" ID="21" parentID="35" abstract="yes">
 </sig>
 
 <field label="links" ID="36" parentID="21">
@@ -142,20 +131,21 @@
    <types> <type ID="21"/> <type ID="38"/> </types>
 </field>
 
-<sig label="WebBasic/XML" ID="39" parentID="35" abstract="yes">
+<sig label="webbasic/XML" ID="39" parentID="35" abstract="yes">
+   <atom label="webbasic/XML$0"/>
 </sig>
 
-<sig label="WebBasic/JSON" ID="40" parentID="35" abstract="yes">
+<sig label="webbasic/JSON" ID="40" parentID="35" abstract="yes">
 </sig>
 
-<sig label="WebBasic/Resource" ID="35" parentID="29" abstract="yes">
+<sig label="webbasic/Resource" ID="35" parentID="29" abstract="yes">
 </sig>
 
 <field label="encodes" ID="41" parentID="35">
    <types> <type ID="35"/> <type ID="29"/> </types>
 </field>
 
-<sig label="WebBasic/basic/Data" ID="29" parentID="2" abstract="yes">
+<sig label="webbasic/basic/Data" ID="29" parentID="2" abstract="yes">
 </sig>
 
 <sig label="this/MyStore" ID="42" parentID="43" one="yes">
@@ -163,34 +153,18 @@
 </sig>
 
 <field label="MyStore__passwords" ID="44" parentID="42">
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="Password$0"/> <atom label="webbasic/basic/Op$1"/> </tuple>
    <types> <type ID="42"/> <type ID="28"/> <type ID="32"/> <type ID="22"/> </types>
 </field>
 
 <field label="MyStore__sessions" ID="45" parentID="42">
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
    <types> <type ID="42"/> <type ID="28"/> <type ID="31"/> <type ID="22"/> </types>
 </field>
 
 <field label="MyStore__orders" ID="46" parentID="42">
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="OrderID$0"/> <atom label="webbasic/basic/Op$1"/> </tuple>
    <types> <type ID="42"/> <type ID="28"/> <type ID="30"/> <type ID="22"/> </types>
 </field>
 
@@ -198,16 +172,18 @@
    <atom label="EvilServer$0"/>
 </sig>
 
-<sig label="WebBasic/HttpServer" ID="43" parentID="48" abstract="yes">
+<sig label="webbasic/HttpServer" ID="43" parentID="48" abstract="yes">
 </sig>
 
 <field label="host" ID="49" parentID="43">
-   <tuple> <atom label="MyStore$0"/> <atom label="WebBasic/IP$0"/> </tuple>
-   <tuple> <atom label="EvilServer$0"/> <atom label="WebBasic/IP$0"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="webbasic/IP$0"/> </tuple>
+   <tuple> <atom label="EvilServer$0"/> <atom label="webbasic/IP$0"/> </tuple>
    <types> <type ID="43"/> <type ID="7"/> </types>
 </field>
 
 <field label="resources" ID="50" parentID="43">
+   <tuple> <atom label="MyStore$0"/> <atom label="webbasic/URL$0"/> <atom label="webbasic/XML$0"/> </tuple>
+   <tuple> <atom label="EvilServer$0"/> <atom label="webbasic/URL$0"/> <atom label="webbasic/XML$0"/> </tuple>
    <types> <type ID="43"/> <type ID="10"/> <type ID="35"/> </types>
 </field>
 
@@ -216,12 +192,12 @@
 </sig>
 
 <field label="Customer__myId" ID="53" parentID="51">
-   <tuple> <atom label="Customer$0"/> <atom label="UserID$1"/> </tuple>
+   <tuple> <atom label="Customer$0"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="51"/> <type ID="28"/> </types>
 </field>
 
 <field label="Customer__myPwd" ID="54" parentID="51">
-   <tuple> <atom label="Customer$0"/> <atom label="Password$1"/> </tuple>
+   <tuple> <atom label="Customer$0"/> <atom label="Password$0"/> </tuple>
    <types> <type ID="51"/> <type ID="32"/> </types>
 </field>
 
@@ -229,189 +205,129 @@
    <atom label="EvilClient$0"/>
 </sig>
 
-<sig label="WebBasic/Browser" ID="52" parentID="48" abstract="yes">
+<sig label="webbasic/Browser" ID="52" parentID="48" abstract="yes">
 </sig>
 
 <field label="frames" ID="56" parentID="52">
    <types> <type ID="52"/> <type ID="19"/> <type ID="22"/> </types>
 </field>
 
-<sig label="WebBasic/Script" ID="38" parentID="48" abstract="yes">
+<sig label="webbasic/Script" ID="38" parentID="48" abstract="yes">
 </sig>
 
 <field label="context" ID="57" parentID="38">
    <types> <type ID="38"/> <type ID="19"/> </types>
 </field>
 
-<sig label="WebBasic/Endpoint" ID="48" parentID="58" abstract="yes">
+<sig label="webbasic/Endpoint" ID="48" parentID="58" abstract="yes">
 </sig>
 
 <field label="addr" ID="59" parentID="48">
-   <tuple> <atom label="MyStore$0"/> <atom label="WebBasic/IP$0"/> </tuple>
-   <tuple> <atom label="EvilServer$0"/> <atom label="WebBasic/IP$0"/> </tuple>
-   <tuple> <atom label="Customer$0"/> <atom label="WebBasic/IP$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="WebBasic/IP$0"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="webbasic/IP$0"/> </tuple>
+   <tuple> <atom label="EvilServer$0"/> <atom label="webbasic/IP$0"/> </tuple>
+   <tuple> <atom label="Customer$0"/> <atom label="webbasic/IP$0"/> </tuple>
+   <tuple> <atom label="EvilClient$0"/> <atom label="webbasic/IP$0"/> </tuple>
    <types> <type ID="58"/> <type ID="7"/> </types>
 </field>
 
-<sig label="WebBasic/basic/Module" ID="58" parentID="2" abstract="yes">
+<sig label="webbasic/basic/Module" ID="58" parentID="2" abstract="yes">
 </sig>
 
 <field label="creates" ID="60" parentID="58">
+   <tuple> <atom label="MyStore$0"/> <atom label="webbasic/XML$0"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="Password$0"/> </tuple>
    <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> </tuple>
    <tuple> <atom label="MyStore$0"/> <atom label="OrderID$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="SessionID$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="Password$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="WebBasic/Token$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$1"/> </tuple>
+   <tuple> <atom label="EvilServer$0"/> <atom label="UserID$0"/> </tuple>
+   <tuple> <atom label="Customer$0"/> <atom label="webbasic/XML$0"/> </tuple>
+   <tuple> <atom label="Customer$0"/> <atom label="Password$0"/> </tuple>
    <tuple> <atom label="Customer$0"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="Customer$0"/> <atom label="UserID$1"/> </tuple>
-   <tuple> <atom label="Customer$0"/> <atom label="Password$1"/> </tuple>
-   <tuple> <atom label="Customer$0"/> <atom label="WebBasic/Token$0"/> </tuple>
+   <tuple> <atom label="EvilClient$0"/> <atom label="webbasic/XML$0"/> </tuple>
    <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$1"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="Password$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="WebBasic/Token$0"/> </tuple>
    <types> <type ID="58"/> <type ID="29"/> </types>
 </field>
 
 <field label="accesses" ID="61" parentID="58">
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$0"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="UserID$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="Password$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$1"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$1"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$1"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$1"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="SessionID$0"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="Password$0"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="WebBasic/Token$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="WebBasic/Token$0"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="WebBasic/Token$0"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="EvilClient$0"/> <atom label="OrderID$1"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
+   <tuple> <atom label="MyStore$0"/> <atom label="OrderID$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="EvilServer$0"/> <atom label="UserID$0"/> <atom label="webbasic/basic/Op$1"/> </tuple>
+   <tuple> <atom label="EvilClient$0"/> <atom label="webbasic/XML$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="EvilClient$0"/> <atom label="UserID$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="EvilClient$0"/> <atom label="OrderID$0"/> <atom label="webbasic/basic/Op$1"/> </tuple>
    <types> <type ID="58"/> <type ID="29"/> <type ID="22"/> </types>
 </field>
 
-<sig label="WebBasic/basic/Op" ID="22" parentID="2" abstract="yes">
-   <atom label="WebBasic/basic/Op$0"/>
-   <atom label="WebBasic/basic/Op$1"/>
-   <atom label="WebBasic/basic/Op$2"/>
-   <atom label="WebBasic/basic/Op$3"/>
-   <atom label="WebBasic/basic/Op$4"/>
+<sig label="webbasic/basic/Op" ID="22" parentID="2" abstract="yes">
+   <atom label="webbasic/basic/Op$0"/>
+   <atom label="webbasic/basic/Op$1"/>
 </sig>
 
 <field label="sender" ID="62" parentID="22">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="EvilClient$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="EvilClient$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="EvilClient$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="EvilClient$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="EvilClient$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="EvilClient$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$1"/> <atom label="Customer$0"/> </tuple>
    <types> <type ID="22"/> <type ID="58"/> </types>
 </field>
 
 <field label="receiver" ID="63" parentID="22">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="MyStore$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="MyStore$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="MyStore$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="MyStore$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="MyStore$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="MyStore$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$1"/> <atom label="EvilServer$0"/> </tuple>
    <types> <type ID="22"/> <type ID="58"/> </types>
 </field>
 
 <field label="args" ID="64" parentID="22">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="Password$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="Password$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="SessionID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="UserID$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="OrderID$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="Password$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="29"/> </types>
 </field>
 
 <field label="ret" ID="65" parentID="22">
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="SessionID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="OrderID$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="SessionID$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="OrderID$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$1"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="29"/> </types>
 </field>
 
 <field label="trigger" ID="66" parentID="22">
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
    <types> <type ID="22"/> <type ID="22"/> </types>
 </field>
 
-<sig label="WebBasic/basic/OO/Ord" ID="67" parentID="2" one="yes" private="yes">
-   <atom label="WebBasic/basic/OO/Ord$0"/>
+<sig label="webbasic/basic/OO/Ord" ID="67" parentID="2" one="yes" private="yes">
+   <atom label="webbasic/basic/OO/Ord$0"/>
 </sig>
 
 <field label="First" ID="68" parentID="67" private="yes">
-   <tuple> <atom label="WebBasic/basic/OO/Ord$0"/> <atom label="WebBasic/basic/Op$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/OO/Ord$0"/> <atom label="webbasic/basic/Op$0"/> </tuple>
    <types> <type ID="67"/> <type ID="22"/> </types>
 </field>
 
 <field label="Next" ID="69" parentID="67" private="yes">
-   <tuple> <atom label="WebBasic/basic/OO/Ord$0"/> <atom label="WebBasic/basic/Op$0"/> <atom label="WebBasic/basic/Op$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/OO/Ord$0"/> <atom label="WebBasic/basic/Op$1"/> <atom label="WebBasic/basic/Op$2"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/OO/Ord$0"/> <atom label="WebBasic/basic/Op$2"/> <atom label="WebBasic/basic/Op$3"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/OO/Ord$0"/> <atom label="WebBasic/basic/Op$3"/> <atom label="WebBasic/basic/Op$4"/> </tuple>
+   <tuple> <atom label="webbasic/basic/OO/Ord$0"/> <atom label="webbasic/basic/Op$0"/> <atom label="webbasic/basic/Op$1"/> </tuple>
    <types> <type ID="67"/> <type ID="22"/> <type ID="22"/> </types>
 </field>
 
-<sig label="WebBasic/basic/SO/Ord" ID="70" parentID="2" one="yes" private="yes">
-   <atom label="WebBasic/basic/SO/Ord$0"/>
+<sig label="webbasic/basic/SO/Ord" ID="70" parentID="2" one="yes" private="yes">
+   <atom label="webbasic/basic/SO/Ord$0"/>
 </sig>
 
 <field label="First" ID="71" parentID="70" private="yes">
-   <tuple> <atom label="WebBasic/basic/SO/Ord$0"/> <atom label="WebBasic/basic/Step$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/SO/Ord$0"/> <atom label="webbasic/basic/Step$0"/> </tuple>
    <types> <type ID="70"/> <type ID="26"/> </types>
 </field>
 
 <field label="Next" ID="72" parentID="70" private="yes">
-   <tuple> <atom label="WebBasic/basic/SO/Ord$0"/> <atom label="WebBasic/basic/Step$0"/> <atom label="WebBasic/basic/Step$1"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/SO/Ord$0"/> <atom label="WebBasic/basic/Step$1"/> <atom label="WebBasic/basic/Step$2"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/SO/Ord$0"/> <atom label="WebBasic/basic/Step$2"/> <atom label="WebBasic/basic/Step$3"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/SO/Ord$0"/> <atom label="WebBasic/basic/Step$3"/> <atom label="WebBasic/basic/Step$4"/> </tuple>
+   <tuple> <atom label="webbasic/basic/SO/Ord$0"/> <atom label="webbasic/basic/Step$0"/> <atom label="webbasic/basic/Step$1"/> </tuple>
    <types> <type ID="70"/> <type ID="26"/> <type ID="26"/> </types>
 </field>
 
 <sig label="univ" ID="2" builtin="yes">
 </sig>
 
-<sig label="WebBasic/HTTPReq" ID="73">
-   <atom label="WebBasic/basic/Op$0"/>
-   <atom label="WebBasic/basic/Op$1"/>
-   <atom label="WebBasic/basic/Op$2"/>
-   <atom label="WebBasic/basic/Op$3"/>
-   <atom label="WebBasic/basic/Op$4"/>
+<sig label="webbasic/HTTPReq" ID="73">
+   <atom label="webbasic/basic/Op$0"/>
+   <atom label="webbasic/basic/Op$1"/>
    <type ID="22"/>
 </sig>
 
 <field label="url" ID="74" parentID="73">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="WebBasic/URL$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="webbasic/URL$0"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$1"/> <atom label="webbasic/URL$0"/> </tuple>
    <types> <type ID="22"/> <type ID="10"/> </types>
 </field>
 
@@ -420,75 +336,62 @@
 </field>
 
 <sig label="this/MyStore__Signup" ID="76">
-   <atom label="WebBasic/basic/Op$0"/>
    <type ID="73"/>
 </sig>
 
 <field label="MyStore__Signup__uid" ID="77" parentID="76">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="28"/> </types>
 </field>
 
 <field label="MyStore__Signup__pwd" ID="78" parentID="76">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="Password$0"/> </tuple>
    <types> <type ID="22"/> <type ID="32"/> </types>
 </field>
 
 <sig label="this/MyStore__Login" ID="79">
-   <atom label="WebBasic/basic/Op$1"/>
-   <atom label="WebBasic/basic/Op$4"/>
    <type ID="73"/>
 </sig>
 
 <field label="MyStore__Login__uid" ID="80" parentID="79">
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="UserID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="28"/> </types>
 </field>
 
 <field label="MyStore__Login__pwd" ID="81" parentID="79">
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="Password$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="Password$0"/> </tuple>
    <types> <type ID="22"/> <type ID="32"/> </types>
 </field>
 
 <field label="MyStore__Login__ret" ID="82" parentID="79">
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="SessionID$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$4"/> <atom label="SessionID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="31"/> </types>
 </field>
 
 <sig label="this/MyStore__PlaceOrder" ID="83">
-   <atom label="WebBasic/basic/Op$3"/>
    <type ID="73"/>
 </sig>
 
 <field label="MyStore__PlaceOrder__uid" ID="84" parentID="83">
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="UserID$1"/> </tuple>
    <types> <type ID="22"/> <type ID="28"/> </types>
 </field>
 
 <field label="MyStore__PlaceOrder__oid" ID="85" parentID="83">
-   <tuple> <atom label="WebBasic/basic/Op$3"/> <atom label="OrderID$1"/> </tuple>
    <types> <type ID="22"/> <type ID="30"/> </types>
 </field>
 
 <sig label="this/MyStore__ListOrder" ID="86">
-   <atom label="WebBasic/basic/Op$2"/>
+   <atom label="webbasic/basic/Op$0"/>
    <type ID="73"/>
 </sig>
 
-<field label="MyStore__ListOrder__sid" ID="87" parentID="86">
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="SessionID$0"/> </tuple>
-   <types> <type ID="22"/> <type ID="31"/> </types>
+<field label="MyStore__ListOrder__uid" ID="87" parentID="86">
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="UserID$0"/> </tuple>
+   <types> <type ID="22"/> <type ID="28"/> </types>
 </field>
 
 <field label="MyStore__ListOrder__ret" ID="88" parentID="86">
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="OrderID$1"/> </tuple>
+   <tuple> <atom label="webbasic/basic/Op$0"/> <atom label="OrderID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="30"/> </types>
 </field>
 
 <sig label="this/EvilServer__EvilHttpReq" ID="89">
+   <atom label="webbasic/basic/Op$1"/>
    <type ID="73"/>
 </sig>
 
@@ -497,15 +400,16 @@
 </field>
 
 <field label="EvilServer__EvilHttpReq__ret" ID="91" parentID="89">
+   <tuple> <atom label="webbasic/basic/Op$1"/> <atom label="UserID$0"/> </tuple>
    <types> <type ID="22"/> <type ID="29"/> </types>
 </field>
 
-<sig label="WebBasic/Host" ID="92">
-   <atom label="WebBasic/IP$0"/>
+<sig label="webbasic/Host" ID="92">
+   <atom label="webbasic/IP$0"/>
    <type ID="7"/>
 </sig>
 
-<sig label="WebBasic/DOMOp" ID="93">
+<sig label="webbasic/DOMOp" ID="93">
    <type ID="22"/>
 </sig>
 
@@ -513,7 +417,7 @@
    <types> <type ID="22"/> <type ID="19"/> </types>
 </field>
 
-<sig label="WebBasic/ReadDOM" ID="95">
+<sig label="webbasic/ReadDOM" ID="95">
    <type ID="93"/>
 </sig>
 
@@ -521,7 +425,7 @@
    <types> <type ID="22"/> <type ID="29"/> </types>
 </field>
 
-<sig label="WebBasic/WriteDOM" ID="97">
+<sig label="webbasic/WriteDOM" ID="97">
    <type ID="93"/>
 </sig>
 
@@ -529,87 +433,74 @@
    <types> <type ID="22"/> <type ID="21"/> </types>
 </field>
 
-<sig label="WebBasic/GET" ID="99">
+<sig label="webbasic/GET" ID="99">
    <type ID="73"/>
 </sig>
 
-<sig label="WebBasic/POST" ID="100">
-   <atom label="WebBasic/basic/Op$0"/>
-   <atom label="WebBasic/basic/Op$1"/>
-   <atom label="WebBasic/basic/Op$2"/>
-   <atom label="WebBasic/basic/Op$3"/>
-   <atom label="WebBasic/basic/Op$4"/>
+<sig label="webbasic/POST" ID="100">
+   <atom label="webbasic/basic/Op$0"/>
+   <atom label="webbasic/basic/Op$1"/>
    <type ID="73"/>
 </sig>
 
-<sig label="WebBasic/HTTPS" ID="101">
+<sig label="webbasic/HTTPS" ID="101">
    <type ID="73"/>
 </sig>
 
-<sig label="WebBasic/XMLHTTPReq" ID="102">
+<sig label="webbasic/XMLHTTPReq" ID="102">
    <type ID="73"/>
 </sig>
 
-<sig label="WebBasic/BrowserOp" ID="103">
+<sig label="webbasic/BrowserOp" ID="103">
    <type ID="22"/>
 </sig>
 
-<sig label="WebBasic/basic/CriticalData" ID="104">
-   <atom label="SessionID$0"/>
+<sig label="webbasic/basic/CriticalData" ID="104">
    <atom label="Password$0"/>
-   <atom label="Password$1"/>
-   <atom label="OrderID$1"/>
-   <type ID="29"/>
-</sig>
-
-<sig label="WebBasic/basic/NonCriticalData" ID="105">
-   <atom label="UserID$0"/>
    <atom label="OrderID$0"/>
-   <atom label="UserID$1"/>
-   <atom label="WebBasic/Token$0"/>
    <type ID="29"/>
 </sig>
 
-<sig label="WebBasic/basic/BadData" ID="106">
+<sig label="webbasic/basic/NonCriticalData" ID="105">
+   <atom label="webbasic/XML$0"/>
+   <atom label="UserID$0"/>
    <type ID="29"/>
 </sig>
 
-<sig label="WebBasic/basic/ConfidentialData" ID="107">
-   <atom label="OrderID$1"/>
+<sig label="webbasic/basic/BadData" ID="106">
    <type ID="29"/>
 </sig>
 
-<sig label="WebBasic/basic/TrustedModule" ID="108">
+<sig label="webbasic/basic/ConfidentialData" ID="107">
+   <atom label="OrderID$0"/>
+   <type ID="29"/>
+</sig>
+
+<sig label="webbasic/basic/TrustedModule" ID="108">
    <atom label="MyStore$0"/>
    <atom label="Customer$0"/>
    <type ID="58"/>
 </sig>
 
-<sig label="WebBasic/basic/UntrustedModule" ID="109">
+<sig label="webbasic/basic/UntrustedModule" ID="109">
    <atom label="EvilServer$0"/>
    <atom label="EvilClient$0"/>
    <type ID="58"/>
 </sig>
 
-<sig label="WebBasic/basic/ProtectedModule" ID="110">
+<sig label="webbasic/basic/ProtectedModule" ID="110">
    <type ID="58"/>
 </sig>
 
-<sig label="Redirect/RedirectingReq" ID="111">
-   <atom label="WebBasic/basic/Op$0"/>
-   <atom label="WebBasic/basic/Op$1"/>
-   <atom label="WebBasic/basic/Op$2"/>
+<sig label="redirect/RedirectingReq" ID="111">
    <type ID="73"/>
 </sig>
 
 <field label="dest" ID="112" parentID="111">
-   <tuple> <atom label="WebBasic/basic/Op$0"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$1"/> <atom label="WebBasic/URL$0"/> </tuple>
-   <tuple> <atom label="WebBasic/basic/Op$2"/> <atom label="WebBasic/URL$0"/> </tuple>
    <types> <type ID="22"/> <type ID="10"/> </types>
 </field>
 
-<sig label="Redirect/RedirectedReq" ID="113">
+<sig label="redirect/RedirectedReq" ID="113">
    <type ID="73"/>
 </sig>
 
@@ -617,13 +508,11 @@
    <types> <type ID="22"/> <type ID="22"/> </types>
 </field>
 
-<sig label="Redirect/CookiePolicy/Cookie" ID="115">
-   <atom label="WebBasic/Token$0"/>
+<sig label="redirect/cookiepolicy/Cookie" ID="115">
    <type ID="34"/>
 </sig>
 
 <field label="host" ID="116" parentID="115">
-   <tuple> <atom label="WebBasic/Token$0"/> <atom label="WebBasic/IP$0"/> </tuple>
    <types> <type ID="34"/> <type ID="7"/> </types>
 </field>
 
@@ -631,8 +520,7 @@
    <types> <type ID="34"/> <type ID="9"/> </types>
 </field>
 
-<sig label="Redirect/CookiePolicy/HHost" ID="118">
-   <atom label="WebBasic/IP$0"/>
+<sig label="redirect/cookiepolicy/HHost" ID="118">
    <type ID="92"/>
 </sig>
 
@@ -640,7 +528,7 @@
    <types> <type ID="7"/> <type ID="7"/> </types>
 </field>
 
-<sig label="Redirect/CookiePolicy/HPath" ID="120">
+<sig label="redirect/cookiepolicy/HPath" ID="120">
    <type ID="9"/>
 </sig>
 
@@ -648,15 +536,15 @@
    <types> <type ID="9"/> <type ID="9"/> </types>
 </field>
 
-<sig label="Redirect/CookiePolicy/CookieReq" ID="122">
+<sig label="redirect/cookiepolicy/CookieReq" ID="122">
    <type ID="73"/>
 </sig>
 
-<sig label="Redirect/CookiePolicy/CookieBrowser" ID="123">
+<sig label="redirect/cookiepolicy/CookieBrowser" ID="123">
    <type ID="52"/>
 </sig>
 
-<sig label="Redirect/CookiePolicy/GetCookie" ID="124">
+<sig label="redirect/cookiepolicy/GetCookie" ID="124">
    <type ID="93"/>
 </sig>
 
@@ -670,7 +558,7 @@
 </skolem>
 
 <skolem label="$confidential_d" ID="127">
-   <tuple> <atom label="OrderID$1"/> </tuple>
+   <tuple> <atom label="OrderID$0"/> </tuple>
    <types> <type ID="29"/> </types>
 </skolem>
 

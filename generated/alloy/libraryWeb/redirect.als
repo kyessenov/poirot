@@ -1,6 +1,6 @@
 module Redirect
 
-open CookiePolicy
+open cookiepolicy
 
 sig RedirectingReq in HTTPReq {
 	dest : URL

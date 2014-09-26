@@ -1,5 +1,5 @@
-open libraryWeb/WebBasic
-open libraryWeb/Redirect
+open libraryWeb/webbasic
+open libraryWeb/redirect
 
 -- module MyStore
 one sig MyStore extends HttpServer {
@@ -10,8 +10,8 @@ one sig MyStore extends HttpServer {
 	all o : this.receives[MyStore__Signup] | MyStore__passwords.(o.next) = (MyStore__passwords.o + ((o.MyStore__Signup__uid) -> (o.MyStore__Signup__pwd)))
 	all o : this.receives[MyStore__Login] | ((o.MyStore__Login__pwd) = MyStore__passwords.o[(o.MyStore__Login__uid)] and (o.MyStore__Login__ret) = MyStore__sessions.o[(o.MyStore__Login__uid)])
 	all o : this.receives[MyStore__PlaceOrder] | MyStore__orders.(o.next) = (MyStore__orders.o + ((o.MyStore__PlaceOrder__uid) -> (o.MyStore__PlaceOrder__oid)))
-	all o : this.receives[MyStore__ListOrder] | (o.MyStore__ListOrder__ret) = MyStore__orders.o[(MyStore__sessions.o.(o.MyStore__ListOrder__sid))]
-	((contains[(MyStore__passwords.first), Customer__myId, Customer__myPwd] and uniquelyAssigned[(MyStore__orders.first)]) and uniquelyAssigned[(MyStore__sessions.first)])
+	all o : this.receives[MyStore__ListOrder] | (o.MyStore__ListOrder__ret) = MyStore__orders.o[(o.MyStore__ListOrder__uid)]
+	(contains[(MyStore__passwords.first), Customer__myId, Customer__myPwd] and uniquelyAssigned[(MyStore__orders.first)])
 	all o : Op - last | let o' = o.next | MyStore__passwords.o' != MyStore__passwords.o implies (o in MyStore__Signup & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__orders.o' != MyStore__orders.o implies (o in MyStore__PlaceOrder & SuccessOp and o.receiver = this)
 	all o : Op - last | let o' = o.next | MyStore__sessions.o' = MyStore__sessions.o
@@ -100,10 +100,10 @@ sig MyStore__PlaceOrder in HTTPReq {
 
 -- operation MyStore__ListOrder
 sig MyStore__ListOrder in HTTPReq {
-	MyStore__ListOrder__sid : one SessionID,
+	MyStore__ListOrder__uid : one UserID,
 	MyStore__ListOrder__ret : one OrderID,
 }{
-	args = MyStore__ListOrder__sid
+	args = MyStore__ListOrder__uid
 	ret = MyStore__ListOrder__ret
 	TrustedModule & sender in Customer
 	TrustedModule & receiver in MyStore

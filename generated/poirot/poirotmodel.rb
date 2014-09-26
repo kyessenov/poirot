@@ -32,14 +32,13 @@ trusted component MyStore [
     updates { orders.insert(uid**oid) }
   }
   
-  op ListOrder[sid: SessionID, ret: OrderID] {
-    ensures { ret == orders[sessions.(sid)] }
+  op ListOrder[uid: UserID, ret: OrderID] {
+    ensures { ret == orders[uid] }
   }
 
   configuration {
     contains(passwords, Customer.myId, Customer.myPwd) and
-    uniquelyAssigned(orders) and
-    uniquelyAssigned(sessions)
+    uniquelyAssigned(orders)
   }
 }
 

@@ -1,6 +1,6 @@
 module CookiePolicy
 
-open WebBasic
+open webbasic
 
 sig Cookie in Token {
 	host : HHost,

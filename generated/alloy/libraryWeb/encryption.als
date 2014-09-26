@@ -1,6 +1,6 @@
 module Encryption
 
-open WebBasic
+open webbasic
 
 sig Key {}
 sig Encrypted in Data {

@@ -3,7 +3,7 @@
 	*/
 module XSS
 
-open WebBasic
+open webbasic
 
 sig SanitizingServer in HttpServer {
 	sanitizes : set HTTPReq

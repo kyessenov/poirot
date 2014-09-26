@@ -1,6 +1,6 @@
 module SOP
 
-open WebBasic
+open webbasic
 
 -- modules
 sig SOPBrowser in Browser {
