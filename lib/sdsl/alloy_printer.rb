@@ -303,8 +303,8 @@ end
 def dumpAlloy(v, alloyFile = ALLOY_FILE)
   f = File.new(alloyFile, 'w')
   # headers
-  f.puts "open libraryWeb/WebBasic"
-  f.puts "open libraryWeb/Redirect"
+  f.puts "open libraryWeb/webbasic"
+  f.puts "open libraryWeb/redirect"
   f.puts
   f.puts v.to_alloy
   # footers
