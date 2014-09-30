@@ -13,7 +13,7 @@ module Slang
       include Slang::Dsl::TypeModHelper
       extend self
 
-      def requirement(*args, &block)
+      def policy(*args, &block)
         assertion(*args, &block)
       end
 

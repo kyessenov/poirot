@@ -2,7 +2,10 @@
 require 'sinatra'
 require 'json'
 require 'cgi'
-require_relative 'poirot_engine'
+require_relative 'server/poirot_engine'
+
+DEFAULT_INST_PATH = "server/generated/poirot/inst.rb"
+DEFAULT_MODEL_PATH = "server/generated/poirot/poirotmodel.rb"
 
 set :bind, '0.0.0.0'
 
@@ -14,11 +17,15 @@ get '/poirot' do
   send_file 'public/poirot.html'
 end
 
+def chop_model model
+  model[("model=".size)..(model.size - 1)]
+end
+
 post '/run' do
   request.body.rewind
   data = request.body.read
   model = (CGI::unescape(data))
-  model = model[("model=".size)..(model.size - 1)]    
+  model = chop_model(model)   
   run_model(model, "SanityCheck")  
 end
 
@@ -26,8 +33,8 @@ post '/analyze' do
   request.body.rewind
   data = request.body.read
   model = (CGI::unescape(data))
-  model = model[("model=".size)..(model.size - 1)]    
-  run_model(model, "myRequirement")    #TODO: Fix it
+  model = chop_model(model)
+  run_model(model, "myPolicy")    #TODO: Fix it
 end
 
 def run_model(model, cmd)
@@ -40,7 +47,7 @@ def run_model(model, cmd)
 
   fork do
     f = File.open(DEFAULT_INST_PATH, 'w')
-    inst = run_poirot(cmd)
+    inst = run_poirot(cmd, DEFAULT_MODEL_PATH)
     f.write(inst.to_json)
     f.close
   end
