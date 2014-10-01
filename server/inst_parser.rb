@@ -40,18 +40,27 @@ def sigs_with_atom(atom, root)
   sigs
 end
 
-def convert_field(cmp, fld)
+def convert_field(cmp, fld, root)
   tuples = []
+  type = fld.xpath("types")[0]
+  arity = type.elements.size
+  types = []
+
+  (1..(arity - 1)).each do |i|
+    t = type.elements[i]
+    sig = root.xpath(".//sig[@ID=#{t["ID"]}]")[0]
+    types[i - 1] = clean_label(sig)
+  end
+
   join(cmp, fld).each do |t|
-    arity = t.elements.size
-    tuple = []
+    tuple = Hash.new
     # ignore the first column, hence start from 1
     (1..(arity - 1)).each do |i|
-      tuple[i - 1] = clean_label(t.elements[i])
+      tuple[types[i - 1]] = clean_label(t.elements[i])
     end
     tuples.push(tuple)
   end
-  [clean_label(fld), tuples]
+  [clean_label(fld), types, tuples]
 end
 
 def convert_cmp(cmp, root)
@@ -65,8 +74,8 @@ def convert_cmp(cmp, root)
   fields = Hash.new
 
   rel_fields.each do |f|
-    flabel, tuples = convert_field(cmp, f)
-    fields[flabel] = tuples
+    flabel, types, tuples = convert_field(cmp, f, root)
+    fields[flabel] = [types, tuples]
   end
 
   [{:inst => clean_label(cmp),
@@ -136,12 +145,12 @@ def parse_events root
     if not already_added(cmps, clean_label(sender))
       cmp, fields = convert_cmp(sender, root)
       cmps.push(cmp)
-      cmp_fields[cmp] = fields
+      cmp_fields[cmp[:inst]] = fields
     end 
     if not already_added(cmps, clean_label(receiver))
       cmp, fields = convert_cmp(receiver, root)
       cmps.push(cmp)
-      cmp_fields[cmp] = fields
+      cmp_fields[cmp[:inst]] = fields
     end
 
     # create a new event instance
@@ -217,7 +226,9 @@ def parse_alloy_instance inst_fname
     end
   end
 
-  {:cmps => cmps, :data => data, :events => events, :accesses => accesses,
-  :specialData => special_data}
+  {:cmps => cmps, :data => data, :events => events, 
+    :fields => cmp_fields,
+    :accesses => accesses,
+    :specialData => special_data}
 end
 

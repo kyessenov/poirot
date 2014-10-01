@@ -104,13 +104,13 @@ var delDuplicates = function(lst) {
 
 var displayAttackFound = function() {
     var text = "An attack scenario has been found!"
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(text);    
 }
 
 var displaySampleScenarioGenerated = function() {
     var text = "A sample scenario has been generated."
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(text);    
 }
 
@@ -128,17 +128,17 @@ var displayCurrOpInfo = function(events) {
 		var receiverText = e.receiver.substring(0, e.receiver.length - 1);
 		text += " " + senderText + " invokes " + e.type + 
 		    " on " + receiverText + " with:";
-		dbViz.append("div").attr("class", "accesses-text")
+		dbViz.append("div").attr("class", "db-text")
 		    .text(text);
 		text = "Arguments: [" + e.args.join(",") + "]"
-		dbViz.append("div").attr("class", "accesses-text")
+		dbViz.append("div").attr("class", "db-text")
 		    .text(indent(text));
 		if (e.ret.length > 0) {
 		    text = "Return data: " + e.ret[0]	    
 		} else {
 		    text = "No return data"
 		}
-		dbViz.append("div").attr("class", "accesses-text")
+		dbViz.append("div").attr("class", "db-text")
 		    .text(indent(text));
 		break;
 	    }
@@ -147,14 +147,14 @@ var displayCurrOpInfo = function(events) {
 }
 
 var displaySpecialData = function(data) {
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text("Initial configuration for Customer:");
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(indent("myId: " + data.myId));
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(indent("myPwd: " + data.myPwd));
     
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text("Initial configuration for MyStore:");
     var i;
     var tuples = [];
@@ -164,7 +164,7 @@ var displaySpecialData = function(data) {
 	    tuples.push("(" + p.uid + "," + p.pwd + ")");
 	}
     }
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(indent("passwords: [" + tuples.join(",") + "]"));
 
     tuples = [];
@@ -174,7 +174,7 @@ var displaySpecialData = function(data) {
 	    tuples.push("(" + p.uid + "," + p.sid + ")");
 	}
     }
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(indent("sessions: [" + tuples.join(",") + "]"));
 
     tuples = [];
@@ -184,7 +184,7 @@ var displaySpecialData = function(data) {
 	    tuples.push("(" + p.uid + "," + p.oid + ")");
 	}
     }
-    dbViz.append("div").attr("class", "accesses-text")
+    dbViz.append("div").attr("class", "db-text")
 	.text(indent("orders: [" + tuples.join(",") + "]"));    
 }
 
@@ -260,7 +260,7 @@ var findObj = function(objs, inst) {
 };
 
 var drawInst = function(inst){
-    drawTrace(inst.cmps, inst.data, inst.events, inst.accesses);
+    drawTrace(inst);
     drawDB(inst.database);
 };
 
@@ -276,7 +276,15 @@ var clearDBViz = function(){
     currCmp = null;
 };
 
-var drawTrace = function(cmps, data, events, accesses, specialData){
+var drawTrace = function(inst){
+
+    cmps = inst.cmps;
+    data = inst.data;
+    events = inst.events;
+    fields = inst.fields;
+    console.log(fields);
+    accesses = inst.accesses;   
+    specialData = inst.specialData;
 
     var lastEventIdx = events.length - 1;
     clearViz();
@@ -535,8 +543,7 @@ var initPoirot = function(){
 		data: { model: editor.getSession().getValue() },
 		success: function(result){ 
 		    var inst = JSON.parse(result);
-		    drawTrace(inst.cmps, inst.data, inst.events,
-			      inst.accesses, inst.specialData);
+		    drawTrace(inst);
 		    $("#loading").hide();
 		}
 	       });
@@ -549,8 +556,7 @@ var initPoirot = function(){
 		data: { model: editor.getSession().getValue() },
 		success: function(result){ 
 		    var inst = JSON.parse(result);
-		    drawTrace(inst.cmps, inst.data, inst.events, 
-			      inst.accesses, inst.specialData);
+		    drawTrace(inst);
 		    $("#loading").hide();
 		}
 	       });
